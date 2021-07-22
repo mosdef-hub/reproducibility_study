@@ -1,6 +1,11 @@
 # reproducibility_study
 Repo for data collection, discussion, etc for a MoSDeF reproducibility study.
 
+### Creating useful git commit messages
+For most additions to this project, we expect users to provide useful/detailed commit messages.
+Please refer to the commit messages in the current `git log` for examples.
+[This is a great resource for creating detailed commit messages.](https://chris.beams.io/posts/git-commit/)
+
 
 ### Using `pre-commit` to auto-format commits
 
