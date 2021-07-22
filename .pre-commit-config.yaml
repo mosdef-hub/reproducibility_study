@@ -31,3 +31,4 @@ repos:
   hooks:
     - id: pydocstyle
       args: [--convention=numpy]
+      exclude: ^(project/tests)
