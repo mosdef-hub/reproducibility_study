@@ -8,7 +8,7 @@ Layout is as below (subject to change):
 │   ├── README.md
 │   ├── engine_input
 │   │   ├── cassandra
-│   │   ├── cp2k
+│   │   ├── mcccs
 │   │   ├── gomc
 │   │   ├── gromacs
 │   │   ├── hoomd
