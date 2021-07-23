@@ -1,0 +1,3 @@
+project = mosdef_reproducibility
+workspace_dir = workspace
+schema_version = 1

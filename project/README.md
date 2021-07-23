@@ -6,6 +6,7 @@ Layout is as below (subject to change):
 ├── init.py
 ├── src
 │   ├── README.md
+│   ├── dashboard.py
 │   ├── engine_input
 │   │   ├── cassandra
 │   │   ├── mcccs
@@ -15,6 +16,8 @@ Layout is as below (subject to change):
 │   │   └── lammps
 │   ├── molecules
 │   ├── project.py
+│   ├── signac.rc
+│   ├── workspace
 │   └── xmls
 └── tests
 ```
