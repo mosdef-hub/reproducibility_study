@@ -25,7 +25,7 @@ params = {
         'density': densities,
         'temperature': temperatures,
         'molecule': molecules,
-        'N_molecules': N_moleculess,
+        'N_molecules': N_molecules,
         'replica': replicas,
 }
 
