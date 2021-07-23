@@ -17,7 +17,7 @@ forcefields = ['Trappe_UA']
 densities = [1.0]  # units
 temperatures = [1.0]  # units
 molecules = ['methane', 'ethane', 'propane', 'butane', 'pentane', 'hexane']
-N_moleculess = [1000]
+N_molecules = [1000]
 replicas = range(5)
 params = {
         'simulation_engine': simulation_engines,
