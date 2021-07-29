@@ -12,14 +12,17 @@ class Project(flow.FlowProject):
 @Project.pre(lambda j: j.sp.simulation_engine=='hoomd')
 def run_hoomd(job):
     from mbuild.formats.gsdwriter import write_gsd
+    from mbuild.formats.hoomd3_simulation import create_hoomd3_forcefield
     import hoomd
     import hoomd.md
-    filled_box = get_system(job)z
+    filled_box = get_system(job)
     ff_file = get_ff_file(job)
     ff = foyer.Forcefield(ff_file)
     structure = ff.apply(filled_box)
 
     write_gsd(structure, job.fn('init.gsd'), ref_distance=rd, ref_energy=re)
+    # NOTE: create_hoomd3_forcefield depends on PR
+    # https://github.com/mosdef-hub/mbuild/pull/871
     snapshot, forcefield, ref_vals = create_hoomd3_forcefield(structure,
             ref_distance=10, ref_energy=1/4.184)
 
