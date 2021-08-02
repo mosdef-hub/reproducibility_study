@@ -1,0 +1,36 @@
+# Lammps script to read in mBuild topologies and perform energy minimization
+# Initialization
+units           real
+boundary        p p p
+atom_style      full
+
+# Assume ff info is included in data file
+pair_style      lj/cut/coul/cut 10.0
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  opls # be careful here, opls assume 1/2 Kn constants, whereas trappe may use Cn constants. No constant term in opls
+read_data structure.lammps
+
+special_bonds lj/coul 0 0 0.5
+pair_modify shift yes mix geometric #TODO: Look to make sure this shift is okay
+
+neighbor        2.5 bin #TODO: I think this is the skin cutoff, double check
+
+timestep 0.1
+thermo 2000
+
+#minimize surface
+dump traj1 all xtc 1000 min_sur.xtc # Only write out to make sure things work okay, then remove that
+dump_modify traj1 unwrap no
+minimize 1e-4 1e-4 1000 1000
+fix integrator all nve/limit 0.1
+run 50000
+unfix integrator
+minimize 1e-4 1e-4 1000 1000
+fix integrator all nve
+run 50000
+unfix integrator
+minimize 1e-4 1e-4 1000 1000
+fix integrator all nvt temp 300.0 300.0 10000
+run 50000
+write_restart minimize.restart
