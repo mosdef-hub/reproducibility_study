@@ -20,4 +20,3 @@ mamba install -c conda-forge pre-commit
 pre-commit install --install-hooks
 pre-commit run --all-files
 ```
-
