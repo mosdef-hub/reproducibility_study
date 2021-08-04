@@ -36,9 +36,9 @@ def has_restart_file(job):
 
 
 @Project.label
-def has_restart_file(job):
+def has_topmon_file(job):
     """Check if the job has a topmon (FF) file."""
-    return job.isfile("fort.77")
+    return job.isfile("topmon.inp")
 
 
 @Project.label
@@ -54,8 +54,6 @@ def has_fort77maker(job):
 @Project.post(has_fort_files)
 def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
-    print(job.workspace())
-    print(job.sp.molecule)
     for file in glob(
         Project().root_directory()
         + "/engine_input/mcccs/{}/fort.4.*".format(job.sp.molecule)
@@ -72,6 +70,17 @@ def copy_fort77maker(job):
         Project().root_directory()
         + "/engine_input/mcccs/fort77maker_onebox.py",
         Project().root_directory() + "/engines/mcccs/",
+    )
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "mcccs")
+@Project.post(has_topmon)
+def copy_topmon(job):
+    """Copy topmon.inp from root directory to mcccs directory."""
+    shutil.copy(
+        Project().root_directory() + "/engine_input/mcccs/topmon.inp",
+        job.workspace() + "/",
     )
 
 
@@ -101,5 +110,4 @@ def run_melt(job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
-    print("The root dir is " + Project().root_directory())
     # breakpoint()
