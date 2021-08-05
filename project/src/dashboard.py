@@ -1,4 +1,4 @@
-"""Dashboard for viewing data associated with jobs in a signac project."""
+"""Signac project visualization support using signac-dashboard."""
 from signac_dashboard import Dashboard
 from signac_dashboard.modules import (
     ImageViewer,
