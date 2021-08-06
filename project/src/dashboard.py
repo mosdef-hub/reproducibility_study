@@ -10,10 +10,10 @@ from signac_dashboard.modules import (
 
 
 class PlotDashboard(Dashboard):
-    """Take signac dashboard and plot statepoints."""
+    """Subclass of main Dashboard class to provide project-specific methods."""
 
     def job_sorter(self, job):
-        """Accumulate all jobs according to a statepoint."""
+        """Sorts jobs based on provided statepoint parameters."""
         return [job.sp.simulation_engine]
 
 
