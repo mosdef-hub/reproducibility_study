@@ -1,8 +1,7 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+# import foyer
 import os
 import pathlib
-import shutil
-from glob import glob
 
 import flow
 from flow import environments
@@ -110,4 +109,3 @@ def run_melt(job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
-    # breakpoint()

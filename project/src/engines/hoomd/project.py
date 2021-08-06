@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import flow
+import foyer
 from flow import environments
 
 
@@ -20,7 +21,8 @@ class Project(flow.FlowProject):
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "hoomd")
 def run_hoomd(job):
-    """Run a simulaiton with HOOMD-blue."""
+    """Run a simulation with HOOMD-blue."""
+
     import hoomd
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
@@ -64,4 +66,3 @@ def run_hoomd(job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
-    breakpoint()
