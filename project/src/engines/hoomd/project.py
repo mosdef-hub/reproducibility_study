@@ -1,27 +1,34 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+# import foyer
+import os
+import pathlib
+
 import flow
 import foyer
 from flow import environments
 
 
 class Project(flow.FlowProject):
-    """Base signac flow project."""
+    """Subclass of FlowProject to provide custom methods and attributes."""
 
-    pass
+    def __init__(self):
+        super().__init__()
+        current_path = pathlib.Path(os.getcwd()).absolute()
+        self.data_dir = current_path.parents[1] / "data"
+        self.ff_fn = self.data_dir / "forcefield.xml"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "hoomd")
 def run_hoomd(job):
-    """Run hoomd simulation."""
+    """Run a simulation with HOOMD-blue."""
     import hoomd
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd3_simulation import create_hoomd3_forcefield
 
     filled_box = get_system(job)
-    ff_file = get_ff_file(job)
-    ff = foyer.Forcefield(ff_file)
+    # ff = foyer.Forcefield(job._project.ff_fn)
     structure = ff.apply(filled_box)
 
     write_gsd(structure, job.fn("init.gsd"), ref_distance=rd, ref_energy=re)
