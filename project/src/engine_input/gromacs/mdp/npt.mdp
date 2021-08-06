@@ -32,7 +32,7 @@ ref_t                    = 300
 pcoupl                   = parrinello-rahman
 pcoupltype               = semiisotropic
 nstpcouple               = -1
-tau-p                    = 10.0 
+tau-p                    = 10.0
 compressibility          = 4.5e-5
 ref-p                    = 1.01325
 
