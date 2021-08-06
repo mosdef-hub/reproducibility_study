@@ -22,7 +22,6 @@ class Project(flow.FlowProject):
 @Project.pre(lambda j: j.sp.simulation_engine == "hoomd")
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
-
     import hoomd
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
