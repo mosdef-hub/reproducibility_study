@@ -1,5 +1,20 @@
-# reproducibility_study
-Repo for data collection, discussion, etc for a MoSDeF reproducibility study.
+# Reproducibility Study
+Repo for data collection, discussion, etc for a [MoSDeF](http://mosdef.org) reproducibility study.
+
+## Installation
+We use [conda](https://docs.conda.io/en/latest/) to manage our software environment, so you'll need a conda installation--we recommend [miniconda](https://docs.conda.io/en/latest/miniconda.html) with [mamba](https://github.com/mamba-org/mamba).
+
+Once conda and mamba are installed, the `mosdef-study38` environment can be created by running:
+
+```bash
+mamba env create -f environment.yml
+```
+
+Each simulation engine requires additional setup.
+TODO engine-specific install steps
+
+## Use
+This project uses the [Signac framework](https://signac.io/) to manage its parameter space. Instructions for initializing and submitting/running the simulation and analysis workflows can be found in [the project guide](project/README.md).
 
 ### Creating useful git commit messages
 For most additions to this project, we expect users to provide useful/detailed commit messages.
