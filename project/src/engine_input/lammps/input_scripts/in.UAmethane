@@ -9,11 +9,11 @@ pair_style      lj/cut/coul/cut 10.0 #no charges
 bond_style  none
 angle_style none
 dihedral_style  none
-read_data methane.lammps
+read_data Methane.lammps
 
 pair_modify shift yes  #TODO: Look to make sure this shift is okay
 
-neighbor        2.5 bin #TODO: I think this is the skin cutoff, double check
+neighbor        2.5 bin #skin cutoff
 
 timestep 0.1
 thermo 2000
