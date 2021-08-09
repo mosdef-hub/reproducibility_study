@@ -6,7 +6,7 @@ import signac
 
 
 def dict_product(dd):
-    """Create a dictionary that is the product of the key,value of a dict."""
+    """Return the product of the key/values of a dictionary."""
     keys = dd.keys()
     for element in itertools.product(*dd.values()):
         yield dict(zip(keys, element))
