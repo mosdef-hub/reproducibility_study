@@ -1,0 +1,10 @@
+name: mosdef-study38
+channels:
+  - conda-forge/label/hoomd_dev
+  - conda-forge
+  - bioconda
+dependencies:
+  - gromacs>=2021.1
+  - lammps
+  - hoomd
+  - cassandra=1.2.5
