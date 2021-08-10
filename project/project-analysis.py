@@ -1,6 +1,4 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
-from os import path
-
 import flow
 
 
