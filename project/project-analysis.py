@@ -18,7 +18,7 @@ def run_analysis(job):
     from src.analysis.rdf import gsd_rdf
 
     # RDF
-    pass
+    gsd_rdf(job)
 
 
 if __name__ == "__main__":
