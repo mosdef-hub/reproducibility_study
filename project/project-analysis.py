@@ -12,7 +12,7 @@ class Project(flow.FlowProject):
 
 
 @Project.operation
-@Project.pre(lambda j: path.isfile(j.fn("trajectory.gsd")))
+@Project.pre(lambda j: j.isfile("trajectory.gsd"))
 def run_analysis(job):
     """Run analysis."""
     from src.analysis.rdf import gsd_rdf
