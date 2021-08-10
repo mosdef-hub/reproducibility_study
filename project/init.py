@@ -23,7 +23,15 @@ simulation_engines = [
 forcefields = ["Trappe_UA"]
 densities = [1.0]  # units
 temperatures = [1.0]  # units
-molecules = ["methane", "ethane", "propane", "butane", "pentane", "hexane"]
+molecules = ["methane", "pentane", "benzene", "water", "ethanol"]
+molw = {
+    "methane": 16.043,
+    "pentane": 72.151,
+    "benzene": 78.114,
+    "water": 18.015,
+    "ethanol": 46.069,
+}
+
 N_molecules = [1000]
 replicas = range(5)
 params = {
@@ -40,3 +48,4 @@ pr_root = os.path.join(os.getcwd(), "src")
 pr = signac.get_project(pr_root)
 for sp in dict_product(params):
     job = pr.open_job(sp).init()
+    job.doc.mw = molw[job.sp.molecule]
