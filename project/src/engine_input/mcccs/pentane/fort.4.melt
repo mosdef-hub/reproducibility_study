@@ -1,10 +1,10 @@
 
  &mc_shared
-     seed=           0
+     seed=           SEED
      nbox=           1
      nmolty=           1
-     nchain=         200
-     nstep=         100
+     nchain=           NCHAIN
+     nstep=         10
      lstop= F
      iratio=         500
      rmin=   1.20000000000000
@@ -52,10 +52,10 @@
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.000000000000000E+000
+     pmvol=  8.000000000000000E-04
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
-     rmvolume=  1.000000000000000E-003
+     rmvolume=  1.000000000000000E+003
  /
 
 
@@ -77,9 +77,9 @@
      pmcb=  0.340000000000000
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
-     nchoi1=          10
-     nchoi=           8
-     nchoir=          10
+     nchoi1=          20
+     nchoi=           16
+     nchoir=          20
      nchoih=           1
      nchtor=         100
      nchbna=        1000
@@ -134,9 +134,9 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  40.000   40.000   40.000 14.000  0.250  0.000 0  F  F  F  F 3440.00     0.1
+  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
-180 0
+NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
 10 10 2 10 0 10.0  2.000 F 0.0
 END SIMULATION_BOX
@@ -144,7 +144,7 @@ END SIMULATION_BOX
 
 MOLECULE_TYPE
 ! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lrplc lsetup lq14scale qscale iurot isolute eta
-6 6 6 6 6 6                                    F      F      F     F              F      T        0.5   0     1000000
+5 5 5 5 5 5                                    F      F      F     F              F      T        0.5   0     1000000
 ! unit ntype leaderq
 1 4 1
 ! stretching
