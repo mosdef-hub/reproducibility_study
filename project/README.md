@@ -1,12 +1,31 @@
+## You are here
 Main location for reproducibility study.
 
-Layout is as below (subject to change):
+## How to use
+All commands are intended to be run from this location with the `mosdef-study38` environment active.
+To initialize the project workspace:
+```bash
+python init.py
+```
+You will see the empty workspace folder populated with the hashed job directories.
+
+Each engine directory in `src/engines` contains its own `project.py` file. To run the simulations for a specific engine (in the following example we use hoomd), you would run:
+```bash
+python src/engines/hoomd/project.py run
+```
+
+Finally, to run the analysis of the simulation output you would run:
+```bash
+python project-analysis.py run
+```
+## Dashboard instructions
+(TODO)
+
+## Layout
 
 ```
 ├── README.md
 ├── __init__.py
-├── __pycache__
-│   └── __init__.cpython-37.pyc
 ├── init.py
 ├── project-analysis.py
 ├── signac.rc
@@ -60,10 +79,6 @@ Layout is as below (subject to change):
 │       └── spce.xml
 ├── tests
 │   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-37.pyc
-│   │   ├── base_test.cpython-37-pytest-6.2.4.pyc
-│   │   └── test_methane_ua.cpython-37-pytest-6.2.4.pyc
 │   ├── base_test.py
 │   ├── test_methane_ua.py
 │   └── test_spce_water.py
