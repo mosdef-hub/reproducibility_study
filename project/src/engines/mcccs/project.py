@@ -110,7 +110,9 @@ def has_topmon(job):
 def has_fort77maker(job):
     """Check if the job has a fort77maker file (obsolete)."""
     return os.path.isfile(
-        Project().root_directory() + "/engines/mcccs/" + "fort77maker_onebox.py"
+        Project().root_directory()
+        + "/src/engines/mcccs/"
+        + "fort77maker_onebox.py"
     )
 
 
@@ -206,7 +208,7 @@ def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
     for file in glob(
         Project().root_directory()
-        + "/engine_input/mcccs/{}/fort.4.*".format(job.sp.molecule)
+        + "/src/engine_input/mcccs/{}/fort.4.*".format(job.sp.molecule)
     ):
         shutil.copy(file, job.workspace() + "/")
 
@@ -221,8 +223,8 @@ def copy_fort77maker(job):
     """Copy fort77maker_onebox.py from root directory to mcccs directory."""
     shutil.copy(
         Project().root_directory()
-        + "/engine_input/mcccs/fort77maker_onebox.py",
-        Project().root_directory() + "/engines/mcccs/",
+        + "/src/engine_input/mcccs/fort77maker_onebox.py",
+        Project().root_directory() + "/src/engines/mcccs/",
     )
 
 
@@ -236,7 +238,7 @@ def copy_topmon(job):
     """Copy topmon.inp from root directory to mcccs directory."""
     shutil.copy(
         Project().root_directory()
-        + "/engine_input/mcccs/{}/topmon.inp".format(job.sp.molecule),
+        + "/src/engine_input/mcccs/{}/topmon.inp".format(job.sp.molecule),
         job.workspace() + "/",
     )
 
@@ -417,7 +419,7 @@ def run_prod(job):
     step = "prod" + str(replicate)
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
+    execommand = "/home/rs/group-code/MCCCS-MN-8-21/exe-8-21/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.prod", "fort.4")
     process = Popen(
