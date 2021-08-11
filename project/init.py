@@ -20,6 +20,8 @@ simulation_engines = [
     "hoomd",
     "lammps",
 ]
+md_engines = ["gromacs", "hoomd", "lammps"]
+mc_engines = ["cassandra", "mcccs", "gomc"]
 forcefields = ["Trappe_UA", "spce", "oplsaa"]
 densities = [1.0]  # units
 temperatures = [1.0]  # units
@@ -50,11 +52,7 @@ for sp in dict_product(params):
 
 for i, sp in enumerate(total_statepoints):
     # filter gemc ensembles from md engines
-    if sp["production_ensemble"] == "GEMC-NVT" and sp["simulation_engine"] in [
-        "gromacs",
-        "hoomd",
-        "lammps",
-    ]:
+    if sp["production_ensemble"] == "GEMC-NVT" and sp["simulation_engine"] in md_engines:
         indices_to_remove.add(i)
 
     # filter gemc production_ensembles from all but 2 molecules
