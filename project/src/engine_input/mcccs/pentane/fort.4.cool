@@ -52,7 +52,7 @@
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.00
+     pmvol=  0.0
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
      rmvolume=  1.000000000000000E+003
@@ -134,7 +134,7 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F 2000     PRESSURE
+  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax

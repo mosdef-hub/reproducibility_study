@@ -4,9 +4,9 @@
      nbox=           1
      nmolty=           1
      nchain=           NCHAIN
-     nstep=         1000
+     nstep=         80000
      lstop= F
-     iratio=         500
+     iratio=         50000000
      rmin=   1
      softcut=   100.000000000000
      linit= F
@@ -16,9 +16,9 @@
 
  &analysis
      iprint=          50
-     imv=        1000
-     iblock=          1000
-     iratp=           500
+     imv=        10
+     iblock=          10
+     iratp=           10
      idiele=      100000
      iheatcapacity=     1000000
      ianalyze=      100000
@@ -46,13 +46,13 @@
 
  &mc_volume
      tavol=  0.400000000000000
-     iratv=         500
+     iratv=         500000000
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.00
+     pmvol=  0.01
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
      rmvolume=  1.000000000000000E+003
@@ -134,7 +134,7 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F 2000     PRESSURE
+  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax

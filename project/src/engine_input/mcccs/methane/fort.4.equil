@@ -7,7 +7,7 @@
      nstep=   20000
      lstop=          F
      iratio=   500
-     rmin=      1.2
+     rmin=      1
      softcut=        100.00
      linit=          F
      lreadq=         F

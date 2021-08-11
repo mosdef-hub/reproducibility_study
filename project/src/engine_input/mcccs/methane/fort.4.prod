@@ -4,10 +4,10 @@
      nbox=           1
      nmolty=         1
      nchain=   NCHAIN
-     nstep=   80000
+     nstep=   30000
      lstop=          F
      iratio=   50000000
-     rmin=      1.2
+     rmin=      1
      softcut=        100.00
      linit=          F
      lreadq=         F
