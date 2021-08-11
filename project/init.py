@@ -52,7 +52,10 @@ for sp in dict_product(params):
 
 for i, sp in enumerate(total_statepoints):
     # filter gemc ensembles from md engines
-    if sp["production_ensemble"] == "GEMC-NVT" and sp["simulation_engine"] in md_engines:
+    if (
+        sp["production_ensemble"] == "GEMC-NVT"
+        and sp["simulation_engine"] in md_engines
+    ):
         indices_to_remove.add(i)
 
     # filter gemc production_ensembles from all but 2 molecules
