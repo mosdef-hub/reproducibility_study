@@ -1,3 +1,7 @@
+# Signac
+.signac_sp_cache.json.gz
+signac_project_document.json
+
 # MacOS/finder file
 .DS_Store
 
