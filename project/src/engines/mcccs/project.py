@@ -115,27 +115,85 @@ def has_fort77maker(job):
 
 
 @Project.label
+def replicate_set(job):
+    """Check if number of replicates for prod has been set."""
+    try:
+        return job.doc.num_prod_replicates == 4
+    except AttributeError:
+        return False
+
+
+@Project.label
+def all_prod_replicates_done(job):
+    """Check if all prod replicate simulations completed."""
+    try:
+
+        return job.doc.prod_replicates_done >= job.doc.num_prod_replicates
+    except AttributeError:
+        return False
+
+
+@Project.label
 def melt_finished(job):
     """Check if melt stage is finished."""
-    return job.isfile("fort.12.melt")
+    step = "melt"
+    run_file = job.ws + "/run.{}".format(step)
+    if job.isfile("run.{}".format(step)):
+        with open(run_file) as myfile:
+            if "Program ended" in myfile.read():
+                return True
+            else:
+                return False
 
 
 @Project.label
 def cool_finished(job):
-    """Check if melt stage is finished."""
-    return job.isfile("fort.12.cool")
+    """Check if cool stage is finished."""
+    step = "cool"
+    run_file = job.ws + "/run.{}".format(step)
+    if job.isfile("run.{}".format(step)):
+        with open(run_file) as myfile:
+            if "Program ended" in myfile.read():
+                return True
+            else:
+                return False
 
 
 @Project.label
 def equil_finished(job):
-    """Check if melt stage is finished."""
-    return job.isfile("fort.12.equil")
+    """Check if equil stage is finished."""
+    step = "equil"
+    run_file = job.ws + "/run.{}".format(step)
+    if job.isfile("run.{}".format(step)):
+        with open(run_file) as myfile:
+            if "Program ended" in myfile.read():
+                return True
+            else:
+                return False
 
 
 @Project.label
 def prod_finished(job):
-    """Check if melt stage is finished."""
-    return job.isfile("fort.12.prod")
+    """Check if prod stage is finished."""
+    step = "prod" + str(job.doc.prod_replicates_done)
+    run_file = job.ws + "/run.{}".format(step)
+    if job.isfile("run.{}".format(step)):
+        with open(run_file) as myfile:
+            if "Program ended" in myfile.read():
+                return True
+            else:
+                return False
+
+
+@Project.operation
+@Project.pre(
+    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+)
+@Project.post(replicate_set)
+def set_prod_replicates(job):
+    """Copy the files for simulation from engine_input folder."""
+    job.doc.num_prod_replicates = 4
+    job.doc.prod_replicates_done = 0
 
 
 @ex
@@ -299,8 +357,9 @@ def run_cool(job):
     print(output)
     shutil.move("fort.12", "fort.12.{}".format(step))
     shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("run1a.dat", "run.{}".format(step))
+    shutil.copy("config1a.dat", "fort.77")
+    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
     shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
 
@@ -334,8 +393,9 @@ def run_equil(job):
     print(output)
     shutil.move("fort.12", "fort.12.{}".format(step))
     shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("run1a.dat", "run.{}".format(step))
+    shutil.copy("config1a.dat", "fort.77")
+    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
     shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
 
@@ -347,16 +407,19 @@ def run_equil(job):
 @Project.pre(has_restart_file)
 @Project.pre(equil_finished)
 @Project.post(prod_finished)
+@Project.post(all_prod_replicates_done)
 def run_prod(job):
     """Run production."""
     from subprocess import PIPE, Popen
 
-    step = "prod"
+    job.doc.prod_replicates_done += 1
+    replicate = job.doc.prod_replicates_done
+    step = "prod" + str(replicate)
     """Run the melting stage."""
     print("Running {}".format(step))
     execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
-    shutil.copyfile("fort.4.{}".format(step), "fort.4")
+    shutil.copyfile("fort.4.prod", "fort.4")
     process = Popen(
         execommand,
         shell=True,
@@ -369,10 +432,14 @@ def run_prod(job):
     print(output)
     shutil.move("fort.12", "fort.12.{}".format(step))
     shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("run1a.dat", "run.{}".format(step))
+    shutil.copy("config1a.dat", "fort.77")
+    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
     shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+    print(job.doc.prod_replicates_done)
+    print(all_prod_replicates_done(job))
+    print(prod_finished(job))
 
 
 if __name__ == "__main__":
