@@ -22,7 +22,8 @@ mamba env update -f engines.yml
 ```
 
 GOMC can be installed according to its documentation [here](https://gomc.eng.wayne.edu/).
-MCCCS Towhee can be installed according to its documentation [here](http://towhee.sourceforge.net/).
+
+MCCCS can be installed according to its documentation [here](https://ccs-psi.org/node/52).
 
 ## Use
 This project uses the [Signac framework](https://signac.io/) to manage its parameter space. Instructions for initializing and submitting/running the simulation and analysis workflows can be found in [the project guide](project/README.md).
