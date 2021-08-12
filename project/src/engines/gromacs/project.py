@@ -18,6 +18,10 @@ class Project(flow.FlowProject):
 
 """Setting progress label"""
 @Project.label
+def job_init(job):
+    return (job.isfile('init.gro', 'init.top', 'nvt.mdp', 'npt.mdp'))
+
+@Project.label
 def em_grompp(job):
     return job.isfile("em.tpr")
 
@@ -43,54 +47,82 @@ def npt_completed(job):
 
 """Setting up workflow operation"""
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+def init_job(job):
+    "Initialize individual job workspace, including mdp and molecular init files"
+    import mbuild as mb
+    from project.src.molecules.system_builder import SystemBuilder
+    with job:
+        # Create a Compound and save to gro and top files
+        ff_path = '' # Fill in path to Trappe-UA xml
+        system = SystemBuilder(job)
+        system.save(filename='init.gro', combining_rule='geometric')
+        system.save(filename='init.top', forcefield_name='trappe')
+
+        # Modify mdp files according to job statepoint
+        return None
+
+@Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("init.gro"))
+@Project.pre(lambda j: j.isfile("init.top"))
 @flow.cmd
 def grompp_em(job):
-    _chdir(job)
-    em_mdp_path = "../../engine_input/gromacs/mdp/em.mdp"
-    msg = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
-    return msg
+    with job:
+        em_mdp_path = "../../engine_input/gromacs/mdp/em.mdp"
+        msg = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
+        return msg
 
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("em.tpr"))
 @flow.cmd
 def gmx_em(job):
-    _chdir(job)
-    return _mdrun_str("em")
+    with job:
+        return _mdrun_str("em")
 
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("em.gro"))
 @flow.cmd
 def grompp_nvt(job):
-    _chdir(job)
-    nvt_mdp_path = "../../engine_input/gromacs/mdp/nvt.mdp"
-    msg = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
-    return msg
+    with job:
+        #nvt_mdp_path = "../../engine_input/gromacs/mdp/nvt.mdp"
+        nvt_mdp_path = "nvt.mdp"
+        msg = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+        return msg
 
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("nvt.tpr"))
 @flow.cmd
 def gmx_nvt(job):
-    return _mdrun_str("nvt")
+    with job:
+        return _mdrun_str("nvt")
 
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("em.gro"))
 @flow.cmd
 def grompp_npt(job):
-    _chdir(job)
-    npt_mdp_path = "../../engine_input/gromacs/mdp/npt.mdp"
-    msg = f"gmx grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
-    return msg
+    with job:
+        #npt_mdp_path = "../../engine_input/gromacs/mdp/npt.mdp"
+        npt_mdp_path = "npt.mdp"
+        msg = f"gmx grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
+        return msg
 
 @Project.operation
+@Project.pre(lambda j: j.sp.simulation_engine == "gromcas")
+@Project.pre(lambda j: j.isfile("npt.tpr"))
 @flow.cmd
 def gmx_npt(job):
-    _chdir(job)
-    return _mdrun_str("npt")
+    with job:
+        return _mdrun_str("npt")
 
 
 def _mdrun_str(op):
     msg = f"gmx mdrun -v deffnm {op} -s {op}.tpr -cpi {op}.cpt "
     return msg
-
-def _chdir(job):
-    p = pathlib.Path(job.workspace())
-    os.chdir(str(p.absolute()))
 
 if __name__ == "__main__":
     pr = Project()
