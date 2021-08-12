@@ -12,6 +12,7 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
 
     A wrapper for freud's RDF module
     https://freud.readthedocs.io/en/latest/modules/density.html#freud.density.RDF
+    Creates the files "rdf.png" and "rdf.txt" in the job folder.
 
     Parameters
     ----------
@@ -25,12 +26,10 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     bins : int, default 50
         The number of bins in the RDF histogram.
     r_min : float, default 0.5
-        The minimum distance to calculate the RDF.
+        The minimum distance (in nm) to calculate the RDF.
     r_max : float, default None
-        The maximum distance to calculate the RDF. If None is provided, then
+        The maximum distance (in nm) to calculate the RDF. If None is provided,
         the minimum box length times a factor of 0.45 will be used.
-
-    TODO (units)
     """
     gsdfile = job.fn("trajectory.gsd")
 
@@ -48,7 +47,7 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
 
     fig, ax = plt.subplots()
     ax.plot(rdf.bin_centers, rdf.rdf)
-    ax.set_xlabel("$r$")
+    ax.set_xlabel("$r (nm)$")
     ax.set_ylabel("$g(r)$")
     ax.set_title("RDF")
 
