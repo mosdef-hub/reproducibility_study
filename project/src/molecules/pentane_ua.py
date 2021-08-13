@@ -37,7 +37,7 @@ class PentaneUA(mb.Compound):
         pentane = mb.recipes.Polymer(
             monomers=[ch2], end_groups=[ch3, mb.clone(ch3)]
         )
-        pentane.build(n=5)
+        pentane.build(n=3)
 
         self.add(pentane, label="PNT")
 
