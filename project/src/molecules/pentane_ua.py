@@ -10,7 +10,7 @@ class PentaneUA(mb.Compound):
     def __init__(self):
         super(PentaneUA, self).__init__()
         # Calculate the angle between the two ports
-        angle = np.deg2rad(109.5)
+        angle = np.deg2rad(114)
         x = 0
         y = 0.077
         z = 0
