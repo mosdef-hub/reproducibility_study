@@ -24,7 +24,7 @@ class PentaneUA(mb.Compound):
         ch3 = mb.Compound()
         ch3.add(mb.Particle(name="_CH3"))
         ch3.add(mb.Port(anchor=ch3[0]), "up")
-        ch3["up"].translate(x, y, z)
+        ch3["up"].translate([x, y, z])
 
         # Create the internal monomer
         ch2 = mb.Compound()
