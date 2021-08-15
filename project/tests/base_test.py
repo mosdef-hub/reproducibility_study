@@ -11,3 +11,9 @@ class BaseTest:
     def spceff(self, name="spce.xml"):
         abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
         return foyer.Forcefield(forcefield_files=str(abs_path) + "/" + name)
+
+    @pytest.fixture
+    def trappe_ua(
+        self,
+    ):
+        return foyer.forcefields.load_TRAPPE_UA()
