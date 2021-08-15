@@ -2,7 +2,9 @@
 Main location for reproducibility study.
 
 ## How to use
-*All commands are intended to be run from this location with the `mosdef-study38` environment active.*
+
+**IMPORTANT: All the following commands are intended to be run from this location with the `mosdef-study38` environment active.**
+
 To initialize the project workspace:
 ```bash
 python init.py
@@ -26,7 +28,9 @@ python project-analysis.py run
 ```
 
 ## Dashboard instructions
-[Signac-dashboard](https://docs.signac.io/projects/dashboard/en/latest/) is a convenient application for displaying a signac project. To initialize the dashboard:
+[Signac-dashboard](https://docs.signac.io/projects/dashboard/en/latest/) is a convenient application for displaying a signac project.
+
+To initialize the dashboard:
 ```bash
 python src/dashboard.py run
 ```
