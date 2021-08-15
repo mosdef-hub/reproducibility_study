@@ -137,3 +137,6 @@ dmypy.json
 
 # Signac workspace
 workspace/
+
+# Pycharm
+.idea/

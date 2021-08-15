@@ -12,6 +12,7 @@ dependencies:
   - gromacs
   - gsd
   - jupyter
+  - jinja2
   - lammps
   - matplotlib
   - mbuild>=0.13.0
