@@ -6,6 +6,7 @@ import pathlib
 import flow
 from flow import environments
 
+
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
 
@@ -67,8 +68,9 @@ def lammps_created_gsd(job):
 @flow.with_job
 def built_lammps(job):
     # Create a lammps datafile for a specified molecule
-    from project.src.molecules.system_builder import SystemBuilder
     from mbuild.formats.lammpsdata import write_lammpsdata
+
+    from project.src.molecules.system_builder import SystemBuilder
     system = SystemBuilder(job)
     parmed_structure = system.to_parmed()
     trappe = foyer.Forcefield(name="trappe-ua")
@@ -91,7 +93,7 @@ def lammps_cp_files(job):
                             "waterSPC/E": "SPCEwater"
                             "ethanolAA": "AAethanol"
                            }
-               
+
     lmps_submit_path = "../../engine_input/lammps/submission_scripts/submit.pbs"
     lmps_run_path = "../../engine_input/lammps/submission_scripts/in." + dict_of_lammps_files[molecule]
     msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
@@ -105,7 +107,7 @@ def lammps_cp_files(job):
 @flow.with_job
 def lammps_em(job):
     modify_submit_scripts("in.em", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs" 
+    msg = f"qsub submit.pbs"
     return msg
 
 @Project.operation
@@ -116,7 +118,7 @@ def lammps_em(job):
 @flow.with_job
 def lammps_nvt(job):
     modify_submit_scripts("in.nvt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs" 
+    msg = f"qsub submit.pbs"
     return msg
 
 @Project.operation
@@ -127,7 +129,7 @@ def lammps_nvt(job):
 @flow.with_job
 def lammps_npt(job):
     modify_submit_scripts("in.npt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs" 
+    msg = f"qsub submit.pbs"
     return msg
 
 @Project.operation
@@ -138,7 +140,7 @@ def lammps_npt(job):
 @flow.with_job
 def lammps_prod(job):
     modify_submit_scripts("in.prod", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs" 
+    msg = f"qsub submit.pbs"
     return msg
 
 @Project.operation
@@ -148,7 +150,7 @@ def lammps_prod(job):
 @flow.with_job
 def lammps_calc_density(job):
     # Create a density datafile from the production run
-    return 
+    return
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
@@ -157,7 +159,7 @@ def lammps_calc_density(job):
 @flow.with_job
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
-    return 
+    return
 
 def modify_submit_lammps(filename, statepoint,cores):
     # Modify Submit Scripts
