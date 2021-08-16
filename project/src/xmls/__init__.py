@@ -1,0 +1,1 @@
+"""Foyer-compatible XMLs."""
