@@ -54,7 +54,7 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     return rdf
 
 
-def _gsd_rdf(gsdfile, frames, stride, bins, r_min, r_max):
+def _gsd_rdf(gsdfile, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     """Compute the RDF given a GSD file."""
     if r_max is None:
         with gsd.hoomd.open(gsdfile) as trajectory:

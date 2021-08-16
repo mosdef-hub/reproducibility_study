@@ -35,3 +35,15 @@ class BaseTest:
     @pytest.fixture
     def trappe_ua(self):
         return foyer.forcefields.load_TRAPPE_UA()
+
+    @pytest.fixture
+    def gsdfile_random(self, tmp_path):
+        filename = tmp_path / "traj_random.gsd"
+        create_gsd(filename)
+        return filename
+
+    @pytest.fixture
+    def gsdfile_xstal(self, tmp_path):
+        filename = tmp_path / "traj_xstal.gsd"
+        create_gsd(filename, system="xstal")
+        return filename
