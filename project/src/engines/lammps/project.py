@@ -73,9 +73,19 @@ def built_lammps(job):
     from project.src.molecules.system_builder import SystemBuilder
     system = SystemBuilder(job)
     parmed_structure = system.to_parmed()
-    trappe = foyer.Forcefield(name="trappe-ua")
-    typed_surface = trappe.apply(parmed_structure)
-    write_lammpsdata(system, "box.lammps", atom_style="full", unit_style="lj", detect_forcefield_style=True)
+    # Apply forcefield from statepoint
+    if job.sp.forcefield_name == "Trappe_UA":
+        ff = foyer.Forcefield(name="trappe-ua")
+    elif job.sp.forcefield_name == "oplsaa"
+        ff = foyer.Forcefield(name="oplsaa")
+    elif job.sp.forcefield_name == "spce"
+        ff = foyer.Forcefield(name="spce") # TODO: Make sure this gets applied correctly
+    else:
+        raise Exception("No forcefield has been applied to this system {}".format(job.id))
+    typed_surface = ff.apply(parmed_structure)
+    write_lammpsdata(system, "box.lammps", atom_style="full", unit_style="real", 
+                     mins=system.get_boundingbox().vectors[0], maxs=system.get_boundingbox().vectors[1],
+                     use_rb_torsions=True)
     return
 
 @Project.operation
@@ -106,6 +116,7 @@ def lammps_cp_files(job):
 @flow.cmd
 @flow.with_job
 def lammps_em(job):
+    modify_lammps_scripts("in.*", job)
     modify_submit_scripts("in.em", str(job.sp.molecule), 8)
     msg = f"qsub submit.pbs"
     return msg
@@ -170,6 +181,16 @@ def modify_submit_lammps(filename, statepoint,cores):
    with open("submit.pbs","w") as f:
        f.write(lines)
    return
+
+def modify_lammps_scripts(filename, job):
+    with open(filename,"r") as f:
+        lines = f.readlines()
+        lines[7] = "pair_style     lj/cut/coul/cut {}\n".format(job.sp.r_cut*10) #nm to angstrom
+        lines[21] = "variable tsample equal {} #kelvin\n".format(job.sp.temperature) #kelvin
+        lines[22] = "variable psample equal {} #atm\n".format(job.sp.pressure/101.325) #kPa to atm
+        lines[42] = "velocity all create {} {} dist gaussian\n".format(job.sp.temperature, job.sp.replica)
+    with open(filename,"w") as f:
+        f.writelines(lines)
 
 if __name__ == "__main__":
     pr = Project()
