@@ -32,5 +32,6 @@ class BaseTest:
         for job in tmp_project:
             return job
 
+    @pytest.fixture
     def trappe_ua(self):
         return foyer.forcefields.load_TRAPPE_UA()

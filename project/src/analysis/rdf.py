@@ -39,9 +39,19 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     freud.density.RDF
         Computed RDF object
     """
-    return _gsd_rdf(
-        job.fn("trajectory.gsd"), frames, stride, bins, r_min, r_max
-    )
+    rdf = _gsd_rdf(job.fn("trajectory.gsd"), frames, stride, bins, r_min, r_max)
+
+    fig, ax = plt.subplots()
+    ax.plot(rdf.bin_centers, rdf.rdf)
+    ax.set_xlabel("$r (nm)$")
+    ax.set_ylabel("$g(r)$")
+    ax.set_title("RDF")
+
+    fig.savefig(job.fn("rdf.png"))
+
+    rdf_array = np.vstack((rdf.bin_centers, rdf.rdf)).T
+    np.savetxt(job.fn("rdf.txt"), rdf_array)
+    return rdf
 
 
 def _gsd_rdf(gsdfile, frames, stride, bins, r_min, r_max):
@@ -58,14 +68,4 @@ def _gsd_rdf(gsdfile, frames, stride, bins, r_min, r_max):
         for frame in trajectory[start::stride]:
             rdf.compute(frame, reset=False)
 
-    fig, ax = plt.subplots()
-    ax.plot(rdf.bin_centers, rdf.rdf)
-    ax.set_xlabel("$r (nm)$")
-    ax.set_ylabel("$g(r)$")
-    ax.set_title("RDF")
-
-    fig.savefig(job.fn("rdf.png"))
-
-    rdf_array = np.vstack((rdf.bin_centers, rdf.rdf)).T
-    np.savetxt(job.fn("rdf.txt"), rdf_array)
     return rdf
