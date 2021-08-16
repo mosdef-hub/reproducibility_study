@@ -8,11 +8,14 @@ import numpy as np
 
 
 def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
-    """Compute the RDF given a GSD file.
+    """Compute the RDF given a Signac Job object.
 
-    A wrapper for freud's RDF module
+    The job folder is expected to contain the file "trajectory.gsd" with lengths
+    in Angstroms.
+    This function is a convenience wrapper for freud's RDF module
     https://freud.readthedocs.io/en/latest/modules/density.html#freud.density.RDF
-    Creates the files "rdf.png" and "rdf.txt" in the job folder.
+    After execution, the files "rdf.png" and "rdf.txt" are created in the job
+    folder.
 
     Parameters
     ----------
@@ -30,9 +33,19 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     r_max : float, default None
         The maximum distance (in nm) to calculate the RDF. If None is provided,
         the minimum box length times a factor of 0.45 will be used.
-    """
-    gsdfile = job.fn("trajectory.gsd")
 
+    Returns
+    -------
+    freud.density.RDF
+        Computed RDF object
+    """
+    return _gsd_rdf(
+        job.fn("trajectory.gsd"), frames, stride, bins, r_min, r_max
+    )
+
+
+def _gsd_rdf(gsdfile, frames, stride, bins, r_min, r_max):
+    """Compute the RDF given a GSD file."""
     if r_max is None:
         with gsd.hoomd.open(gsdfile) as trajectory:
             box = trajectory[-1].configuration.box[:3]
@@ -55,3 +68,4 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
 
     rdf_array = np.vstack((rdf.bin_centers, rdf.rdf)).T
     np.savetxt(job.fn("rdf.txt"), rdf_array)
+    return rdf
