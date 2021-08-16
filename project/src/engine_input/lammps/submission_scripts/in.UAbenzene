@@ -60,7 +60,7 @@ write_restart equilibrated_npt.restart #remove once working
 dump traj3 all xtc 10000 prod.xtc
 timestep 1.0
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0
-run 1000000
+run 3000000
 unfix integrator
 write_restart production.restart #remove once working
 undump traj3
