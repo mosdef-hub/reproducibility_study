@@ -170,6 +170,15 @@ def lammps_calc_density(job):
 @flow.with_job
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
+    import mbuild as mb
+    import MDAnalysis as mda
+    traj = mda.coordinates.XTC.XTCReader("prod.xtc")
+    top = mda.topology.LAMMPSParser.DATAParser("box.lammps")
+    u = mda.Universe(top, traj)
+    u.trajectory.next(-1)
+    parmed_structure = u.convert_to('PARMED')
+    mb.formats.gsdwriter.write_gsd(parmed_structure, "prod.gsd")
+    # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
 
 def modify_submit_lammps(filename, statepoint,cores):
