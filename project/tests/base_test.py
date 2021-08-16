@@ -33,6 +33,9 @@ class BaseTest:
         for job in tmp_project:
             return job
 
+    def trappe_ua(self):
+        return foyer.forcefields.load_TRAPPE_UA()
+
 
 def create_frame(i, bonds, images, seed=42):
     np.random.seed(seed)
