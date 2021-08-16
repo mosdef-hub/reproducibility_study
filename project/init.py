@@ -2,6 +2,7 @@
 import itertools
 import os
 
+import numpy as np
 import signac
 import unyt as u
 from numpy import ModuleDeprecationWarning
@@ -147,11 +148,13 @@ for molecule in molecules:
                                                     "molecule": molecule,
                                                     "engine": engine,
                                                     "replica": replica,
-                                                    "temperature": temp.to_value(
-                                                        "K"
+                                                    "temperature": np.round(
+                                                        temp.to_value("K"),
+                                                        decimals=3,
                                                     ),
-                                                    "pressure": press.to_value(
-                                                        "kPa"
+                                                    "pressure": np.round(
+                                                        press.to_value("kPa"),
+                                                        decimals=3,
                                                     ),
                                                     "ensemble": ensemble
                                                     if ensemble
@@ -160,34 +163,50 @@ for molecule in molecules:
                                                     "N_vap": n_vap
                                                     if n_vap
                                                     else None,
-                                                    "box_L_liq": liq_box_L.to_value(
-                                                        "nm"
+                                                    "box_L_liq": np.round(
+                                                        liq_box_L.to_value(
+                                                            "nm"
+                                                        ),
+                                                        decimals=3,
                                                     )
                                                     if liq_box_L
                                                     else None,
-                                                    "box_L_vap": vap_box_L.to_value(
-                                                        "nm"
+                                                    "box_L_vap": np.round(
+                                                        vap_box_L.to_value(
+                                                            "nm"
+                                                        ),
+                                                        decimals=3,
                                                     )
                                                     if vap_box_L
                                                     else None,
-                                                    "init_liq_den": init_liq_den.to_value(
-                                                        g_per_cm3
+                                                    "init_liq_den": np.round(
+                                                        init_liq_den.to_value(
+                                                            g_per_cm3
+                                                        ),
+                                                        decimals=3,
                                                     ),
-                                                    "init_vap_den": init_vap_den.to_value(
-                                                        g_per_cm3
+                                                    "init_vap_den": np.round(
+                                                        init_vap_den.to_value(
+                                                            g_per_cm3
+                                                        ),
+                                                        decimals=3,
                                                     )
                                                     if init_vap_den
                                                     else None,
-                                                    "mass": mass.to_value(
-                                                        "g/mol"
+                                                    "mass": np.round(
+                                                        mass.to_value("g/mol"),
+                                                        decimals=3,
                                                     ),
                                                     "forcefield_name": forcefields[
                                                         molecule
                                                     ],
                                                     "cutoff_style": cutoff_style,
-                                                    "r_cut": r_cuts[
-                                                        molecule
-                                                    ].to_value("nm"),
+                                                    "r_cut": np.round(
+                                                        r_cuts[
+                                                            molecule
+                                                        ].to_value("nm"),
+                                                        decimals=3,
+                                                    ),
                                                 }
                                                 total_statepoints.append(
                                                     statepoint
