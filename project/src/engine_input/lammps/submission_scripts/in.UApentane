@@ -5,23 +5,25 @@ boundary        p p p
 atom_style      full
 
 # Assume ff info is included in data file
-pair_style      lj/cut/coul/cut 10.0 #no charges 
+pair_style     lj/cut/coul/cut 14.0 #no charges 
 bond_style  none
 angle_style none
 dihedral_style  none
-read_data Methane.lammps
+read_data box.lammps
 
-pair_modify shift yes  #TODO: Look to make sure this shift is okay
+pair_modify shift no  #TODO: Look to make sure this shift is okay
 
 neighbor        2.5 bin #skin cutoff
 
 timestep 0.1
 thermo 2000
-thermo_style custom step temp press pe epair emol ke etotal
+thermo_style custom step temp press pe epair emol ke etotal density
+
+variable tsample equal 372.0 #kelvin
+variable psample equal "1402/101.325" #kPa to atm
 # ________________________________________________________________________________________
 
 # Minimize energy
-dump traj1 all xtc 1000 min_sur.xtc # Only write out to make sure things work okay, then remove that
 minimize 1e-4 1e-4 1000 1000
 fix integrator all nve/limit 0.1
 run 10000
@@ -31,32 +33,34 @@ fix integrator all nve
 run 10000
 unfix integrator
 minimize 1e-4 1e-4 1000 1000
-fix integrator all nvt temp 100.0 100.0 10000.0
+fix integrator all nvt temp ${tsample} ${tsample} 100.0
 run 50000
 unfix integrator
 write_restart minimized.restart #remove once working
 #use a differetent tdamp to control the temp
-undump traj1
 # ________________________________________________________________________________________
 
-# Equilibrate box
-dump traj2 all xtc 10000 eq.xtc # Only write out to make sure things work okay, then remove that
+# Equilibrate nvt box
 timestep 1.0
 minimize 1e-4 1e-4 1000 1000
-fix integrator all nvt temp 100.0 100.0 100.0
-run 50000
+fix integrator all nvt temp ${tsample} ${tsample} 100.0
+run 20000
 unfix integrator
-write_restart equilibrated.restart #remove once working
-undump traj2
+write_restart equilibrated_nvt.restart #remove once working
 # ________________________________________________________________________________________
 
+# Equilibrate npt box
+fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0
+run 80000
+unfix integrator
+write_restart equilibrated_npt.restart #remove once working
+# ________________________________________________________________________________________
 
 # Production 
-dump traj3 all xtc 10000 prod.xtc # Only write out to make sure things work okay, then remove that
+dump traj3 all xtc 10000 prod.xtc
 timestep 1.0
-minimize 1e-4 1e-4 1000 1000
-fix integrator all nvt temp 100.0 100.0 100.0
-run 500000
+fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0
+run 1000000
 unfix integrator
 write_restart production.restart #remove once working
 undump traj3
