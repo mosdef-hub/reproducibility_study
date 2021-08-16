@@ -35,17 +35,17 @@ def lammps_minimized(job):
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 def lammps_equilibrated_nvt(job):
-    return job.isfile("nvt.restart")
+    return job.isfile("equilibrated_nvt.restart")
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 def lammps_equilibrated_npt(job):
-    return job.isfile("npt.restart")
+    return job.isfile("equilibrated_npt.restart")
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 def lammps_production(job):
-    return job.isfile("prod.restart")
+    return job.isfile("production.restart")
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
@@ -83,8 +83,18 @@ def built_lammps(job):
 @flow.cmd
 @flow.with_job
 def lammps_cp_files(job):
-    lmps_submit_path = "../../engine_input/lammps/submission_scripts/*"
-    msg = f"cp {lmps_inpt_path} ./"
+    molecule = job.sp.molecule
+    dict_of_lammps_files = {
+                            "methaneUA": "UAmethane"
+                            "pentaneUA": "UApentane"
+                            "benzeneUA": "UAbenzene"
+                            "waterSPC/E": "SPCEwater"
+                            "ethanolAA": "AAethanol"
+                           }
+               
+    lmps_submit_path = "../../engine_input/lammps/submission_scripts/submit.pbs"
+    lmps_run_path = "../../engine_input/lammps/submission_scripts/in." + dict_of_lammps_files[molecule]
+    msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
     return msg
 
 @Project.operation
