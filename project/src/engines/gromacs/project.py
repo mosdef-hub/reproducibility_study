@@ -75,7 +75,7 @@ def init_job(job):
 
     with job:
         # Create a Compound and save to gro and top files
-        system = SystemBuilder(job)
+        system = SystemBuilder(job.sp)
         system.save(filename="init.gro")
         system.save(filename="init.top", forcefield_name=job.sp.forcefield)
 
