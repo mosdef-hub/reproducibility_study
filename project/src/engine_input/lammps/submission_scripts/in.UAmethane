@@ -5,7 +5,7 @@ boundary        p p p
 atom_style      full
 
 # Assume ff info is included in data file
-pair_style     lj/cut/coul/cut 14.0 #no charges 
+pair_style     lj/cut/coul/cut 14.0 #no charges
 bond_style  none
 angle_style none
 dihedral_style  none
@@ -56,7 +56,7 @@ unfix integrator
 write_restart equilibrated_npt.restart #remove once working
 # ________________________________________________________________________________________
 
-# Production 
+# Production
 dump traj3 all xtc 10000 prod.xtc
 timestep 1.0
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0
