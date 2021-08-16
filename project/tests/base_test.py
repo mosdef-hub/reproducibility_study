@@ -69,6 +69,23 @@ def create_frame_random(i, bonds, n=50, L=10, seed=42):
     return s
 
 
+def create_frame_xstal(i, L=10, seed=42):
+    box, points = freud.data.UnitCell.fcc().generate_system(
+        num_replicas=L, sigma_noise=0.05, seed=seed
+    )
+    s = gsd.hoomd.Snapshot()
+    s.configuration.step = i
+    n = len(points)
+    s.particles.N = n
+    s.particles.types = ["A"]
+    s.particles.typeid = np.zeros(n)
+    s.particles.position = points
+    s.configuration.box = [L, L, L, 0, 0, 0]
+    s.particles.image = np.zeros(shape=(n, 3))
+    s.validate()
+    return s
+
+
 def create_gsd(filename, bonds=False, system="random"):
     if system == "random":
         with gsd.hoomd.open(name=filename, mode="wb") as f:
@@ -78,3 +95,9 @@ def create_gsd(filename, bonds=False, system="random"):
     else:
         with gsd.hoomd.open(name=filename, mode="wb") as f:
             f.extend([create_frame_xstal(i, seed=i) for i in range(10)])
+
+
+if __name__ == "__main__":
+    create_gsd("traj_random.gsd", bonds=False, system="random")
+    create_gsd("traj_random_bonds.gsd", bonds=True, system="random")
+    create_gsd("traj_xstal.gsd", system="xstal")
