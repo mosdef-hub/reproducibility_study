@@ -57,8 +57,8 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-  4 1   98.0000  3.75000  0.0000  15.0347000 C   #Tr-UA CH3 alkane
-  5 1   46.0000  3.95000  0.0000  14.0268000 C   #Tr-UA CH2 alkane
+  4 1   98.0000  3.75000  0.0000  15.0347000 _CH3   #Tr-UA CH3 alkane
+  5 1   46.0000  3.95000  0.0000  14.0268000 _CH2   #Tr-UA CH2 alkane
 END ATOMS
 
 NONBOND
