@@ -137,3 +137,10 @@ dmypy.json
 
 # Signac workspace
 workspace/
+<<<<<<< HEAD
+
+# Pycharm
+.idea/
+
+# Slurm
+slurm*

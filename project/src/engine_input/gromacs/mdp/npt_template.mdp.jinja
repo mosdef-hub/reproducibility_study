@@ -10,7 +10,7 @@ nstenergy                = 1000
 nstlog                   = 1000
 
 cutoff-scheme            = Verlet
-ns_type                  = grid
+ns-type                  = grid
 nstlist                  = 10
 pbc                      = xyz
 rcoulomb                 = 0.9
@@ -20,21 +20,21 @@ coulombtype              = PME
 fourierspacing           = 0.16
 ewald-geometry           = 3d
 
-gen_vel                  = yes
-gen-temp                 = 300
+gen-vel                  = yes
+gen-temp                 = {{ temp }}
 gen-seed                 = 1234
 
 tcoupl                   = nose-hoover
 tc-grps                  = System
-tau_t                    = 1.0
-ref_t                    = 300
+tau-t                    = 1.0
+ref-t                    = {{ temp }}
 
 pcoupl                   = parrinello-rahman
-pcoupltype               = semiisotropic
+pcoupltype               = isotropic
 nstpcouple               = -1
 tau-p                    = 10.0
-compressibility          = 4.5e-5
-ref-p                    = 1.01325
+compressibility          = {{ compressibility }}
+ref-p                    = {{ refp }}
 
 constraints              = all-bonds all-angles
 constraints-algorithms   = LINCS
