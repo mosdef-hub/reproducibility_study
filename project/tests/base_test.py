@@ -6,6 +6,8 @@ import signac
 
 from project.src import xmls
 
+from .utils import create_gsd
+
 
 class BaseTest:
     @pytest.fixture
