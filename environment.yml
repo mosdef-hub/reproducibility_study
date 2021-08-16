@@ -4,29 +4,31 @@ channels:
   - conda-forge/label/hoomd_dev
   - bioconda
 dependencies:
+  - constrainmol
   - ele
+  - foyer>=0.9.3
+  - freud
+  - gmso
+  - gromacs
+  - gsd
+  - jupyter
+  - lammps
+  - matplotlib
+  - mbuild>=0.13.0
+  - mdtraj
+  - mosdef_cassandra
   - numpy
+  - packmol>=18
   - pandas
   - panedr
-  - freud
-  - gsd
-  - packmol>=18
   - parmed>=3.4.0
+  - pymbar
+  - pytest
   - python=3.8
-  - mbuild>=0.11.0
-  - foyer>=0.9.1
-  - gmso
-  - signac
-  - signac-flow
-  - signac-dashboard
-  - matplotlib
-  - seaborn
-  - jupyter
-  - mdtraj
   - rdkit
   - scipy
-  - gromacs
-  - lammps
-  - mosdef_cassandra
+  - seaborn
+  - signac
+  - signac-dashboard
+  - signac-flow
   - unyt
-  - pytest
