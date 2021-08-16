@@ -1,0 +1,13 @@
+#!/bin/bash -l
+#PBS -N FILL_IN_NAME
+#PBS -m ae
+#PBS -M nicholas.craven.76@gmail.com
+#PBS -l nodes=1:ppn=16
+#PBS -l walltime=96:00:00
+#PBS -q standard
+#PBS -j oe
+cd $PBS_O_WORKDIR
+module load lammps
+
+mpirun -np 8 lmp < in.minimize #change name so proper script is run for each molecule
+echo $PBS_JOBID $PBS_O_WORKDIR >> ~/job-id-dirs.txt
