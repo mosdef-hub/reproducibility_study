@@ -6,9 +6,9 @@ atom_style      full
 
 # Assume ff info is included in data file
 pair_style     lj/cut/coul/cut 14.0 #no charges 
-bond_style  none
-angle_style none
-dihedral_style  none
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  harmonic
 read_data box.lammps
 
 pair_modify shift no  #TODO: Look to make sure this shift is okay
