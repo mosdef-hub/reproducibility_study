@@ -83,7 +83,7 @@ def built_lammps(job):
     else:
         raise Exception("No forcefield has been applied to this system {}".format(job.id))
     typed_surface = ff.apply(parmed_structure)
-    write_lammpsdata(system, "box.lammps", atom_style="full", unit_style="real", 
+    write_lammpsdata(system, "box.lammps", atom_style="full", unit_style="real",
                      mins=system.get_boundingbox().vectors[0], maxs=system.get_boundingbox().vectors[1],
                      use_rb_torsions=True)
     return
