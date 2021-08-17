@@ -17,7 +17,7 @@ def decorr_sampling(job, data_type="potential_energy"):
     data_type : str; default "potential_erngy"
         The type of simulation data to be used in sampling
     """
-    data = np.genfromtxt(job.fn("trajectory.log", names=True))[data_type]
+    data = np.genfromtxt(job.fn("log.txt", names=True))[data_type]
     prod_start, ineff, prod_size = timeseries.detectEquilibration(data)
     uncorr_indices = timeseries.subsampleCorrelatedData(
         data[prod_start:], g=ineff, conservative=True
