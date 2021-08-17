@@ -28,6 +28,8 @@ def get_system(job):
     import sys
 
     sys.path.append(Project().root_directory() + "/src/molecules/")
+    from system_builder import construct_system
+
     system = construct_system(job.sp)
     return system
 
