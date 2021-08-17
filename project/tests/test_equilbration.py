@@ -15,9 +15,9 @@ class TestEquilibration(BaseTest):
         data = testsystems.correlated_timeseries_example(
             N=1000, tau=200, seed=432
         )
-        assert not is_equilibrated(data, threshold=0.80)
-        assert not is_equilibrated(data, threshold=0.40)
-        assert is_equilibrated(data, threshold=0.10)
+        assert not is_equilibrated(data, threshold=0.80)[0]
+        assert not is_equilibrated(data, threshold=0.40)[0]
+        assert is_equilibrated(data, threshold=0.10)[0]
 
     def test_incorrect_threshold(self):
         data = testsystems.correlated_timeseries_example(

@@ -8,7 +8,7 @@ from pymbar import timeseries
 
 def is_equilibrated(
     a_t: npt.ArrayLike, threshold: float = 0.8, nskip: int = 1
-) -> bool:
+) -> List:
     """Check if a dataset is equilibrated based on a fraction of equil data.
 
     Using `pymbar.timeseries` module, check if a timeseries dataset has enough
@@ -19,7 +19,8 @@ def is_equilibrated(
     The `pymbar.timeseries` module returns the starting index of the
     'production' region from 'a_t'. The fraction of 'production' data is
     then compared to the threshold value. If the fraction of 'production' data
-    is >= threshold fraction this will return True, False otherwise.
+    is >= threshold fraction this will return a list of
+    [True, t0, g] and [False, None, None] otherwise.
 
     Parameters
     ----------
@@ -38,13 +39,13 @@ def is_equilibrated(
             f"Passed 'threshold' value: {threshold}, expected value between 0.0-1.0."
         )
 
-    [t0, _, _] = timeseries.detectEquilibration(a_t, nskip=nskip)
+    [t0, g, _] = timeseries.detectEquilibration(a_t, nskip=nskip)
     frac_equilibrated = 1.0 - (t0 / np.shape(a_t)[0])
 
     if frac_equilibrated >= threshold:
-        return True
+        return [True, t0, g]
     else:
-        return False
+        return [False, t0, g]
 
 
 def trim_non_equilibrated(
@@ -75,11 +76,10 @@ def trim_non_equilibrated(
         discarding more data.
 
     """
-    if not is_equilibrated(a_t, threshold=threshold, nskip=nskip):
+    [truth, t0, g] = is_equilibrated(a_t, threshold=threshold, nskip=nskip)
+    if not truth:
         raise ValueError(
             f"Data with a threshold of {threshold} is not equilibrated!"
         )
-
-    [t0, g, _] = timeseries.detectEquilibration(a_t, nskip=nskip)
 
     return [a_t[t0:], g, t0]
