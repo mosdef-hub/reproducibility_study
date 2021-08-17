@@ -44,7 +44,6 @@ def construct_system(sp):
         "ethanolAA": None,
     }
     molecule = molecule_dict[sp["molecule"]]
-    # print(molecule)
     molecule.name = sp["molecule"]
     liq_box = mb.Box([sp["box_L_liq"]] * 3)
     filled_liq_box = mb.fill_box(
