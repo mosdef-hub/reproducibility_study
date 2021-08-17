@@ -65,7 +65,7 @@ def run_hoomd(job):
             "volume",
         ],
     )
-    file = open("log.txt", mode="x", newline="\n")
+    file = open("log.txt", mode="a", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
         trigger=hoomd.trigger.Periodic(period=5000),
