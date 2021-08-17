@@ -16,7 +16,7 @@ def decorr_sampling(job, data_type="potential_energy"):
     ----------
     job : signac.contrib.job.Job
         The Job object.
-    data_type : str; default "potential_erngy"
+    data_type : str; default "potential_energy"
         The type of simulation data to be used in sampling
     """
     data = np.genfromtxt(job.fn("log.txt", names=True))[data_type]
