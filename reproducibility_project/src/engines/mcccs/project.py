@@ -25,38 +25,40 @@ ex = Project.make_group(name="ex")
 
 def get_system(job):
     """Return the system (mbuild filled_box) for a particular job."""
-    molecule = job.sp.molecule
-    import warnings
+    import sys
 
-    import mbuild as mb
+    sys.path.append(Project().root_directory() + "/src/molecules/")
+    from mbuild.lib.molecules.water import WaterSPC
+    from methane_ua import MethaneUA
+    from pentane_ua import PentaneUA
+    from system_builder import construct_system
 
-    from reproducibility_project.src.utils.forcefields import load_ff
+    system = construct_system(job.sp)
 
-    warnings.simplefilter("ignore")
-    methane = mb.Compound(name="MET")
-    methane_child_bead = mb.Compound(name="_CH4")
-    methane.add(methane_child_bead, inherit_periodicity=False)
-    box_liq = mb.fill_box(
-        compound=methane, n_compounds=1230, box=[4.5, 4.5, 4.5]
-    )
-    ff = load_ff(job.sp.forcefield_name)
-    parameterized_box_liquid = ff.apply(box_liq)
-    return box_liq
+    return system
 
 
 def get_molecules(job):
     """Return the list of mbuild molecules being used in the job."""
-    molecule = job.sp.molecule
-    import warnings
+    import sys
 
-    import foyer
-    import mbuild as mb
+    sys.path.append(Project().root_directory() + "/src/molecules/")
+    from mbuild.lib.molecules.water import WaterSPC
+    from methane_ua import MethaneUA
+    from pentane_ua import PentaneUA
 
-    warnings.simplefilter("ignore")
-    methane = mb.Compound(name="MET")
-    methane_child_bead = mb.Compound(name="_CH4")
-    methane.add(methane_child_bead, inherit_periodicity=False)
-    return [methane]
+    molecule_dict = {
+        "methaneUA": MethaneUA,
+        "pentaneUA": PentaneUA,
+        "benzeneUA": None,
+        "waterSPC/E": WaterSPC,
+        "ethanolAA": None,
+    }
+    molecule = molecule_dict[job.sp.molecule]
+    return [molecule]
+
+
+"""Setting progress label"""
 
 
 @Project.label
@@ -72,7 +74,9 @@ def has_fort_files(job):
 
 @Project.label
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 def files_ready(job):
     """Check if the keywords in the fort.4 files have been replaced."""
@@ -188,9 +192,14 @@ def prod_finished(job):
                 return False
 
 
+"""Setting up workflow operation"""
+
+
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.post(replicate_set)
 def set_prod_replicates(job):
@@ -202,7 +211,9 @@ def set_prod_replicates(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.post(has_fort_files)
 def copy_files(job):
@@ -217,7 +228,9 @@ def copy_files(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.post(has_fort77maker)
 def copy_fort77maker(job):
@@ -232,7 +245,9 @@ def copy_fort77maker(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.post(has_topmon)
 def copy_topmon(job):
@@ -247,7 +262,9 @@ def copy_topmon(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort_files)
 @Project.post(files_ready)
@@ -273,7 +290,9 @@ def replace_keyword_fort_files(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort77maker)
 @Project.post(has_restart_file)
@@ -282,7 +301,8 @@ def make_restart_file(job):
     from fort77maker_onebox import fort77writer
 
     molecules = get_molecules(job)
-    filled_box = get_system(job)
+    print(molecules)
+    filled_box = get_system(job)[0]
 
     fort77writer(
         molecules,
@@ -295,7 +315,9 @@ def make_restart_file(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(has_fort_files)
@@ -333,7 +355,9 @@ def run_melt(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(melt_finished)
@@ -369,7 +393,9 @@ def run_cool(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
@@ -405,7 +431,9 @@ def run_equil(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.simulation_engine == "mcccs" and j.sp.molecule == "methane"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == "methaneUA"
+    and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(equil_finished)
@@ -420,7 +448,7 @@ def run_prod(job):
     step = "prod" + str(replicate)
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = "/home/rs/group-code/MCCCS-MN-8-21/exe-8-21/src/topmon"
+    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.prod", "fort.4")
     process = Popen(
