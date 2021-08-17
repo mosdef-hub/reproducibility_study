@@ -1,5 +1,6 @@
 """Methods used to create systems from job statepoint."""
 import mbuild as mb
+from mbuild.lib.molecules.water import WaterSPC
 from methane_ua import MethaneUA
 from pentane_ua import PentaneUA
 
@@ -31,17 +32,15 @@ def construct_system(sp):
 
     Returns
     -------
-    system: mb.Compound
-        The constructed mbuild Compound
+    filled_liq_box or [filled_liq_box, filled_vap_box]
+        Return the liquid box if vapor box is not specified, else return a list of both.
     """
-    system = mb.Compound()
-
     # Update this dict as new recipes are made
     molecule_dict = {
         "methaneUA": MethaneUA,
         "pentaneUA": PentaneUA,
         "benzeneUA": None,
-        "waterSPC/E": None,
+        "waterSPC/E": WaterSPC,
         "ethanolAA": None,
     }
     molecule = molecule_dict[sp["molecule"]]
@@ -49,17 +48,12 @@ def construct_system(sp):
     filled_liq_box = mb.fill_box(
         compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
     )
-    system.add(liq_box)
 
     if sp["box_L_vap"] and sp["N_vap"]:
         vap_box = mb.Box([sp["box_L_vap"]] * 3)
         filled_vap_box = mb.fill_box(
             compound=[molecule], n_compounds=[sp["N_vap"]], box=vap_box
         )
-
-        # Translate the vapor box to be on top of the liquid box
-        new_vap_box_center = filled_liq_box.center
-        new_vap_box_center[2] += sp["box_L_vap"]
-        system.add(filled_vap_box)
-
-    return system
+        return [filled_liq_box, filled_vap_box]
+    else:
+        return filled_liq_box
