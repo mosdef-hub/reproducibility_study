@@ -20,7 +20,7 @@ def decorr_sampling(job, data_type="potential_energy"):
         The type of simulation data to be used in sampling
     """
     data = np.genfromtxt(job.fn("log.txt", names=True))[data_type]
-    is_equil, prod_start, ineff = is_equilibrated(data, threshold=0.8, nskip=1)
+    is_equil, prod_start, ineff = is_equilibrated(data, threshold=0.75, nskip=1)
     if is_equil:
         uncorr_indices = timeseries.subsampleCorrelatedData(
             data[prod_start:], g=ineff, conservative=True
