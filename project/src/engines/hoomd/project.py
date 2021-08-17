@@ -39,27 +39,49 @@ def run_hoomd(job):
     )
 
     device = hoomd.device.auto_select()
-    simulation = hoomd.Simulation(device=device, seed=job.sp.replica)
-    simulation.create_state_from_snapshot(snapshot)
+    sim = hoomd.Simulation(device=device, seed=job.sp.replica)
+    sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
         filename=job.fn("traj.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode="ab",
     )
-    simulation.operations.writers.append(gsd_writer)
+    sim.operations.writers.append(gsd_writer)
+
+    logger = hoomd.logging.Logger(categories=["scalar"])
+    logger.add(sim, quantities=["timestep", "tps"])
+    thermo_props = hoomd.md.compute.ThermodynamicQuantities(
+        filter=hoomd.filter.All()
+    )
+    sim.operations.computes.append(thermo_props)
+    logger.add(
+        thermo_props,
+        quantities=[
+            "kinetic_energy",
+            "potential_energy",
+            "pressure",
+            "kinetic_temperature",
+            "volume",
+        ],
+    )
+    file = open("raw_log.txt", mode="x", newline="\n")
+    table_file = hoomd.write.Table(
+        output=file, trigger=hoomd.trigger.Periodic(period=5000), logger=logger
+    )
+    sim.operations.writers.append(table_file)
+
     integrator = hoomd.md.Integrator(dt=0.005)
     integrator.forces = forcefield
     nvt = hoomd.md.metehods.NVT(
         filter=hoomd.filter.All(), kT=job.sp.temperature, tau=1.0
     )
     integrator.methods = [nvt]
-    simulation.operations.intgrator = integrator
-    simulation.state.thermalize_particle_momenta(
+    sim.operations.intgrator = integrator
+    sim.state.thermalize_particle_momenta(
         filter=hoomd.filter.All(),
         kT=job.sp.temperature,
     )
-    simulation.run(1e6)
-    return None
+    sim.run(1e6)
 
 
 if __name__ == "__main__":
