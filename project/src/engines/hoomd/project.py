@@ -67,7 +67,10 @@ def run_hoomd(job):
     )
     file = open("raw_log.txt", mode="x", newline="\n")
     table_file = hoomd.write.Table(
-        output=file, trigger=hoomd.trigger.Periodic(period=5000), logger=logger
+        output=file,
+        trigger=hoomd.trigger.Periodic(period=5000),
+        logger=logger,
+        max_header_len=7,
     )
     sim.operations.writers.append(table_file)
 
