@@ -71,13 +71,13 @@ def npt_completed(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "gromacs")
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
-    from project.src.molecules.system_builder import SystemBuilder
+    from project.src.molecules.system_builder import construct_system
 
     with job:
         # Create a Compound and save to gro and top files
-        system = SystemBuilder(job.sp)
+        system = construct_system(job.sp)
         system.save(filename="init.gro")
-        system.save(filename="init.top", forcefield_name=job.sp.forcefield)
+        system.save(filename="init.top", forcefield_name=job.sp.forcefield_name)
 
         # Modify mdp files according to job statepoint parameters
         mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
@@ -97,7 +97,6 @@ def init_job(job):
                 "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
                 "data": {
                     "temp": job.sp.temperature,
-                    "compressibility": job.sp.compressibility,
                     "refp": job.sp.pressure,
                 },
             },
@@ -211,11 +210,11 @@ def _setup_mdp(fname, template, data, overwrite=False):
 
     if isinstance(template, str):
         with open(template, "r") as f:
-            template = Template(file.read())
+            template = Template(f.read())
 
     if not overwrite:
         if os.path.isfile(fname):
-            raise OverwriteError(
+            raise FileExistsError(
                 f"{fname} already exists. Set overwrite=True to write out."
             )
 
