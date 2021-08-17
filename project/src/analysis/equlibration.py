@@ -52,7 +52,7 @@ def trim_non_equilibrated(
 ) -> List:
     """Prune timeseries array to just the production data.
 
-    Refer to equilibration.is_equilibrated for addtional information.#!/usr/bin/env python
+    Refer to equilibration.is_equilibrated for addtional information.
 
     This method returns a list of length 3, where list[0] is the trimmed array,
     list[1] is the calculated statistical inefficiency and list[2] is the
