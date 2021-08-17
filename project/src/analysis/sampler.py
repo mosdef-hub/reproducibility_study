@@ -1,4 +1,4 @@
-"""Use the pymbar package to perform decorrelated equilibration sampling"""
+"""Use the pymbar package to perform decorrelated equilibration sampling."""
 
 import numpy as np
 from pymbar import timeseries
