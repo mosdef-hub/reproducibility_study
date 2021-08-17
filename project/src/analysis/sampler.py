@@ -23,5 +23,5 @@ def decorr_sampling(job, data_type="potential_energy"):
         data[prod_start:], g=ineff, conservative=True
     )
     job.doc["sample_start"] = uncorr_indices.start + prod_start
-    job.doc["sample_end"] = uncorr_indices.stop
+    job.doc["sample_end"] = uncorr_indices.stop + prod_start
     job.doc["sample_stride"] = uncorr_indices.step
