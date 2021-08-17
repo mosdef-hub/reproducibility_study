@@ -81,7 +81,7 @@ def run_hoomd(job):
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
     nvt = hoomd.md.methods.NVT(filter=hoomd.filter.All(), kT=kT, tau=1.0)
     integrator.methods = [nvt]
-    sim.operations.intgrator = integrator
+    sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
     sim.run(1e6)
 
