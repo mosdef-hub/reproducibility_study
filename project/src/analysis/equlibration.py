@@ -48,7 +48,7 @@ def is_equilibrated(
 
 
 def trim_non_equilibrated(
-    a_t: npt.ArrayLike, threshold: float = 0.8, nskip: int = 1
+    a_t: npt.ArrayLike, threshold: float = 0.75, nskip: int = 1
 ) -> List:
     """Prune timeseries array to just the production data.
 

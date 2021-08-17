@@ -33,7 +33,7 @@ class TestEquilibration(BaseTest):
         data = testsystems.correlated_timeseries_example(
             N=1000, tau=200, seed=432
         )
-        [new_a_t, g] = trim_non_equilibrated(data, threshold=0.2)
+        [new_a_t, g, t0] = trim_non_equilibrated(data, threshold=0.2)
         assert np.shape(new_a_t)[0] < np.shape(data)[0]
 
     def test_trim_high_threshold(self):
