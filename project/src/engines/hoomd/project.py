@@ -43,7 +43,7 @@ def run_hoomd(job):
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
-        filename=job.fn("traj.gsd"),
+        filename=job.fn("trajectory.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode="ab",
     )
@@ -65,7 +65,7 @@ def run_hoomd(job):
             "volume",
         ],
     )
-    file = open("raw_log.txt", mode="x", newline="\n")
+    file = open("log.txt", mode="x", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
         trigger=hoomd.trigger.Periodic(period=5000),
