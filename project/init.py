@@ -43,14 +43,13 @@ for key in molecules:
     else:
         forcefields[key] = "oplsaa"
         r_cuts[key] = 10 * u.angstrom
-g_per_mol = u.g / u.mol
 g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
 masses = {
-    "methaneUA": [16.04] * g_per_mol,
-    "pentaneUA": [72.15] * g_per_mol,
-    "benzeneUA": [78.1118] * g_per_mol,
-    "waterSPC/E": [18.0153] * g_per_mol,
-    "ethanolAA": [46.0684] * g_per_mol,
+    "methaneUA": [16.04] * u.amu,
+    "pentaneUA": [72.15] * u.amu,
+    "benzeneUA": [78.1118] * u.amu,
+    "waterSPC/E": [18.0153] * u.amu,
+    "ethanolAA": [46.0684] * u.amu,
 }
 init_density_liq = {
     "methaneUA": [0.3752] * g_per_cm3,
@@ -194,7 +193,7 @@ for molecule in molecules:
                                                     if init_vap_den
                                                     else None,
                                                     "mass": np.round(
-                                                        mass.to_value("g/mol"),
+                                                        mass.to_value("amu"),
                                                         decimals=3,
                                                     ),
                                                     "forcefield_name": forcefields[
