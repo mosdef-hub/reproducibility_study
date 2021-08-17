@@ -32,8 +32,8 @@ def construct_system(sp):
 
     Returns
     -------
-    filled_liq_box or [filled_liq_box, filled_vap_box]
-        Return the liquid box if vapor box is not specified, else return a list of both.
+    [filled_liq_box, filled_vap_box]
+        Return list of system as specified.
     """
     # Update this dict as new recipes are made
     molecule_dict = {
@@ -56,4 +56,4 @@ def construct_system(sp):
         )
         return [filled_liq_box, filled_vap_box]
     else:
-        return filled_liq_box
+        return [filled_liq_box, None]
