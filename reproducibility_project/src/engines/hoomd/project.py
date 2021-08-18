@@ -41,7 +41,7 @@ def run_hoomd(job):
     except AttributeError:
         return
 
-    if job.sp.forcefield_name == "Trappe_UA":
+    if job.sp.forcefield_name == "trappe-ua":
         ff = foyer.forcefields.load_TRAPPE_UA()
     elif job.sp.forcefield_name == "benzene_ua":
         ff = foyer.forcefields.Forcefield("src/xmls/benzene_trappe-ua_like.xml")
