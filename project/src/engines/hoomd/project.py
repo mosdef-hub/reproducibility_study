@@ -5,6 +5,7 @@ import pathlib
 
 import flow
 import foyer
+import unyt as u
 from flow import environments
 
 
@@ -32,34 +33,57 @@ def run_hoomd(job):
     structure = ff.apply(filled_box)
 
     write_gsd(structure, job.fn("init.gsd"), ref_distance=rd, ref_energy=re)
-    # NOTE: create_hoomd3_forcefield depends on PR
-    # https://github.com/mosdef-hub/mbuild/pull/871
+    # ref_distance: 10 angstrom -> 1 nm
+    # ref_energy: 1/4.184 kcal/mol -> 1 kJ/mol
+    # ref_mass: 0.9999938574 dalton -> 1 amu
     snapshot, forcefield, ref_vals = create_hoomd3_forcefield(
-        structure, ref_distance=10, ref_energy=1 / 4.184
+        structure, ref_distance=10, ref_energy=1 / 4.184, ref_mass=0.9999938574
     )
 
     device = hoomd.device.auto_select()
-    simulation = hoomd.Simulation(device=device, seed=job.sp.replica)
-    simulation.create_state_from_snapshot(snapshot)
+    sim = hoomd.Simulation(device=device, seed=job.sp.replica)
+    sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
-        filename=job.fn("traj.gsd"),
+        filename=job.fn("trajectory.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode="ab",
     )
-    simulation.operations.writers.append(gsd_writer)
+    sim.operations.writers.append(gsd_writer)
+
+    logger = hoomd.logging.Logger(categories=["scalar"])
+    logger.add(sim, quantities=["timestep", "tps"])
+    thermo_props = hoomd.md.compute.ThermodynamicQuantities(
+        filter=hoomd.filter.All()
+    )
+    sim.operations.computes.append(thermo_props)
+    logger.add(
+        thermo_props,
+        quantities=[
+            "kinetic_energy",
+            "potential_energy",
+            "pressure",
+            "kinetic_temperature",
+            "volume",
+        ],
+    )
+    file = open("log.txt", mode="a", newline="\n")
+    table_file = hoomd.write.Table(
+        output=file,
+        trigger=hoomd.trigger.Periodic(period=5000),
+        logger=logger,
+        max_header_len=7,
+    )
+    sim.operations.writers.append(table_file)
+
     integrator = hoomd.md.Integrator(dt=0.005)
     integrator.forces = forcefield
-    nvt = hoomd.md.metehods.NVT(
-        filter=hoomd.filter.All(), kT=job.sp.temperature, tau=1.0
-    )
+    # convert temp in K to kJ/mol
+    kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    nvt = hoomd.md.methods.NVT(filter=hoomd.filter.All(), kT=kT, tau=1.0)
     integrator.methods = [nvt]
-    simulation.operations.intgrator = integrator
-    simulation.state.thermalize_particle_momenta(
-        filter=hoomd.filter.All(),
-        kT=job.sp.temperature,
-    )
-    simulation.run(1e6)
-    return None
+    sim.operations.integrator = integrator
+    sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+    sim.run(1e6)
 
 
 if __name__ == "__main__":
