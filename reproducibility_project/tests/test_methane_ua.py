@@ -2,8 +2,8 @@ import mbuild as mb
 import numpy as np
 import pytest
 
-from project.src.molecules.methane_ua import MethaneUA
-from project.tests.base_test import BaseTest
+from reproducibility_project.src.molecules.methane_ua import MethaneUA
+from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestMethaneUA(BaseTest):
