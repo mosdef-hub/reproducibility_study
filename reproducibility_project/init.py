@@ -15,7 +15,7 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPC/E", "ethanolAA"]
+molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPCE", "ethanolAA"]
 replicas = range(5)
 simulation_engines = [
     "cassandra",
@@ -34,7 +34,7 @@ cutoff_styles = ["hard"]
 for key in molecules:
     if "UA" in key:
         if "benz" not in key:
-            forcefields[key] = "Trappe_UA"
+            forcefields[key] = "trappe-ua"
         else:
             forcefields[key] = "benzene_ua"
         r_cuts[key] = 14.0 * u.angstrom
