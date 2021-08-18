@@ -22,13 +22,13 @@ def sample_job(job, variable="potential_energy", threshold=0.75):
         Fraction of data expected to be equilibrated.
     """
     try:
-        job.doc["sample_results"]
+        job.doc["sampling_results"]
     except KeyError:
-        job.doc["sample_results"] = {}
+        job.doc["sampling_results"] = {}
 
     data = np.genfromtxt(job.fn("log.txt"), names=True)[variable]
     start, stop, step = _decorr_sampling(data, threshold)
-    job.doc["sample_results"][variable] = range(start, stop, step)
+    job.doc["sampling_results"][variable] = range(start, stop, step)
 
 
 def _decorr_sampling(data, threshold):
