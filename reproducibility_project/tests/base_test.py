@@ -4,7 +4,7 @@ import foyer
 import pytest
 import signac
 
-from project.src import xmls
+from reproducibility_project.src import xmls
 
 from .utils import create_gsd
 

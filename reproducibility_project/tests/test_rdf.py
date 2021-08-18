@@ -3,8 +3,8 @@ import mbuild as mb
 import numpy as np
 import pytest
 
-from project.src.analysis.rdf import _gsd_rdf, gsd_rdf
-from project.tests.base_test import BaseTest
+from reproducibility_project.src.analysis.rdf import _gsd_rdf, gsd_rdf
+from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestRDF(BaseTest):

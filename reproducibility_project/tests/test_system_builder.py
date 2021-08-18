@@ -1,6 +1,8 @@
-import project
-from project.src.molecules.system_builder import construct_system
-from project.tests.base_test import BaseTest
+import reproducibility_project
+from reproducibility_project.src.molecules.system_builder import (
+    construct_system,
+)
+from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestSystemBuilder(BaseTest):

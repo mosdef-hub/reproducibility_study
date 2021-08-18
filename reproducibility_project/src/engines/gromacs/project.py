@@ -5,8 +5,8 @@ import pathlib
 import flow
 from flow import environments
 
-import project
-from project.src.engine_input.gromacs import mdp
+import reproducibility_project
+from reproducibility_project.src.engine_input.gromacs import mdp
 
 
 class Project(flow.FlowProject):
