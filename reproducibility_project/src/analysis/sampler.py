@@ -1,8 +1,8 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
 import numpy as np
-from project.src.analysis.equlibration import is_equilibrated
 from pymbar import timeseries
+from reproducibility_project.src.analysis.equlibration import is_equilibrated
 
 
 def sample_job(job, variable="potential_energy", threshold=0.75):
