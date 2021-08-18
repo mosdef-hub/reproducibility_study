@@ -163,10 +163,7 @@ for molecule in molecules:
                 temp.to_value("K"),
                 decimals=3,
             ),
-            "pressure": np.round(
-                press.to_value("kPa"),
-                decimals=3,
-            ),
+            "pressure": np.round(press.to_value("kPa"), decimals=3).item(),
             "ensemble": ensemble if ensemble else None,
             "N_liquid": n_liq,
             "N_vap": n_vap if n_vap else None,
