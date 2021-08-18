@@ -25,6 +25,7 @@ def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
     import sys
 
+    import foyer
     import hoomd
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
@@ -33,8 +34,24 @@ def run_hoomd(job):
     sys.path.append(Project().root_directory())
     from src.molecules.system_builder import construct_system
 
-    filled_box = construct_system(job.sp)
-    # ff = foyer.Forcefield(job._project.ff_fn)
+    # temporary hack until benzene and ethanol are added
+    try:
+        # Ignore the vapor box
+        filled_box, _ = construct_system(job.sp)
+    except AttributeError:
+        return
+
+    if job.sp.forcefield_name == "Trappe_UA":
+        ff = foyer.forcefields.load_TRAPPE_UA()
+    elif job.sp.forcefield_name == "benzene_ua":
+        ff = foyer.forcefields.Forcefield("src/xmls/benzene_trappe-ua_like.xml")
+    elif job.sp.forcefield_name == "spce":
+        ff = foyer.forcefields.Forcefield("src/xmls/spce.xml")
+    elif job.sp.forcefield_name == "oplsaa":
+        ff = foyer.forcefields.load_OPLSAA()
+    else:
+        raise ValueError(f"No forcefield defined for {job.sp.forcefield_name}")
+
     structure = ff.apply(filled_box)
 
     # ref_distance: 10 angstrom -> 1 nm
@@ -50,6 +67,7 @@ def run_hoomd(job):
         ref_energy=re,
         ref_mass=rm,
     )
+
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure, ref_distance=rd, ref_energy=re, ref_mass=rm
     )
