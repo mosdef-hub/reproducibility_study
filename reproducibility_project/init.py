@@ -15,7 +15,7 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPC/E", "ethanolAA"]
+molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPCE", "ethanolAA"]
 replicas = range(5)
 simulation_engines = [
     "cassandra",
@@ -34,9 +34,9 @@ cutoff_styles = ["hard"]
 for key in molecules:
     if "UA" in key:
         if "benz" not in key:
-            forcefields[key] = "Trappe_UA"
+            forcefields[key] = "trappe-ua"
         else:
-            forcefields[key] = "benzene_ua"
+            forcefields[key] = "benzene-ua"
         r_cuts[key] = 14.0 * u.angstrom
     elif "SPC/E" in key:
         forcefields[key] = "spce"
@@ -49,28 +49,28 @@ masses = {
     "methaneUA": [16.04] * u.amu,
     "pentaneUA": [72.15] * u.amu,
     "benzeneUA": [78.1118] * u.amu,
-    "waterSPC/E": [18.0153] * u.amu,
+    "waterSPCE": [18.0153] * u.amu,
     "ethanolAA": [46.0684] * u.amu,
 }
 init_density_liq = {
     "methaneUA": [0.3752] * g_per_cm3,
     "pentaneUA": [0.5390] * g_per_cm3,
     "benzeneUA": [0.692] * g_per_cm3,
-    "waterSPC/E": [0.998] * g_per_cm3,
+    "waterSPCE": [0.998] * g_per_cm3,
     "ethanolAA": [0.7893] * g_per_cm3,
 }
 init_density_vap = {
     "methaneUA": [0.0117] * g_per_cm3,
     "pentaneUA": [0.019] * g_per_cm3,
     "benzeneUA": [None],
-    "waterSPC/E": [None],
+    "waterSPCE": [None],
     "ethanolAA": [None],
 }
 temperatures = {
     "methaneUA": [140.0] * u.K,
     "pentaneUA": [372.0] * u.K,
     "benzeneUA": [450.0] * u.K,
-    "waterSPC/E": [280.0, 300.0, 320.0] * u.K,
+    "waterSPCE": [280.0, 300.0, 320.0] * u.K,
     "ethanolAA": [280.0, 300.0, 320.0] * u.K,
 }
 
@@ -78,7 +78,7 @@ pressures = {
     "methaneUA": [1318.0] * u.kPa,
     "pentaneUA": [1402.0] * u.kPa,
     "benzeneUA": [2260.0] * u.kPa,
-    "waterSPC/E": [101.325, 101.325, 101.325] * u.kPa,
+    "waterSPCE": [101.325, 101.325, 101.325] * u.kPa,
     "ethanolAA": [101.325, 101.325, 101.325] * u.kPa,
 }
 
@@ -86,7 +86,7 @@ N_liq_molecules = {
     "methaneUA": [900],
     "pentaneUA": [300],
     "benzeneUA": [400],
-    "waterSPC/E": [2000, 2000, 2000],
+    "waterSPCE": [2000, 2000, 2000],
     "ethanolAA": [700, 700, 700],
 }
 
@@ -94,7 +94,7 @@ N_vap_molecules = {
     "methaneUA": [100],
     "pentaneUA": [100],
     "benzeneUA": [None],
-    "waterSPC/E": [None],
+    "waterSPCE": [None],
     "ethanolAA": [None],
 }
 
@@ -102,7 +102,7 @@ liq_box_lengths = {
     "methaneUA": [39.98] * u.angstrom,
     "pentaneUA": [40.55] * u.angstrom,
     "benzeneUA": [42.17] * u.angstrom,
-    "waterSPC/E": [39.14] * u.angstrom,
+    "waterSPCE": [39.14] * u.angstrom,
     "ethanolAA": [40.79] * u.angstrom,
 }
 
@@ -110,7 +110,7 @@ vap_box_lengths = {
     "methaneUA": [61.06] * u.angstrom,
     "pentaneUA": [85.75] * u.angstrom,
     "benzeneUA": [None],
-    "waterSPC/E": [None],
+    "waterSPCE": [None],
     "ethanolAA": [None],
 }
 
@@ -118,7 +118,7 @@ ensembles = {
     "methaneUA": ["NPT", "GEMC-NVT"],
     "pentaneUA": ["NPT", "GEMC-NVT"],
     "benzeneUA": ["NPT", None],
-    "waterSPC/E": ["NPT", None],
+    "waterSPCE": ["NPT", None],
     "ethanolAA": ["NPT", None],
 }
 
@@ -130,87 +130,77 @@ pr = signac.get_project(pr_root)
 # filter the list of dictionaries
 total_statepoints = list()
 for molecule in molecules:
-    for engine in simulation_engines:
-        for ensemble in ensembles[molecule]:
-            for temp, press in zip(temperatures[molecule], pressures[molecule]):
-                for n_liq in N_liq_molecules[molecule]:
-                    for liq_box_L in liq_box_lengths[molecule]:
-                        for n_vap in N_vap_molecules[molecule]:
-                            for vap_box_L in vap_box_lengths[molecule]:
-                                for init_liq_den, init_vap_den in zip(
-                                    init_density_liq[molecule],
-                                    init_density_vap[molecule],
-                                ):
-                                    for mass in masses[molecule]:
-                                        for cutoff_style in cutoff_styles:
-                                            for replica in replicas:
-                                                statepoint = {
-                                                    "molecule": molecule,
-                                                    "engine": engine,
-                                                    "replica": replica,
-                                                    "temperature": np.round(
-                                                        temp.to_value("K"),
-                                                        decimals=3,
-                                                    ),
-                                                    "pressure": np.round(
-                                                        press.to_value("kPa"),
-                                                        decimals=3,
-                                                    ),
-                                                    "ensemble": ensemble
-                                                    if ensemble
-                                                    else None,
-                                                    "N_liquid": n_liq,
-                                                    "N_vap": n_vap
-                                                    if n_vap
-                                                    else None,
-                                                    "box_L_liq": np.round(
-                                                        liq_box_L.to_value(
-                                                            "nm"
-                                                        ),
-                                                        decimals=3,
-                                                    )
-                                                    if liq_box_L
-                                                    else None,
-                                                    "box_L_vap": np.round(
-                                                        vap_box_L.to_value(
-                                                            "nm"
-                                                        ),
-                                                        decimals=3,
-                                                    )
-                                                    if vap_box_L
-                                                    else None,
-                                                    "init_liq_den": np.round(
-                                                        init_liq_den.to_value(
-                                                            g_per_cm3
-                                                        ),
-                                                        decimals=3,
-                                                    ),
-                                                    "init_vap_den": np.round(
-                                                        init_vap_den.to_value(
-                                                            g_per_cm3
-                                                        ),
-                                                        decimals=3,
-                                                    )
-                                                    if init_vap_den
-                                                    else None,
-                                                    "mass": np.round(
-                                                        mass.to_value("amu"),
-                                                        decimals=3,
-                                                    ),
-                                                    "forcefield_name": forcefields[
-                                                        molecule
-                                                    ],
-                                                    "cutoff_style": cutoff_style,
-                                                    "r_cut": np.round(
-                                                        r_cuts[
-                                                            molecule
-                                                        ].to_value("nm"),
-                                                        decimals=3,
-                                                    ),
-                                                }
-                                                total_statepoints.append(
-                                                    statepoint
-                                                )
+    for (
+        engine,
+        ensemble,
+        (temp, press),
+        n_liq,
+        liq_box_L,
+        n_vap,
+        vap_box_L,
+        (init_liq_den, init_vap_den),
+        mass,
+        cutoff_style,
+        replica,
+    ) in itertools.product(
+        simulation_engines,
+        ensembles[molecule],
+        zip(temperatures[molecule], pressures[molecule]),
+        N_liq_molecules[molecule],
+        liq_box_lengths[molecule],
+        N_vap_molecules[molecule],
+        vap_box_lengths[molecule],
+        zip(init_density_liq[molecule], init_density_vap[molecule]),
+        masses[molecule],
+        cutoff_styles,
+        replicas,
+    ):
+        statepoint = {
+            "molecule": molecule,
+            "engine": engine,
+            "replica": replica,
+            "temperature": np.round(
+                temp.to_value("K"),
+                decimals=3,
+            ).item(),
+            "pressure": np.round(press.to_value("kPa"), decimals=3).item(),
+            "ensemble": ensemble if ensemble else None,
+            "N_liquid": n_liq,
+            "N_vap": n_vap if n_vap else None,
+            "box_L_liq": np.round(
+                liq_box_L.to_value("nm"),
+                decimals=3,
+            ).item()
+            if liq_box_L
+            else None,
+            "box_L_vap": np.round(
+                vap_box_L.to_value("nm"),
+                decimals=3,
+            ).item()
+            if vap_box_L
+            else None,
+            "init_liq_den": np.round(
+                init_liq_den.to_value(g_per_cm3),
+                decimals=3,
+            ).item(),
+            "init_vap_den": np.round(
+                init_vap_den.to_value(g_per_cm3),
+                decimals=3,
+            ).item()
+            if init_vap_den
+            else None,
+            "mass": np.round(
+                mass.to_value("amu"),
+                decimals=3,
+            ).item(),
+            "forcefield_name": forcefields[molecule],
+            "cutoff_style": cutoff_style,
+            "r_cut": np.round(
+                r_cuts[molecule].to_value("nm"),
+                decimals=3,
+            ).item(),
+        }
+        total_statepoints.append(statepoint)
 
 # print(len(total_statepoints))
 indices_to_remove = set()
