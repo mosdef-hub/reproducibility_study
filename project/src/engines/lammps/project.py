@@ -64,8 +64,8 @@ def lammps_created_gsd(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.post(lammps_created_box)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def built_lammps(job):
     # Create a lammps datafile for a specified molecule
     from mbuild.formats.lammpsdata import write_lammpsdata
@@ -76,9 +76,9 @@ def built_lammps(job):
     # Apply forcefield from statepoint
     if job.sp.forcefield_name == "Trappe_UA":
         ff = foyer.Forcefield(name="trappe-ua")
-    elif job.sp.forcefield_name == "oplsaa"
+    elif job.sp.forcefield_name == "oplsaa":
         ff = foyer.Forcefield(name="oplsaa")
-    elif job.sp.forcefield_name == "spce"
+    elif job.sp.forcefield_name == "spce":
         ff = foyer.Forcefield(name="spce") # TODO: Make sure this gets applied correctly
     else:
         raise Exception("No forcefield has been applied to this system {}".format(job.id))
@@ -92,16 +92,16 @@ def built_lammps(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.pre(lammps_created_box)
 @Project.post(lammps_copy_files)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def lammps_cp_files(job):
     molecule = job.sp.molecule
     dict_of_lammps_files = {
-                            "methaneUA": "UAmethane"
-                            "pentaneUA": "UApentane"
-                            "benzeneUA": "UAbenzene"
-                            "waterSPC/E": "SPCEwater"
-                            "ethanolAA": "AAethanol"
+                            "methaneUA": "UAmethane",
+                            "pentaneUA": "UApentane",
+                            "benzeneUA": "UAbenzene",
+                            "waterSPC/E": "SPCEwater",
+                            "ethanolAA": "AAethanol",
                            }
 
     lmps_submit_path = "../../engine_input/lammps/submission_scripts/submit.pbs"
@@ -113,8 +113,8 @@ def lammps_cp_files(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.pre(lammps_copy_files)
 @Project.post(lammps_minimized)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def lammps_em(job):
     modify_lammps_scripts("in.*", job)
     modify_submit_scripts("in.em", str(job.sp.molecule), 8)
@@ -125,8 +125,8 @@ def lammps_em(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.pre(lammps_minimized)
 @Project.post(lammps_equilibrated_nvt)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def lammps_nvt(job):
     modify_submit_scripts("in.nvt", str(job.sp.molecule), 8)
     msg = f"qsub submit.pbs"
@@ -136,8 +136,8 @@ def lammps_nvt(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.pre(lammps_equilibrated_nvt)
 @Project.post(lammps_equilibrated_npt)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def lammps_npt(job):
     modify_submit_scripts("in.npt", str(job.sp.molecule), 8)
     msg = f"qsub submit.pbs"
@@ -147,8 +147,8 @@ def lammps_npt(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
 @Project.pre(lammps_equilibrated_npt)
 @Project.post(lammps_production)
-@flow.cmd
 @flow.with_job
+@flow.cmd
 def lammps_prod(job):
     modify_submit_scripts("in.prod", str(job.sp.molecule), 8)
     msg = f"qsub submit.pbs"
@@ -156,18 +156,18 @@ def lammps_prod(job):
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
-@Project.pre(lammps_equilibrated_production)
-@flow.cmd
+@Project.pre(lammps_production)
 @flow.with_job
+@flow.cmd
 def lammps_calc_density(job):
     # Create a density datafile from the production run
     return
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps")
-@Project.pre(lammps_equilibrated_production)
-@flow.cmd
+@Project.pre(lammps_production)
 @flow.with_job
+@flow.cmd
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
     import mbuild as mb
@@ -187,9 +187,9 @@ def modify_submit_lammps(filename, statepoint,cores):
         lines = f.readlines()
         lines[1] = "#PBS -N {}{}\n".format(filename, statepoint)
         lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
-   with open("submit.pbs","w") as f:
-       f.write(lines)
-   return
+    with open("submit.pbs","w") as f:
+        f.write(lines)
+    return
 
 def modify_lammps_scripts(filename, job):
     with open(filename,"r") as f:
