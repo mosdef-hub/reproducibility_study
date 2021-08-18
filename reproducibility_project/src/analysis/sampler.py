@@ -1,9 +1,8 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
 import numpy as np
-from pymbar import timeseries
-
 from project.src.analysis.equlibration import is_equilibrated
+from pymbar import timeseries
 
 
 def sample_job(job, variable="potential_energy", threshold=0.75):
@@ -28,14 +27,15 @@ def sample_job(job, variable="potential_energy", threshold=0.75):
     job.doc["sample_end"] = stop
     job.doc["sample_stride"] = step
 
+
 def _decorr_sampling(data, threshold):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
     Parameters
     ----------
-    data : numpy.Array 
+    data : numpy.Array
         1-D time dependent data to check for equilibration
-    threshold : float 
+    threshold : float
         Fraction of data expected to be equilibrated.
     """
     is_equil, prod_start, ineff = is_equilibrated(data, threshold, nskip=1)
@@ -43,10 +43,11 @@ def _decorr_sampling(data, threshold):
         uncorr_indices = timeseries.subsampleCorrelatedData(
             data[prod_start:], g=ineff, conservative=True
         )
-        return (uncorr_indices.start + prod_start,
-                uncorr_indices.stop + prod_start,
-                uncorr_indices.step
-                )
+        return (
+            uncorr_indices.start + prod_start,
+            uncorr_indices.stop + prod_start,
+            uncorr_indices.step,
+        )
     else:
         raise ValueError(
             "Property does not have requisite threshold of production data expected."
