@@ -3,8 +3,8 @@ import mbuild as mb
 import numpy as np
 import pytest
 
-from project.src.molecules.pentane_ua import PentaneUA
-from project.tests.base_test import BaseTest
+from reproducibility_project.src.molecules.pentane_ua import PentaneUA
+from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestPentaneUA(BaseTest):

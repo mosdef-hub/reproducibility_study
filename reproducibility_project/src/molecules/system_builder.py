@@ -1,8 +1,9 @@
 """Methods used to create systems from job statepoint."""
 import mbuild as mb
 from mbuild.lib.molecules.water import WaterSPC
-from methane_ua import MethaneUA
-from pentane_ua import PentaneUA
+
+from reproducibility_project.src.molecules.methane_ua import MethaneUA
+from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
 
 def construct_system(sp):
@@ -37,13 +38,14 @@ def construct_system(sp):
     """
     # Update this dict as new recipes are made
     molecule_dict = {
-        "methaneUA": MethaneUA,
-        "pentaneUA": PentaneUA,
+        "methaneUA": MethaneUA(),
+        "pentaneUA": PentaneUA(),
         "benzeneUA": None,
-        "waterSPC/E": WaterSPC,
+        "waterSPC/E": WaterSPC(),
         "ethanolAA": None,
     }
     molecule = molecule_dict[sp["molecule"]]
+    molecule.name = sp["molecule"]
     liq_box = mb.Box([sp["box_L_liq"]] * 3)
     filled_liq_box = mb.fill_box(
         compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
