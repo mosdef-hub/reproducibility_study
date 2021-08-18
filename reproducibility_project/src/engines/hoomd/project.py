@@ -20,24 +20,38 @@ class Project(flow.FlowProject):
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "hoomd")
+@Project.pre(lambda j: j.sp.engine == "hoomd")
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
+    import sys
+
     import hoomd
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
-    from mbuild.formats.hoomd3_simulation import create_hoomd3_forcefield
+    from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
-    filled_box = get_system(job)
+    sys.path.append(Project().root_directory())
+    from src.molecules.system_builder import construct_system
+
+    filled_box = construct_system(job.sp)
     # ff = foyer.Forcefield(job._project.ff_fn)
     structure = ff.apply(filled_box)
 
-    write_gsd(structure, job.fn("init.gsd"), ref_distance=rd, ref_energy=re)
     # ref_distance: 10 angstrom -> 1 nm
     # ref_energy: 1/4.184 kcal/mol -> 1 kJ/mol
     # ref_mass: 0.9999938574 dalton -> 1 amu
-    snapshot, forcefield, ref_vals = create_hoomd3_forcefield(
-        structure, ref_distance=10, ref_energy=1 / 4.184, ref_mass=0.9999938574
+    rd = 10
+    re = 1 / 4.184
+    rm = 0.9999938574
+    write_gsd(
+        structure,
+        job.fn("init.gsd"),
+        ref_distance=rd,
+        ref_energy=re,
+        ref_mass=rm,
+    )
+    snapshot, forcefield, ref_vals = create_hoomd_forcefield(
+        structure, ref_distance=rd, ref_energy=re, ref_mass=rm
     )
 
     device = hoomd.device.auto_select()
