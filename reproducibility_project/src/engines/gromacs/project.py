@@ -71,7 +71,9 @@ def npt_completed(job):
 @Project.pre(lambda j: j.sp.simulation_engine == "gromacs")
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
-    from project.src.molecules.system_builder import construct_system
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
 
     with job:
         # Create a Compound and save to gro and top files
@@ -97,7 +99,7 @@ def init_job(job):
                 "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
                 "data": {
                     "temp": job.sp.temperature,
-                    "refp": job.sp.pressure,
+                    "refp": job.sp.pressure * 0.01,  # convert from kPa to bar
                 },
             },
         }
