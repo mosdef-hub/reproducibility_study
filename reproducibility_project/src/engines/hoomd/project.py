@@ -25,9 +25,9 @@ def run_hoomd(job):
     import foyer
     import hoomd
     import hoomd.md
+    import unyt as u
     from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
-    import unyt as u
 
     sys.path.append(Project().root_directory())
     from src.molecules.system_builder import construct_system
