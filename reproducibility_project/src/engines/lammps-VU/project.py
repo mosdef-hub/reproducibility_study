@@ -5,6 +5,7 @@ import sys
 
 import flow
 from flow import environments
+import numpy as np
 
 
 class Project(flow.FlowProject):
@@ -168,22 +169,36 @@ def run_lammps(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_production)
+@Project.post(lambda j: j.isfile("prod.gsd"))
 @flow.with_job
 @flow.cmd
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
     import mbuild as mb
     import MDAnalysis as mda
-
-    traj = mda.coordinates.XTC.XTCReader("prod.xtc")
-    top = mda.topology.LAMMPSParser.DATAParser("box.lammps")
-    u = mda.Universe(top, traj)
-    u.trajectory.next(-1)
-    parmed_structure = u.convert_to("PARMED")
+    u = mda.Universe("box.lammps", topology_format="DATA")
+    u.load_new("prod.xtc")
+    u.trajectory[-1]
+    parmed_structure = u.atoms.convert_to("PARMED")
     mb.formats.gsdwriter.write_gsd(parmed_structure, "prod.gsd")
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
 
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_production)
+@Project.post(lambda j: j.isfile("density.csv"))
+@flow.with_job
+@flow.cmd
+def lammps_create_density_csv(job):
+    # Create rdf data from the production run
+    import lammps_thermo
+    thermo = lammps_thermo.load("log.lammps", skip_sections=9)
+    density = thermo.prop("Density")
+    list_d = np.concatenate(density).ravel() 
+    print(list_d)
+    np.savetxt('density.csv', list_d, delimiter=',', fmt='%f')
+    return
 
 def modify_submit_scripts(filename, jobid, cores):
     # Modify Submit Scripts
