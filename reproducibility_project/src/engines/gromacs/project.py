@@ -59,26 +59,37 @@ def init_job(job):
     # Modify mdp files according to job statepoint parameters
     import unyt as u
 
+    cutoff_styles = {"hard": "Cut-off"}
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
     mdps = {
         "em": {
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
-            "data": {"r_cut": job.sp.r_cut},
+            "data": {
+                "r_cut": job.sp.r_cut,
+                "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "temp": job.sp.temperature,
+                "replica": job.sp.replica,
+            },
         },
         "nvt": {
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
-            "data": {"temp": job.sp.temperature, "r_cut": job.sp.r_cut},
+            "data": {
+                "temp": job.sp.temperature,
+                "r_cut": job.sp.r_cut,
+                "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+            },
         },
         "npt": {
             "fname": "npt.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
             "data": {
                 "temp": job.sp.temperature,
-                "refp": job.sp.pressure.to_value("bar"),
+                "refp": pressure.to_value("bar"),
                 "r_cut": job.sp.r_cut,
+                "cutoff_style": cutoff_styles[job.sp.cutoff_style],
             },
         },
     }

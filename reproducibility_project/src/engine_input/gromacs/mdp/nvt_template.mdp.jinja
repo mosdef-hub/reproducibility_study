@@ -1,11 +1,11 @@
 integrator          = md
-nsteps              = 25000000
-dt                  = 0.001
+nsteps              = 2500000
+dt                  = 0.002
 
-comm-mode           = None
+comm-mode           = Angular
 
 nstxout             = 1000
-nstvout             = 0
+nstvout             = 1000
 nstenergy           = 1000
 nstlog              = 1000
 
@@ -13,23 +13,20 @@ cutoff-scheme       = Verlet
 ns_type             = grid
 nstlist             = 10
 pbc                 = xyz
-rcoulomb            = {{ r_cut }}
-rvdw                = {{ r_cut  }}
 
-coulombtype         = PME
-fourierspacing      = 0.16
-ewald-geometry      = 3d
+coulombtype         = {{  cutoff_style  }}
+rcoulomb            = {{  r_cut  }}
 
-gen_vel             = yes
-gen-temp            = {{ temp }}
-gen-seed            = 1234
+vdwtype             = {{  cutoff_style  }}
+rvdw                = {{  r_cut }}
+
 
 tcoupl              = nose-hoover
 tc-grps             = System
 tau_t               = 1
-ref_t               = {{ temp }}
+ref_t               = {{  temp  }}
 
 pcoupl              = no
 
-constraints         = all-bonds all-angles
-constraint-algorithm = LINCS LINCS
+constraints         = all-angles
+constraint-algorithm = LINCS

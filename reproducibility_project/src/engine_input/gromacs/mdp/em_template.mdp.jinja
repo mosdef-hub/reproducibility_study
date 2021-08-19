@@ -1,24 +1,25 @@
 integrator          = steep
 nsteps              = 200000
-dt                  = 0.001
+dt                  = 0.002
 
-nstxout             = 0
-nstvout             = 0
+nstxout             = 1000
+nstvout             = 1000
 nstenergy           = 1000
 nstlog              = 1000
 
 cutoff-scheme       = Verlet
 ns_type             = grid
 nstlist             = 10
-rcoulomb            = 0.9
-rvdw                = 0.9
 
-coulombtype         = PME
-fourierspacing      = 0.16
+coulombtype         = {{  cutoff_style  }}
+rcoulomb            = {{  r_cut  }}
+
+vdwtype             = {{  cutoff_style  }}
+rvdw                = {{  r_cut }}
 
 gen_vel             = yes
-gen-temp            = 300
-gen-seed            = 1234
+gen-temp            = {{  temp  }}
+gen-seed            = {{  replica  }}
 
 tcoupl              = no
 
@@ -27,5 +28,5 @@ pcoupl              = no
 pbc                 = xyz
 periodic-molecules  = yes
 
-constraints         = all-bonds all-angles
-constraint-algorithm = LINCS LINCS
+constraints         = all-angles
+constraint-algorithm =  LINCS
