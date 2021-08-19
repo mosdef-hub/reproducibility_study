@@ -41,7 +41,7 @@ def run_hoomd(job):
 
     if job.sp.forcefield_name == "trappe-ua":
         ff = foyer.forcefields.load_TRAPPE_UA()
-    elif job.sp.forcefield_name == "benzene_ua":
+    elif job.sp.forcefield_name == "benzene-ua":
         ff = foyer.forcefields.Forcefield("src/xmls/benzene_trappe-ua_like.xml")
     elif job.sp.forcefield_name == "spce":
         ff = foyer.forcefields.Forcefield("src/xmls/spce.xml")
