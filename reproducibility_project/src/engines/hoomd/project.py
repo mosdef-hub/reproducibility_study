@@ -146,7 +146,7 @@ def run_hoomd(job):
         box1=initial_box,
         box2=final_box,
         variant=ramp,
-        trigger=box_resize_trigger
+        trigger=box_resize_trigger,
     )
     sim.operations.updaters.append(box_resize)
     sim.run(2e4)
