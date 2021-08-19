@@ -16,6 +16,24 @@ class Project(flow.FlowProject):
         self.ff_fn = self.data_dir / "forcefield.xml"
 
 
+class Fry(DefaultSlurmEnvironment):
+    """Subclass of DefaultSlurmEnvironment for BSU's Fry cluster."""
+
+    hostname_pattern = "fry.boisestate.edu"
+    template = "fry.sh"
+
+    @classmethod
+    def add_args(cls, parser):
+        """Add command line arguments to the submit call."""
+        parser.add_argument(
+            "--partition",
+            default="batch",
+            help="Specify the partition to submit to.",
+        )
+        parser.add_argument("--nodelist", help="Specify the node to submit to.")
+
+
+@directives(ngpu=1)
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 def run_hoomd(job):
