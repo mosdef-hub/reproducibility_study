@@ -37,7 +37,7 @@ class Fry(DefaultSlurmEnvironment):
 # This environment variable is set by running
 # echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
 # with the mosdef-study38 conda env active
-@Project.operation.with_directives({"executable":"$MOSDEF_PYTHON", "ngpu":1})
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
