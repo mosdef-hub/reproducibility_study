@@ -13,8 +13,8 @@ cutoff-scheme       = Verlet
 ns_type             = grid
 nstlist             = 10
 pbc                 = xyz
-rcoulomb            = 0.9
-rvdw                = 0.9
+rcoulomb            = {{ r_cut }}
+rvdw                = {{ r_cut  }}
 
 coulombtype         = PME
 fourierspacing      = 0.16
@@ -32,4 +32,4 @@ ref_t               = {{ temp }}
 pcoupl              = no
 
 constraints         = all-bonds all-angles
-constraint-algorithm = LINCS
+constraint-algorithm = LINCS LINCS

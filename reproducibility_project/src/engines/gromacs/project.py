@@ -65,12 +65,12 @@ def init_job(job):
         "em": {
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
-            "data": dict(),
+            "data": {"r_cut": job.sp.r_cut},
         },
         "nvt": {
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
-            "data": {"temp": job.sp.temperature},
+            "data": {"temp": job.sp.temperature, "r_cut": job.sp.r_cut},
         },
         "npt": {
             "fname": "npt.mdp",
@@ -78,6 +78,7 @@ def init_job(job):
             "data": {
                 "temp": job.sp.temperature,
                 "refp": job.sp.pressure.to_value("bar"),
+                "r_cut": job.sp.r_cut,
             },
         },
     }
