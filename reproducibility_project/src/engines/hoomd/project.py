@@ -149,7 +149,7 @@ def run_hoomd(job):
         trigger=box_resize_trigger,
     )
     sim.operations.updaters.append(box_resize)
-    sim.run(2e4)
+    sim.run(2e4 + 1)
     assert sim.state.box == final_box
     sim.operations.updaters.remove(box_resize)
 
