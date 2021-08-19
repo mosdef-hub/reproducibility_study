@@ -39,6 +39,7 @@ class Fry(DefaultSlurmEnvironment):
 # with the mosdef-study38 conda env active
 @Project.operation.with_directives({"executable":"$MOSDEF_PYTHON", "ngpu":1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.post(lambda j: j.doc.get("finished"))
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
     import sys
@@ -131,6 +132,7 @@ def run_hoomd(job):
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
     sim.run(1e6)
+    job.doc.finished = True
 
 
 if __name__ == "__main__":
