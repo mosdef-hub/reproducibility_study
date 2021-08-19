@@ -137,7 +137,7 @@ def run_hoomd(job):
     # Shrink step follows this example
     # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
     # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
-    ramp = hoomd.variant.Ramp(A=0, B=1, t_start=sim.timestep, t_ramp=2e4)
+    ramp = hoomd.variant.Ramp(A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4))
     initial_box = sim.state.box
     L = job.sp.box_L_liq
     final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
