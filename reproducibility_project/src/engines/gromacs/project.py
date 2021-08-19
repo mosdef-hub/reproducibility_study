@@ -18,6 +18,11 @@ class Project(flow.FlowProject):
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.post(lambda j: j.isfile("init.gro"))
+@Project.post(lambda j: j.isfile("init.top"))
+@Project.post(lambda j: j.isfile("em.mdp"))
+@Project.post(lambda j: j.isfile("nvt.mdp"))
+@Project.post(lambda j: j.isfile("npt.mdp"))
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
@@ -107,6 +112,7 @@ def init_job(job):
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("init.gro"))
 @Project.pre(lambda j: j.isfile("init.top"))
+@Project.post(lambda j: j.isfile("em.tpr"))
 @flow.with_job
 @flow.cmd
 def grompp_em(job):
@@ -119,6 +125,7 @@ def grompp_em(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("em.tpr"))
+@Project.post(lambda j: j.isfile("em.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_em(job):
@@ -129,6 +136,7 @@ def gmx_em(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("em.gro"))
+@Project.post(lambda j: j.isfile("nvt.tpr"))
 @flow.with_job
 @flow.cmd
 def grompp_nvt(job):
@@ -141,6 +149,7 @@ def grompp_nvt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("nvt.tpr"))
+@Project.post(lambda j: j.isfile("nvt.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_nvt(job):
@@ -151,6 +160,7 @@ def gmx_nvt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("nvt.gro"))
+@Project.post(lambda j: j.isfile("npt.tpr"))
 @flow.with_job
 @flow.cmd
 def grompp_npt(job):
@@ -163,6 +173,7 @@ def grompp_npt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("npt.tpr"))
+@Project.post(lambda j: j.isfile("npt.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_npt(job):
