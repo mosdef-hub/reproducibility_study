@@ -19,42 +19,42 @@ class Project(flow.FlowProject):
 #____________________________________________________________________________
 """Setting progress label"""
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_created_box(job):
     return job.isfile("box.lammps")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_copy_files(job):
     return job.isfile("submit.pbs")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_minimized(job):
     return job.isfile("minimized.restart")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_equilibrated_nvt(job):
     return job.isfile("equilibrated_nvt.restart")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_equilibrated_npt(job):
     return job.isfile("equilibrated_npt.restart")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_production(job):
     return job.isfile("production.restart")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_density_data(job):
     return job.isfile("density.dat")
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 def lammps_created_gsd(job):
     return job.isfile("prod.gsd")
 
@@ -62,7 +62,7 @@ def lammps_created_gsd(job):
 """Setting up workflow operation"""
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.post(lammps_created_box)
 @flow.with_job
 @flow.cmd
@@ -89,7 +89,7 @@ def built_lammps(job):
     return
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_created_box)
 @Project.post(lammps_copy_files)
 @flow.with_job
@@ -104,13 +104,13 @@ def lammps_cp_files(job):
                             "ethanolAA": "AAethanol",
                            }
 
-    lmps_submit_path = "../../engine_input/lammps/submission_scripts/submit.pbs"
-    lmps_run_path = "../../engine_input/lammps/submission_scripts/in." + dict_of_lammps_files[molecule]
+    lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
+    lmps_run_path = "../../src/engine_input/lammps/input_scripts/in." + dict_of_lammps_files[molecule]
     msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
     return msg
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_copy_files)
 @Project.post(lammps_minimized)
 @flow.with_job
@@ -122,7 +122,7 @@ def lammps_em(job):
     return msg
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_minimized)
 @Project.post(lammps_equilibrated_nvt)
 @flow.with_job
@@ -133,7 +133,7 @@ def lammps_nvt(job):
     return msg
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_equilibrated_nvt)
 @Project.post(lammps_equilibrated_npt)
 @flow.with_job
@@ -144,7 +144,7 @@ def lammps_npt(job):
     return msg
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_equilibrated_npt)
 @Project.post(lammps_production)
 @flow.with_job
@@ -155,7 +155,7 @@ def lammps_prod(job):
     return msg
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_production)
 @flow.with_job
 @flow.cmd
@@ -164,7 +164,7 @@ def lammps_calc_density(job):
     return
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
 @Project.pre(lammps_production)
 @flow.with_job
 @flow.cmd
