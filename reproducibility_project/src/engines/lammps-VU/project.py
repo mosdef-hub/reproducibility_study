@@ -1,11 +1,10 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
-# import foyer
 import os
 import pathlib
+import sys
 
 import flow
 from flow import environments
-
 
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -22,49 +21,49 @@ class Project(flow.FlowProject):
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_box(job):
     return job.isfile("box.lammps")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_copy_files(job):
     return job.isfile("submit.pbs")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_minimized(job):
     return job.isfile("minimized.restart")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_equilibrated_nvt(job):
     return job.isfile("equilibrated_nvt.restart")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_equilibrated_npt(job):
     return job.isfile("equilibrated_npt.restart")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_production(job):
     return job.isfile("production.restart")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_density_data(job):
     return job.isfile("density.dat")
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_gsd(job):
     return job.isfile("prod.gsd")
 
@@ -74,19 +73,22 @@ def lammps_created_gsd(job):
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.post(lammps_created_box)
 @flow.with_job
 @flow.cmd
 def built_lammps(job):
     # Create a lammps datafile for a specified molecule
     from mbuild.formats.lammpsdata import write_lammpsdata
-    from project.src.molecules.system_builder import SystemBuilder
-
-    system = SystemBuilder(job)
+    import foyer
+    sys.path.append(Project().root_directory() + "/..")
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+    system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
     # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "Trappe_UA":
+    if job.sp.forcefield_name == "trappe-ua":
         ff = foyer.Forcefield(name="trappe-ua")
     elif job.sp.forcefield_name == "oplsaa":
         ff = foyer.Forcefield(name="oplsaa")
@@ -100,19 +102,19 @@ def built_lammps(job):
         )
     typed_surface = ff.apply(parmed_structure)
     write_lammpsdata(
-        system,
+        typed_surface,
         "box.lammps",
         atom_style="full",
         unit_style="real",
-        mins=system.get_boundingbox().vectors[0],
-        maxs=system.get_boundingbox().vectors[1],
+        mins=[system.get_boundingbox().vectors[0]],
+        maxs=[system.get_boundingbox().vectors[1]],
         use_rb_torsions=True,
     )
     return
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_created_box)
 @Project.post(lammps_copy_files)
 @flow.with_job
@@ -127,76 +129,40 @@ def lammps_cp_files(job):
         "ethanolAA": "AAethanol",
     }
 
-    lmps_submit_path = "../../engine_input/lammps/VU_scripts/submit.pbs"
+    lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
     lmps_run_path = (
-        "../../engine_input/lammps/input_scripts/in."
+        "../../src/engine_input/lammps/input_scripts/in."
         + dict_of_lammps_files[molecule]
     )
-    msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
+    msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_copy_files)
 @Project.post(lammps_minimized)
 @flow.with_job
 @flow.cmd
-def lammps_em(job):
-    modify_lammps_scripts("in.*", job)
-    modify_submit_scripts("in.em", str(job.sp.molecule), 8)
+def run_lammps(job):
+    dict_of_lammps_files = {
+        "methaneUA": "UAmethane",
+        "pentaneUA": "UApentane",
+        "benzeneUA": "UAbenzene",
+        "waterSPC/E": "SPCEwater",
+        "ethanolAA": "AAethanol",
+    }
+    modify_lammps_scripts("in.{}".format(dict_of_lammps_files[job.sp.molecule]), job)
+    modify_submit_scripts(
+        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), 
+        job.id[0:3], 
+        8)
     msg = f"qsub submit.pbs"
     return msg
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
-@Project.pre(lammps_minimized)
-@Project.post(lammps_equilibrated_nvt)
-@flow.with_job
-@flow.cmd
-def lammps_nvt(job):
-    modify_submit_scripts("in.nvt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
-@Project.pre(lammps_equilibrated_nvt)
-@Project.post(lammps_equilibrated_npt)
-@flow.with_job
-@flow.cmd
-def lammps_npt(job):
-    modify_submit_scripts("in.npt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
-@Project.pre(lammps_equilibrated_npt)
-@Project.post(lammps_production)
-@flow.with_job
-@flow.cmd
-def lammps_prod(job):
-    modify_submit_scripts("in.prod", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
-@Project.pre(lammps_production)
-@flow.with_job
-@flow.cmd
-def lammps_calc_density(job):
-    # Create a density datafile from the production run
-    return
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_production)
 @flow.with_job
 @flow.cmd
@@ -215,14 +181,14 @@ def lammps_calc_rdf(job):
     return
 
 
-def modify_submit_lammps(filename, statepoint, cores):
+def modify_submit_scripts(filename, jobid, cores):
     # Modify Submit Scripts
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}{}\n".format(filename, statepoint)
+        lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid)
         lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
     with open("submit.pbs", "w") as f:
-        f.write(lines)
+        f.writelines(lines)
     return
 
 
@@ -248,4 +214,3 @@ def modify_lammps_scripts(filename, job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
-    breakpoint()
