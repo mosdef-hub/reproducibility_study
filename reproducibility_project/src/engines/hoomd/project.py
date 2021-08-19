@@ -1,11 +1,8 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
-# import foyer
 import os
 import pathlib
 
 import flow
-import foyer
-import unyt as u
 from flow import environments
 
 
@@ -30,6 +27,7 @@ def run_hoomd(job):
     import hoomd.md
     from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
+    import unyt as u
 
     sys.path.append(Project().root_directory())
     from src.molecules.system_builder import construct_system
