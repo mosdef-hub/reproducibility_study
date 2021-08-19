@@ -6,6 +6,7 @@ import sys
 import flow
 from flow import environments
 
+
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
 
@@ -79,12 +80,14 @@ def lammps_created_gsd(job):
 @flow.cmd
 def built_lammps(job):
     # Create a lammps datafile for a specified molecule
-    from mbuild.formats.lammpsdata import write_lammpsdata
     import foyer
+    from mbuild.formats.lammpsdata import write_lammpsdata
+
     sys.path.append(Project().root_directory() + "/..")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
+
     system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
     # Apply forcefield from statepoint
@@ -152,11 +155,12 @@ def run_lammps(job):
         "waterSPC/E": "SPCEwater",
         "ethanolAA": "AAethanol",
     }
-    modify_lammps_scripts("in.{}".format(dict_of_lammps_files[job.sp.molecule]), job)
+    modify_lammps_scripts(
+        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), job
+    )
     modify_submit_scripts(
-        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), 
-        job.id[0:3], 
-        8)
+        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), job.id[0:3], 8
+    )
     msg = f"qsub submit.pbs"
     return msg
 
