@@ -57,7 +57,9 @@ def run_hoomd(job):
     # temporary hack until benzene and ethanol are added
     try:
         # Ignore the vapor box
-        filled_box, _ = construct_system(job.sp)
+        # Initialize with box expanded by factor of 5
+        # We will shrink it later
+        filled_box, _ = construct_system(job.sp, scale=5)
     except AttributeError:
         return
 
@@ -114,7 +116,7 @@ def run_hoomd(job):
             "volume",
         ],
     )
-    file = open("log.txt", mode="a", newline="\n")
+    file = open(job.fn("log.txt"), mode="a", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
         trigger=hoomd.trigger.Periodic(period=5000),
@@ -131,6 +133,26 @@ def run_hoomd(job):
     integrator.methods = [nvt]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+
+    # Shrink step follows this example
+    # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
+    # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
+    ramp = hoomd.variant.Ramp(A=0, B=1, t_start=sim.timestep, t_ramp=2e4)
+    initial_box = sim.state.box
+    L = job.sp.box_L_liq
+    final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
+    box_resize_trigger = hoomd.trigger.Periodic(10)
+    box_resize = hoomd.update.BoxResize(
+        box1=initial_box,
+        box2=final_box,
+        variant=ramp,
+        trigger=box_resize_trigger
+    )
+    sim.operations.updaters.append(box_resize)
+    sim.run(2e4)
+    assert sim.state.box == final_box
+    sim.operations.updaters.remove(box_resize)
+
     sim.run(1e6)
     job.doc.finished = True
 
