@@ -55,19 +55,15 @@ def run_hoomd(job):
     # ref_distance: 10 angstrom -> 1 nm
     # ref_energy: 1/4.184 kcal/mol -> 1 kJ/mol
     # ref_mass: 0.9999938574 dalton -> 1 amu
-    rd = 10
-    re = 1 / 4.184
-    rm = 0.9999938574
+    d = 10
+    e = 1 / 4.184
+    m = 0.9999938574
     write_gsd(
-        structure,
-        job.fn("init.gsd"),
-        ref_distance=rd,
-        ref_energy=re,
-        ref_mass=rm,
+        structure, job.fn("init.gsd"), ref_distance=d, ref_energy=e, ref_mass=m
     )
 
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
-        structure, ref_distance=rd, ref_energy=re, ref_mass=rm
+        structure, ref_distance=d, ref_energy=e, ref_mass=m
     )
 
     device = hoomd.device.auto_select()
