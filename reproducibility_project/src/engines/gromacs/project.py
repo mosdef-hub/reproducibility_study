@@ -30,10 +30,10 @@ def init_job(job):
     # Create a Compound and save to gro and top files
     system = construct_system(job.sp)
     system[0].save(filename="init.gro", overwrite=True)
-    if job.sp.forcefield_name.lower() in ["oplsaa", "trappe-ua"]:
+    if job.sp.forcefield_name in ["oplsaa", "trappe-ua"]:
         system[0].save(
             filename="init.top",
-            forcefield_name=job.sp.forcefield_name.lower(),
+            forcefield_name=job.sp.forcefield_name,
             overwrite=True,
         )
     elif job.sp.forcefield_name == "spce":
@@ -45,8 +45,21 @@ def init_job(job):
         system[0].save(
             filename="init.top", forcefield_files=ff_path, overwrite=True
         )
+    elif job.sp.forcefield_name == "benzene-ua":
+        from reproducibility_project.src import xmls
+
+        ff_name = "benzene_trappe-ua_like.xml"
+        ff_path = (
+            str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/" + ff_name
+        )
+        system[0].save(
+            filename="init.top", forcefield_files=ff_path, overwrite=True
+        )
 
     # Modify mdp files according to job statepoint parameters
+    import unyt as u
+
+    pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
     mdps = {
         "em": {
@@ -64,7 +77,7 @@ def init_job(job):
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
             "data": {
                 "temp": job.sp.temperature,
-                "refp": job.sp.pressure * 0.01,  # convert from kPa to bar
+                "refp": job.sp.pressure.to_value("bar"),
             },
         },
     }
