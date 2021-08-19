@@ -3,10 +3,11 @@ import os
 import pathlib
 
 import flow
-from flow import environments
+from flow import FlowProject
+from flow.environment import DefaultSlurmEnvironment
 
 
-class Project(flow.FlowProject):
+class Project(FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
 
     def __init__(self):
@@ -33,8 +34,10 @@ class Fry(DefaultSlurmEnvironment):
         parser.add_argument("--nodelist", help="Specify the node to submit to.")
 
 
-@directives(ngpu=1)
-@Project.operation
+# This environment variable is set by running
+# echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
+# with the mosdef-study38 conda env active
+@Project.operation.with_directives({"executable":"$MOSDEF_PYTHON", "ngpu":1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
