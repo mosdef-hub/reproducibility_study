@@ -3,7 +3,7 @@ import mbuild as mb
 from mbuild.lib.molecules.water import WaterSPC
 
 from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
-from reproducibility_project.src.molecules.ethanol_aa import EthanolUA
+from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
 from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
@@ -48,7 +48,7 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
         "waterSPC/E": WaterSPC(),
-        "ethanolAA": EthanolUA(),
+        "ethanolAA": EthanolAA(),
     }
     molecule = molecule_dict[sp["molecule"]]
     molecule.name = sp["molecule"]

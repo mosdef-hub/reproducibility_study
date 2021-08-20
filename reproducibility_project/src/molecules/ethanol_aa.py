@@ -1,6 +1,9 @@
 """Create atomistic representation of ethanol."""
+import os
 
 import mbuild as mb
+
+from reproducibility_project.src import molecules
 
 
 class EthanolAA(mb.Compound):
@@ -8,7 +11,8 @@ class EthanolAA(mb.Compound):
 
     def __init__(self):
         super(EthanolAA, self).__init__()
-        self.add(mb.load("ethanol_aa.mol2", labels="ETO"))
+        abs_path = os.path.dirname(os.path.abspath(molecules.__file__))
+        self.add(mb.load(f"{abs_path}/ethanol_aa.mol2", labels="ETO"))
 
 
 def main():

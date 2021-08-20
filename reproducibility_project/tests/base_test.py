@@ -36,6 +36,13 @@ class BaseTest:
         return foyer.forcefields.load_TRAPPE_UA()
 
     @pytest.fixture
+    def benzene_uaff(self):
+        abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
+        return foyer.Forcefield(
+            forcefield_files=f"{abs_path}/benzene_trappe-ua_like.xml"
+        )
+
+    @pytest.fixture
     def gsdfile_random(self, tmp_path):
         filename = tmp_path / "traj_random.gsd"
         create_gsd(filename)

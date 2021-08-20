@@ -1,6 +1,10 @@
 """Create united-atom representation of benzene."""
 
+import os
+
 import mbuild as mb
+
+from reproducibility_project.src import molecules
 
 
 class BenzeneUA(mb.Compound):
@@ -8,7 +12,8 @@ class BenzeneUA(mb.Compound):
 
     def __init__(self):
         super(BenzeneUA, self).__init__()
-        self.add(mb.load("benzene_ua.mol2"), label="BEN")
+        abs_path = os.path.dirname(os.path.abspath(molecules.__file__))
+        self.add(mb.load(f"{abs_path}/benzene_ua.mol2"), label="BEN")
 
 
 def main():
