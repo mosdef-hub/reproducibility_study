@@ -1,7 +1,6 @@
 """Methods used to create systems from job statepoint."""
 import mbuild as mb
 from mbuild.lib.molecules.water import WaterSPC
-
 from reproducibility_study.src.molecules.methane_ua import MethaneUA
 from reproducibility_study.src.molecules.pentane_ua import PentaneUA
 
