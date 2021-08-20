@@ -1,4 +1,3 @@
-import reproducibility_project
 from reproducibility_project.src.molecules.system_builder import (
     construct_system,
 )
