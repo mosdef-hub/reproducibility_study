@@ -4,10 +4,10 @@
      nbox=           1
      nmolty=           1
      nchain=           NCHAIN
-     nstep=         10
+     nstep=         30000
      lstop= F
-     iratio=         500
-     rmin=   1.20000000000000
+     iratio=         50000000
+     rmin=   1
      softcut=   100.000000000000
      linit= F
      lreadq= F
@@ -16,9 +16,9 @@
 
  &analysis
      iprint=          50
-     imv=        1200
-     iblock=          50
-     iratp=           5
+     imv=        10
+     iblock=          10
+     iratp=           10
      idiele=      100000
      iheatcapacity=     1000000
      ianalyze=      100000
@@ -46,13 +46,13 @@
 
  &mc_volume
      tavol=  0.400000000000000
-     iratv=         500
+     iratv=         500000000
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  8.000000000000000E-04
+     pmvol=  0.01
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
      rmvolume=  1.000000000000000E+003
@@ -77,11 +77,11 @@
      pmcb=  0.340000000000000
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
-     nchoi1=          20
-     nchoi=           16
-     nchoir=          20
+     nchoi1=          12
+     nchoi=           10
+     nchoir=          50
      nchoih=           1
-     nchtor=         100
+     nchtor=         50
      nchbna=        1000
      nchbnb=        1000
      icbdir=           0
@@ -179,6 +179,7 @@ MOLECULE_TYPE
 2 1 1
 4 5 1
 ! torsion
+0
 ! unit ntype leaderq
 4 5 4
 ! stretching

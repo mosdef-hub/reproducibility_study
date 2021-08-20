@@ -40,12 +40,12 @@
 
 
  &external_field
-     Elect_field=  0.000000000000000E+000  0.000000000000000E+000
+     Elect_field=  0.000000000000000E+000
  /
 
 
  &mc_volume
-     tavol=  0.400000000000000
+     tavol=  0.500000000000000
      iratv=         500
      pmvlmt=   1.00000000000000
      nvolb=           1
@@ -179,6 +179,7 @@ MOLECULE_TYPE
 2 1 1
 4 5 1
 ! torsion
+0
 ! unit ntype leaderq
 4 5 4
 ! stretching
@@ -247,7 +248,7 @@ END INTRAMOLECULAR_OH15
 
 UNIFORM_BIASING_POTENTIALS
 ! for each molecule type, give nbox values
-0.0d0 0.0d0
+0.0d0
 END UNIFORM_BIASING_POTENTIALS
 
 
