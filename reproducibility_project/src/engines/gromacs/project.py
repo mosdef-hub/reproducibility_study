@@ -4,6 +4,7 @@ import pathlib
 import sys
 
 import flow
+import unyt as u
 from flow import environments
 
 from reproducibility_project.src.engine_input.gromacs import mdp
@@ -65,8 +66,6 @@ def init_job(job):
         )
 
     # Modify mdp files according to job statepoint parameters
-    import unyt as u
-
     cutoff_styles = {"hard": "Cut-off"}
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
