@@ -8,7 +8,7 @@ class EthanolAA(mb.Compound):
 
     def __init__(self):
         super(EthanolAA, self).__init__()
-        self.add(mb.load("ethanol_aa.mol2", labels="ETOH"))
+        self.add(mb.load("ethanol_aa.mol2", labels="ETO"))
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     print(ethanol)
     print(ethanol.name)
     print(ethanol.labels)
-    print(ethanol["ETOH"])
+    print(ethanol["ETO"])
 
 
 if __name__ == "__main__":

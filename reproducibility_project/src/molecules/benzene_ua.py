@@ -8,7 +8,7 @@ class BenzeneUA(mb.Compound):
 
     def __init__(self):
         super(BenzeneUA, self).__init__()
-        self.add(mb.load("benzene_ua.mol2"), label="BENZ")
+        self.add(mb.load("benzene_ua.mol2"), label="BEN")
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     print(benzene)
     print(benzene.name)
     print(benzene.labels)
-    print(benzene["BENZ"])
+    print(benzene["BEN"])
 
 
 if __name__ == "__main__":
