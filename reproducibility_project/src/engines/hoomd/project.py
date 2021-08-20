@@ -1,15 +1,13 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
-# import foyer
 import os
 import pathlib
 
 import flow
-import foyer
-import unyt as u
-from flow import environments
+from flow import FlowProject
+from flow.environment import DefaultSlurmEnvironment
 
 
-class Project(flow.FlowProject):
+class Project(FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
 
     def __init__(self):
@@ -19,25 +17,76 @@ class Project(flow.FlowProject):
         self.ff_fn = self.data_dir / "forcefield.xml"
 
 
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "hoomd")
+class Fry(DefaultSlurmEnvironment):
+    """Subclass of DefaultSlurmEnvironment for BSU's Fry cluster."""
+
+    hostname_pattern = "fry.boisestate.edu"
+    template = "fry.sh"
+
+    @classmethod
+    def add_args(cls, parser):
+        """Add command line arguments to the submit call."""
+        parser.add_argument(
+            "--partition",
+            default="batch",
+            help="Specify the partition to submit to.",
+        )
+        parser.add_argument("--nodelist", help="Specify the node to submit to.")
+
+
+# This environment variable is set by running
+# echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
+# with the mosdef-study38 conda env active
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.post(lambda j: j.doc.get("finished"))
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
+    import foyer
     import hoomd
     import hoomd.md
+    import unyt as u
     from mbuild.formats.gsdwriter import write_gsd
-    from mbuild.formats.hoomd3_simulation import create_hoomd3_forcefield
+    from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
-    filled_box = get_system(job)
-    # ff = foyer.Forcefield(job._project.ff_fn)
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+
+    # temporary hack until benzene and ethanol are added
+    try:
+        # Ignore the vapor box
+        # Initialize with box expanded by factor of 5
+        # We will shrink it later
+        filled_box, _ = construct_system(job.sp, scale=5)
+    except AttributeError:
+        return
+
+    if job.sp.forcefield_name == "trappe-ua":
+        ff = foyer.forcefields.load_TRAPPE_UA()
+    elif job.sp.forcefield_name == "benzene-ua":
+        ff = foyer.forcefields.Forcefield("src/xmls/benzene_trappe-ua_like.xml")
+    elif job.sp.forcefield_name == "spce":
+        ff = foyer.forcefields.Forcefield("src/xmls/spce.xml")
+    elif job.sp.forcefield_name == "oplsaa":
+        ff = foyer.forcefields.load_OPLSAA()
+    else:
+        raise ValueError(f"No forcefield defined for {job.sp.forcefield_name}")
+
     structure = ff.apply(filled_box)
 
-    write_gsd(structure, job.fn("init.gsd"), ref_distance=rd, ref_energy=re)
     # ref_distance: 10 angstrom -> 1 nm
     # ref_energy: 1/4.184 kcal/mol -> 1 kJ/mol
     # ref_mass: 0.9999938574 dalton -> 1 amu
-    snapshot, forcefield, ref_vals = create_hoomd3_forcefield(
-        structure, ref_distance=10, ref_energy=1 / 4.184, ref_mass=0.9999938574
+    d = 10
+    e = 1 / 4.184
+    m = 0.9999938574
+    write_gsd(
+        structure, job.fn("init.gsd"), ref_distance=d, ref_energy=e, ref_mass=m
+    )
+
+    snapshot, forcefield, ref_vals = create_hoomd_forcefield(
+        structure, ref_distance=d, ref_energy=e, ref_mass=m
     )
 
     device = hoomd.device.auto_select()
@@ -66,7 +115,7 @@ def run_hoomd(job):
             "volume",
         ],
     )
-    file = open("log.txt", mode="a", newline="\n")
+    file = open(job.fn("log.txt"), mode="a", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
         trigger=hoomd.trigger.Periodic(period=5000),
@@ -83,7 +132,28 @@ def run_hoomd(job):
     integrator.methods = [nvt]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+
+    # Shrink step follows this example
+    # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
+    # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
+    ramp = hoomd.variant.Ramp(A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4))
+    initial_box = sim.state.box
+    L = job.sp.box_L_liq
+    final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
+    box_resize_trigger = hoomd.trigger.Periodic(10)
+    box_resize = hoomd.update.BoxResize(
+        box1=initial_box,
+        box2=final_box,
+        variant=ramp,
+        trigger=box_resize_trigger,
+    )
+    sim.operations.updaters.append(box_resize)
+    sim.run(2e4 + 1)
+    assert sim.state.box == final_box
+    sim.operations.updaters.remove(box_resize)
+
     sim.run(1e6)
+    job.doc.finished = True
 
 
 if __name__ == "__main__":

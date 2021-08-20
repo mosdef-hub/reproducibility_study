@@ -53,6 +53,7 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
     molecule = molecule_dict[sp["molecule"]]
     molecule.name = sp["molecule"]
     liq_box = mb.Box([sp["box_L_liq"] * scale_liq_box] * 3)
+
     filled_liq_box = mb.fill_box(
         compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
     )
