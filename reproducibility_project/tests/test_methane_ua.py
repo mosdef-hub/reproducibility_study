@@ -1,6 +1,5 @@
 import mbuild as mb
 import numpy as np
-import pytest
 
 from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.tests.base_test import BaseTest

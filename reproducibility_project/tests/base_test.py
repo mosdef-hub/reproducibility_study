@@ -5,8 +5,7 @@ import pytest
 import signac
 
 from reproducibility_project.src import xmls
-
-from .utils import create_gsd
+from reproducibility_project.tests.utils import create_gsd
 
 
 class BaseTest:

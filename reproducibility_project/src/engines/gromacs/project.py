@@ -5,7 +5,6 @@ import pathlib
 import flow
 from flow import environments
 
-import reproducibility_project
 from reproducibility_project.src.engine_input.gromacs import mdp
 
 
