@@ -154,6 +154,15 @@ def has_fort77maker(job):
 
 
 @Project.label
+def equil_replicate_set(job):
+    """Check if number of equil replicates done has been set."""
+    try:
+        return job.doc.equil_replicates_done == 0
+    except AttributeError:
+        return False
+
+
+@Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
     try:
@@ -230,6 +239,18 @@ def prod_finished(job):
 
 
 """Setting up workflow operation"""
+
+
+@Project.operation
+@Project.pre(
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("pentaneUA")
+    and j.sp.ensemble == "NPT"
+)
+@Project.post(equil_replicate_set)
+def set_equil_replicates(job):
+    """Copy the files for simulation from engine_input folder."""
+    job.doc.equil_replicates_done = 0
 
 
 @Project.operation
@@ -436,6 +457,7 @@ def run_cool(job):
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
 @Project.post(equil_finished)
+@Project.post(system_equilibrated)
 def run_equil(job):
     """Run equilibration."""
     from subprocess import PIPE, Popen
