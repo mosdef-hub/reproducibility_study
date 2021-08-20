@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from mbuild.lib.molecules.water import WaterSPC
 
 from reproducibility_project.tests.base_test import BaseTest
