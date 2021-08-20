@@ -1,8 +1,9 @@
 """Methods used to create systems from job statepoint."""
 import mbuild as mb
 from mbuild.lib.molecules.water import WaterSPC
-from src.molecules.methane_ua import MethaneUA
-from src.molecules.pentane_ua import PentaneUA
+
+from reproducibility_study.src.molecules.methane_ua import MethaneUA
+from reproducibility_study.src.molecules.pentane_ua import PentaneUA
 
 
 def construct_system(sp, scale=1.0):

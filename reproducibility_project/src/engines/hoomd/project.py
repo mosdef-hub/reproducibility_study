@@ -42,8 +42,6 @@ class Fry(DefaultSlurmEnvironment):
 @Project.post(lambda j: j.doc.get("finished"))
 def run_hoomd(job):
     """Run a simulation with HOOMD-blue."""
-    import sys
-
     import foyer
     import hoomd
     import hoomd.md
@@ -51,8 +49,9 @@ def run_hoomd(job):
     from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
-    sys.path.append(Project().root_directory())
-    from src.molecules.system_builder import construct_system
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
 
     # temporary hack until benzene and ethanol are added
     try:
