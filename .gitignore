@@ -1,3 +1,7 @@
+# Output files
+*.gsd
+*.png
+
 # Signac
 .signac_sp_cache.json.gz
 signac_project_document.json
@@ -137,3 +141,10 @@ dmypy.json
 
 # Signac workspace
 workspace/
+<<<<<<< HEAD
+
+# Pycharm
+.idea/
+
+# Slurm
+slurm*
