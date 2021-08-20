@@ -1,9 +1,12 @@
 """Utilities to load forcefields based on forcefield names."""
-import foyer
 import os
 
+import foyer
 
-def load_ff(name: str = None,) -> foyer.Forcefield:
+
+def load_ff(
+    name: str = None,
+) -> foyer.Forcefield:
     """Based on a forcefield name, return a foyer.Forcefield object.
 
     For the reproducibility project, multiple forcefield types are expected based on the molecule of study at that statepoint.
@@ -14,7 +17,6 @@ def load_ff(name: str = None,) -> foyer.Forcefield:
     name : str, default=None, optional
         Forcefield name to load.
     """
-
     if name in ["oplsaa", "trappe-ua"]:
         return foyer.Forcefield(name=name)
     elif name == "spce":
@@ -33,4 +35,6 @@ def load_ff(name: str = None,) -> foyer.Forcefield:
         )
         return foyer.Forcefield(forcefield_files=ff_path)
     else:
-        raise ValueError(f"Unexpected forcefield name. Forcefield name {name} is not currently supported.")
+        raise ValueError(
+            f"Unexpected forcefield name. Forcefield name {name} is not currently supported."
+        )

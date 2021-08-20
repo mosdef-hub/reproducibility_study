@@ -42,7 +42,10 @@ def init_job(job):
     system[0].save(filename="init.gro", overwrite=True)
     ff = load_ff(job.sp.forcefield_name)
     param_system = ff.apply(system[0])
-    param_system.save("init.top", overwrite=True,)
+    param_system.save(
+        "init.top",
+        overwrite=True,
+    )
 
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "Cut-off"}
