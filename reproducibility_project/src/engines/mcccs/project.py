@@ -28,8 +28,8 @@ def get_system(job):
     molecule = job.sp.molecule
     import warnings
 
-    import foyer
     import mbuild as mb
+    from reproducibility_project.src.utils.forcefields import load_ff
 
     warnings.simplefilter("ignore")
     methane = mb.Compound(name="MET")
@@ -38,8 +38,8 @@ def get_system(job):
     box_liq = mb.fill_box(
         compound=methane, n_compounds=1230, box=[4.5, 4.5, 4.5]
     )
-    trappe = foyer.forcefields.load_TRAPPE_UA()
-    parameterized_box_liquid = trappe.apply(box_liq)
+    ff = load_ff(job.sp.forcefield_name)
+    parameterized_box_liquid = ff.apply(box_liq)
     return box_liq
 
 

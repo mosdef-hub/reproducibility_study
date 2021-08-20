@@ -5,6 +5,7 @@ import pathlib
 import flow
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
+from reproducibility_project.src.utils.forcefields import load_ff
 
 
 class Project(FlowProject):
@@ -62,17 +63,7 @@ def run_hoomd(job):
     except AttributeError:
         return
 
-    if job.sp.forcefield_name == "trappe-ua":
-        ff = foyer.forcefields.load_TRAPPE_UA()
-    elif job.sp.forcefield_name == "benzene-ua":
-        ff = foyer.forcefields.Forcefield("src/xmls/benzene_trappe-ua_like.xml")
-    elif job.sp.forcefield_name == "spce":
-        ff = foyer.forcefields.Forcefield("src/xmls/spce.xml")
-    elif job.sp.forcefield_name == "oplsaa":
-        ff = foyer.forcefields.load_OPLSAA()
-    else:
-        raise ValueError(f"No forcefield defined for {job.sp.forcefield_name}")
-
+    ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
 
     # ref_distance: 10 angstrom -> 1 nm

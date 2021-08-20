@@ -8,6 +8,7 @@ import unyt as u
 from flow import environments
 
 from reproducibility_project.src.engine_input.gromacs import mdp
+from reproducibility_project.src.utils.forcefields import load_ff
 
 
 class Project(flow.FlowProject):
@@ -39,31 +40,9 @@ def init_job(job):
     # Create a Compound and save to gro and top files
     system = construct_system(job.sp)
     system[0].save(filename="init.gro", overwrite=True)
-    if job.sp.forcefield_name in ["oplsaa", "trappe-ua"]:
-        system[0].save(
-            filename="init.top",
-            forcefield_name=job.sp.forcefield_name,
-            overwrite=True,
-        )
-    elif job.sp.forcefield_name == "spce":
-        from reproducibility_project.src import xmls
-
-        ff_path = (
-            str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/spce.xml"
-        )
-        system[0].save(
-            filename="init.top", forcefield_files=ff_path, overwrite=True
-        )
-    elif job.sp.forcefield_name == "benzene-ua":
-        from reproducibility_project.src import xmls
-
-        ff_name = "benzene_trappe-ua_like.xml"
-        ff_path = (
-            str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/" + ff_name
-        )
-        system[0].save(
-            filename="init.top", forcefield_files=ff_path, overwrite=True
-        )
+    ff = load_ff(job.sp.forcefield_name)
+    param_system = ff.apply(system[0])
+    param_system.save("init.top", overwrite=True,)
 
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "Cut-off"}
