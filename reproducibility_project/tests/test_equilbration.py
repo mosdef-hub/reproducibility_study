@@ -6,8 +6,7 @@ from reproducibility_project.src.analysis.equlibration import (
     is_equilibrated,
     trim_non_equilibrated,
 )
-
-from .base_test import BaseTest
+from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestEquilibration(BaseTest):
