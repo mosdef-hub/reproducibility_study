@@ -27,15 +27,17 @@ def is_cassandra(job):
 def run_cassandra(job):
     ""
 
+    import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
-    import foyer
     import unyt as u
     from mbuild.formats.xyz import read_xyz
 
-    from reproducibility_project.src.molecules.system_builder import construct_system
     from reproducibility_project.src.molecules.methane_ua import MethaneUA
     from reproducibility_project.src.molecules.pentane_ua import PentaneUA
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
 
 
     compound_dict = {
