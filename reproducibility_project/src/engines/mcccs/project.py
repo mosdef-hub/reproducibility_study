@@ -1,5 +1,4 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
-# import foyer
 import fileinput
 import os
 import pathlib
@@ -30,6 +29,9 @@ def get_system(job):
     import foyer
     from constrainmol import ConstrainedMolecule
 
+    sys.path.append(Project().root_directory())
+    from src.utils.forcefields import load_ff
+
     sys.path.append(Project().root_directory() + "/src/molecules/")
     sys.path.append(Project().root_directory() + "/..")
     from system_builder import construct_system
@@ -41,18 +43,7 @@ def get_system(job):
     system = construct_system(job.sp)
     parmed_molecule = molecule.to_parmed()
     # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "trappe-ua":
-        ff = foyer.Forcefield(name="trappe-ua")
-    elif job.sp.forcefield_name == "oplsaa":
-        ff = foyer.Forcefield(name="oplsaa")
-    elif job.sp.forcefield_name == "spce":
-        ff = foyer.Forcefield(
-            name="spce"
-        )  # TODO: Make sure this gets applied correctly
-    else:
-        raise Exception(
-            "No forcefield has been applied to this system {}".format(job.id)
-        )
+    ff = load_ff(job.sp.forcefield_name)
     typed_molecule = ff.apply(parmed_molecule)
     print("The typed molecule is {}".format(typed_molecule))
     constrain_mol = ConstrainedMolecule(typed_molecule)
@@ -74,6 +65,8 @@ def get_molecules(job):
     import sys
 
     sys.path.append(Project().root_directory() + "/src/molecules/")
+    from benzene_ua import BenzeneUA
+    from ethanol_aa import EthanolAA
     from mbuild.lib.molecules.water import WaterSPC
     from methane_ua import MethaneUA
     from pentane_ua import PentaneUA
@@ -81,9 +74,9 @@ def get_molecules(job):
     molecule_dict = {
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
-        "benzeneUA": None,
+        "benzeneUA": BenzeneUA(),
         "waterSPC/E": WaterSPC(),
-        "ethanolAA": None,
+        "ethanolAA": EthanolAA(),
     }
     molecule = molecule_dict[job.sp.molecule]
     return [molecule]
@@ -109,7 +102,7 @@ def has_fort_files(job):
     and j.sp.molecule == ("pentaneUA")
     and j.sp.ensemble == "NPT"
 )
-def files_ready(job):
+def files_ready_npt(job):
     """Check if the keywords in the fort.4 files have been replaced."""
     # Link: https://stackoverflow.com/questions/32749350/check-if-a-string-is-in-a-file-with-python
     job.doc.files_ready = False
@@ -157,7 +150,7 @@ def has_fort77maker(job):
 def equil_replicate_set(job):
     """Check if number of equil replicates done has been set."""
     try:
-        return job.doc.equil_replicates_done == 0
+        return job.doc.equil_replicates_done
     except AttributeError:
         return False
 
@@ -211,7 +204,12 @@ def cool_finished(job):
 @Project.label
 def equil_finished(job):
     """Check if equil stage is finished."""
-    step = "equil"
+    try:
+
+        step = "equil" + str(job.doc.equil_replicates_done - 1)
+    except (KeyError, AttributeError):
+        step = "equil" + "0"
+
     run_file = job.ws + "/run.{}".format(step)
     if job.isfile("run.{}".format(step)):
         with open(run_file) as myfile:
@@ -219,6 +217,41 @@ def equil_finished(job):
                 return True
             else:
                 return False
+    else:
+        return False
+
+
+def sanitize_npt_log(step):
+    """Sanitize the output logs for NPT simulations."""
+    import numpy as np
+
+    files = glob("fort*12*{}*".format(step))
+    arrays = []
+    for filecurrent in files:
+        array = np.genfromtxt(filecurrent, skip_header=1)
+        arrays.append(array)
+    arrays = np.vstack(arrays)
+    arrays[:, 0] = arrays[:, 0] / 10
+    arrays[:, 1] = arrays[:, 1] / 10
+    arrays[:, 2] = arrays[:, 2] / 10
+    arrays[:, 3] = arrays[:, 3] * 0.008314410016255453
+    arrays[:, 4] = arrays[:, 4]
+    return arrays
+
+
+def system_equilibrated(job):
+    """Check if the system is equilibrated."""
+    orig_dir = os.getcwd()
+    os.chdir(job.ws)
+    files = glob("fort*12*{}*".format("equil"))
+    if len(files) < 2:  # at least do two loops of equilibration
+        print("equils done is less than 2")
+        return False
+    if job.sp.ensemble == "NPT":
+        equil_log = sanitize_npt_log("equil")
+
+    # run pymbar
+    return True
 
 
 @Project.label
@@ -226,7 +259,7 @@ def prod_finished(job):
     """Check if prod stage is finished."""
     try:
 
-        step = "prod" + str(job.doc.prod_replicates_done)
+        step = "prod" + str(job.doc.prod_replicates_done - 1)
     except (KeyError, AttributeError):
         step = "prod" + "0"
     run_file = job.ws + "/run.{}".format(step)
@@ -236,6 +269,8 @@ def prod_finished(job):
                 return True
             else:
                 return False
+    else:
+        return False
 
 
 """Setting up workflow operation"""
@@ -278,7 +313,9 @@ def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
     for file in glob(
         Project().root_directory()
-        + "/src/engine_input/mcccs/{}/fort.4.*".format(job.sp.molecule)
+        + "/src/engine_input/mcccs/{}/{}/fort.4.*".format(
+            job.sp.molecule, job.sp.ensemble
+        )
     ):
         shutil.copy(file, job.workspace() + "/")
 
@@ -312,7 +349,9 @@ def copy_topmon(job):
     """Copy topmon.inp from root directory to mcccs directory."""
     shutil.copy(
         Project().root_directory()
-        + "/src/engine_input/mcccs/{}/topmon.inp".format(job.sp.molecule),
+        + "/src/engine_input/mcccs/{}/{}/topmon.inp".format(
+            job.sp.molecule, job.sp.ensemble
+        ),
         job.workspace() + "/",
     )
 
@@ -325,8 +364,8 @@ def copy_topmon(job):
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort_files)
-@Project.post(files_ready)
-def replace_keyword_fort_files(job):
+@Project.post(files_ready_npt)
+def replace_keyword_fort_files_npt(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
     file_names = ["melt", "cool", "equil", "prod"]
     seed = job.sp.replica
@@ -379,7 +418,7 @@ def make_restart_file(job):
 @Project.pre(has_restart_file)
 @Project.pre(has_fort_files)
 @Project.pre(has_topmon)
-@Project.pre(files_ready)
+@Project.pre(files_ready_npt)
 @Project.post(melt_finished)
 def run_melt(job):
     """Run melting stage."""
@@ -462,12 +501,12 @@ def run_equil(job):
     """Run equilibration."""
     from subprocess import PIPE, Popen
 
-    step = "equil"
-    """Run the melting stage."""
+    step = "equil" + str(job.doc.equil_replicates_done)
+    """Run the  equil  stage."""
     print("Running {}".format(step))
     execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
-    shutil.copyfile("fort.4.{}".format(step), "fort.4")
+    shutil.copyfile("fort.4.equil", "fort.4")
     process = Popen(
         execommand,
         shell=True,
@@ -485,6 +524,7 @@ def run_equil(job):
     shutil.move("config1a.dat", "config1a.dat.{}".format(step))
     shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
     shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+    job.doc.equil_replicates_done += 1
 
 
 @Project.operation
@@ -494,17 +534,16 @@ def run_equil(job):
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
-@Project.pre(equil_finished)
+@Project.pre(system_equilibrated)
 @Project.post(prod_finished)
 @Project.post(all_prod_replicates_done)
 def run_prod(job):
     """Run production."""
     from subprocess import PIPE, Popen
 
-    job.doc.prod_replicates_done += 1
     replicate = job.doc.prod_replicates_done
     step = "prod" + str(replicate)
-    """Run the melting stage."""
+    """Run the prod stage."""
     print("Running {}".format(step))
     execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
@@ -529,6 +568,7 @@ def run_prod(job):
     print(job.doc.prod_replicates_done)
     print(all_prod_replicates_done(job))
     print(prod_finished(job))
+    job.doc.prod_replicates_done += 1
 
 
 if __name__ == "__main__":
