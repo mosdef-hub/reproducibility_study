@@ -1,9 +1,12 @@
 """Timeseries and pyMBAR related methods."""
+import pathlib
 from typing import List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from pymbar import timeseries
+from unyt import matplotlib_support
 
 
 def is_equilibrated(
@@ -20,7 +23,7 @@ def is_equilibrated(
     'production' region from 'a_t'. The fraction of 'production' data is
     then compared to the threshold value. If the fraction of 'production' data
     is >= threshold fraction this will return a list of
-    [True, t0, g] and [False, None, None] otherwise.
+    [True, t0, g, Neff] and [False, None, None, None] otherwise.
 
     Parameters
     ----------
@@ -39,13 +42,13 @@ def is_equilibrated(
             f"Passed 'threshold' value: {threshold}, expected value between 0.0-1.0."
         )
 
-    [t0, g, _] = timeseries.detectEquilibration(a_t, nskip=nskip)
+    [t0, g, Neff] = timeseries.detectEquilibration(a_t, nskip=nskip)
     frac_equilibrated = 1.0 - (t0 / np.shape(a_t)[0])
 
     if frac_equilibrated >= threshold:
-        return [True, t0, g]
+        return [True, t0, g, Neff]
     else:
-        return [False, t0, g]
+        return [False, None, None, None]
 
 
 def trim_non_equilibrated(
@@ -76,10 +79,54 @@ def trim_non_equilibrated(
         discarding more data.
 
     """
-    [truth, t0, g] = is_equilibrated(a_t, threshold=threshold, nskip=nskip)
+    [truth, t0, g, Neff] = is_equilibrated(
+        a_t, threshold=threshold, nskip=nskip
+    )
     if not truth:
         raise ValueError(
             f"Data with a threshold of {threshold} is not equilibrated!"
         )
 
-    return [a_t[t0:], g, t0]
+    return [a_t[t0:], g, t0, Neff]
+
+
+def plot_data_with_t0_line(
+    filename: str,
+    a_t: npt.ArrayLike,
+    threshold: float = 0.0,
+    overwrite: bool = False,
+    plt_kwargs: dict = None,
+) -> None:
+    """Plot data with a vertical line at beginning of equilibration.
+
+    Parameters
+    ----------
+    a_t : numpy.typing.ArrayLike
+        1-D time dependent data
+    threshold : float, optional, default=0.0
+        Threshold to error out on if threshold fraction of data is not equilibrated.
+    overwrite : bool, optional, default=False
+        Do not write to filename if a file already exists with the same name.
+        Set to True to overwrite exisiting files.
+    plt_kwargs : dict, optional, default=None
+        keyword dictionary for matplotlib.pyplot.plot command.
+    """
+    scale = 1.25
+    path = pathlib.Path(filename)
+    if path.is_file() and not overwrite:
+        raise FileExistsError(
+            f"Cannot write {path.name}, file already exists at: {path.absolute()}. Set overwrite=True to replace file."
+        )
+
+    _, t0, g, Neff = is_equilibrated(a_t, threshold=threshold, nskip=1)
+
+    ymin = np.min(a_t) * scale
+    ymax = np.max(a_t) * scale
+
+    plt.plot(
+        a_t,
+    )
+    plt.vlines(x=t0, ymin=ymin, ymax=ymax)
+    plt.savefig(
+        str(path.absolute()),
+    )
