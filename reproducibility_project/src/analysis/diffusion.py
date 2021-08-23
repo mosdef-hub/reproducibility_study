@@ -1,9 +1,10 @@
 """Facilitate calculation of the diffusion coefficient from simulation data."""
 
-import freud
 import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
+from freud.box import Box
+from freud.msd import MSD
 
 
 def gsd_msd(job, skip=2, stride=1):
@@ -44,18 +45,19 @@ def gsd_msd(job, skip=2, stride=1):
     return msd
 
 
-def _gsd_rdf(gsdfile, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
-    """Compute the RDF given a GSD file."""
-    if r_max is None:
-        with gsd.hoomd.open(gsdfile) as trajectory:
-            box = trajectory[-1].configuration.box[:3]
-        r_max = min(box) * 0.45
-
-    rdf = freud.density.RDF(bins=bins, r_min=r_min, r_max=r_max)
-
+def _gsd_msd(gsdfile, skip, stride=1):
+    """Compute the MSD given a GSD file."""
     with gsd.hoomd.open(gsdfile) as trajectory:
-        start = -(frames * stride) + stride - 1
-        for frame in trajectory[start::stride]:
-            rdf.compute(frame, reset=False)
+        boxes = []
+        images = []
+        positions = []
+        for frame in trajectory[skip::stride]:
+            images.append(frame.particles.image)
+            boxes.append(frame.configuration.box)
+            positions.append(frame.particles.position)
 
-    return rdf
+    # msd requires that the box size does not change.
+    assert all(all(i == boxes[0]) for i in boxes)
+    msd = MSD(Box.from_box(boxes[0]))
+    msd.compute(positions, images=images)
+    return msd
