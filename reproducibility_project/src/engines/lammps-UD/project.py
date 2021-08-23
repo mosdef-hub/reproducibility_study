@@ -35,20 +35,15 @@ def lammps_copy_files(job):
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-def lammps_minimized(job):
-    return job.isfile("minimized.restart")
-
-
-@Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-def lammps_equilibrated_nvt(job):
+def lammps_minimized_equilibrated_nvt(job):
     return job.isfile("equilibrated_nvt.restart")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_equilibrated_npt(job):
-    return job.isfile("equilibrated_npt.restart")
+    #TODO: modify the following line to properly checking equlibration
+    return job.isfile("equilibrated_npt.restart") and True
 
 
 @Project.label
@@ -139,37 +134,26 @@ def lammps_cp_files(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 @Project.pre(lammps_copy_files)
-@Project.post(lammps_minimized)
+@Project.post(lammps_minimized_equilibrated_nvt)
 @flow.with_job
 @flow.cmd
-def lammps_em(job):
-    modify_lammps_scripts("in.*", job)
-    modify_submit_scripts("in.em", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+def lammps_em_nvt(job):
+    in_script_name = "in.minimize"
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
+
+
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-@Project.pre(lammps_minimized)
-@Project.post(lammps_equilibrated_nvt)
-@flow.with_job
-@flow.cmd
-def lammps_nvt(job):
-    modify_submit_scripts("in.nvt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-@Project.pre(lammps_equilibrated_nvt)
+@Project.pre(lammps_minimized_equilibrated_nvt)
 @Project.post(lammps_equilibrated_npt)
 @flow.with_job
 @flow.cmd
-def lammps_npt(job):
-    modify_submit_scripts("in.npt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+def lammps_equil_npt(job):
+    in_script_name = "in.equil"
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -180,8 +164,8 @@ def lammps_npt(job):
 @flow.with_job
 @flow.cmd
 def lammps_prod(job):
-    modify_submit_scripts("in.prod", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+    in_script_name = "in.prod"
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -224,25 +208,6 @@ def modify_submit_lammps(filename, statepoint, cores):
     with open("submit.pbs", "w") as f:
         f.write(lines)
     return
-
-
-def modify_lammps_scripts(filename, job):
-    with open(filename, "r") as f:
-        lines = f.readlines()
-        lines[7] = "pair_style     lj/cut/coul/cut {}\n".format(
-            job.sp.r_cut * 10
-        )  # nm to angstrom
-        lines[21] = "variable tsample equal {} #kelvin\n".format(
-            job.sp.temperature
-        )  # kelvin
-        lines[22] = "variable psample equal {} #atm\n".format(
-            job.sp.pressure / 101.325
-        )  # kPa to atm
-        lines[42] = "velocity all create {} {} dist gaussian\n".format(
-            job.sp.temperature, job.sp.replica
-        )
-    with open(filename, "w") as f:
-        f.writelines(lines)
 
 
 if __name__ == "__main__":
