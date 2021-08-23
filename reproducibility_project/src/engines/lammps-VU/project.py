@@ -84,6 +84,7 @@ def built_lammps(job):
     import foyer
     from mbuild.formats.lammpsdata import write_lammpsdata
 
+    from reproducibility_project.src.utils.forcefields import load_ff
     sys.path.append(Project().root_directory() + "/..")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
@@ -91,20 +92,10 @@ def built_lammps(job):
 
     system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
-    # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "trappe-ua":
-        ff = foyer.Forcefield(name="trappe-ua")
-    elif job.sp.forcefield_name == "oplsaa":
-        ff = foyer.Forcefield(name="oplsaa")
-    elif job.sp.forcefield_name == "spce":
-        ff = foyer.Forcefield(
-            name="spce"
-        )  # TODO: Make sure this gets applied correctly
-    else:
-        raise Exception(
-            "No forcefield has been applied to this system {}".format(job.id)
-        )
+    ff = load_ff(job.sp.forcefield_name)
+    system.save('box.json') # save the compound as a json object for reading back in to mbuild
     typed_surface = ff.apply(parmed_structure)
+    typed_surface.save('box.top') #save to gromacs topology for later conversions in mdtraj
     write_lammpsdata(
         typed_surface,
         "box.lammps",
@@ -113,7 +104,7 @@ def built_lammps(job):
         mins=[system.get_boundingbox().vectors[0]],
         maxs=[system.get_boundingbox().vectors[1]],
         use_rb_torsions=True,
-    )
+    ) # write out a lammps topology
     return
 
 
