@@ -156,131 +156,128 @@ def run_cassandra(job):
 
 
 
-    mc.run(
-            system=meltsystem_liq,
-            moveset=nvtmoves,
-            run_type="equilibration",
-            run_length=5000,
-            temperature=1000,
-            pressure=P,
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="nvt_melt",
-            prop_freq=prop_freq,
-            coord_freq=5000,
-            units='sweeps',
-            steps_per_sweep=Nliq,
-            seeds=seeds
-            )
-
-    nvtendbox_liq = read_xyz("nvt_melt.out.xyz")
-
-    nvtendbox_liq.box = liqbox_filled.box
-
-    nvtsystem_liq = mc.System([nvtendbox_liq], species_list)
-
-    mc.run(
-            system=nvtsystem_liq,
-            moveset=nvtmoves,
-            run_type="equilibration",
-            run_length=5000,
-            temperature=T,
-            pressure=P,
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="nvt_equil",
-            prop_freq=prop_freq,
-            coord_freq=5000,
-            units='sweeps',
-            steps_per_sweep=Nliq,
-            seeds=seeds
-            )
-
-    nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
-
-    nvtendbox_liq.box = liqbox_filled.box
-    boxlist = [nvtendbox_liq]
-
-    if ensemble == "GEMC-NVT":
-        meltsystem_vap = mc.System([vapbox_filled], species_list)
+    with job:
         mc.run(
-                system=meltsystem_vap,
+                system=meltsystem_liq,
                 moveset=nvtmoves,
                 run_type="equilibration",
                 run_length=5000,
                 temperature=1000,
-                pressure=P,
                 properties=proplist,
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
-                run_name="nvt_melt_vap",
+                run_name="nvt_melt",
                 prop_freq=prop_freq,
                 coord_freq=5000,
                 units='sweeps',
-                steps_per_sweep=Nvap,
+                steps_per_sweep=Nliq,
                 seeds=seeds
                 )
-        meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
 
-        meltendbox_vap.box = vapbox_filled.box
-        nvtsystem_vap = mc.System([meltendbox_vap], species_list)
+        nvtendbox_liq = read_xyz("nvt_melt.out.xyz")
+
+        nvtendbox_liq.box = liqbox_filled.box
+
+        nvtsystem_liq = mc.System([nvtendbox_liq], species_list)
+
         mc.run(
-                system=nvtsystem_vap,
+                system=nvtsystem_liq,
                 moveset=nvtmoves,
                 run_type="equilibration",
                 run_length=5000,
                 temperature=T,
-                pressure=P,
                 properties=proplist,
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
-                run_name="nvt_equil_vap",
+                run_name="nvt_equil",
                 prop_freq=prop_freq,
                 coord_freq=5000,
                 units='sweeps',
-                steps_per_sweep=Nvap,
+                steps_per_sweep=Nliq,
                 seeds=seeds
                 )
-        nvtendbox_vap = read_xyz("nvt_equil_vap.out.xyz")
 
-        nvtendbox_vap.box = vapbox_filled.box
-        boxlist.append(nvtendbox_vap)
-        moveset.prob_swap = p_swap
+        nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
+
+        nvtendbox_liq.box = liqbox_filled.box
+        boxlist = [nvtendbox_liq]
+
+        if ensemble == "GEMC-NVT":
+            meltsystem_vap = mc.System([vapbox_filled], species_list)
+            mc.run(
+                    system=meltsystem_vap,
+                    moveset=nvtmoves,
+                    run_type="equilibration",
+                    run_length=5000,
+                    temperature=1000,
+                    properties=proplist,
+                    cutoff_style="cut",
+                    vdw_cutoff=cutoff,
+                    charge_cutoff=cutoff,
+                    run_name="nvt_melt_vap",
+                    prop_freq=prop_freq,
+                    coord_freq=5000,
+                    units='sweeps',
+                    steps_per_sweep=Nvap,
+                    seeds=seeds
+                    )
+            meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
+
+            meltendbox_vap.box = vapbox_filled.box
+            nvtsystem_vap = mc.System([meltendbox_vap], species_list)
+            mc.run(
+                    system=nvtsystem_vap,
+                    moveset=nvtmoves,
+                    run_type="equilibration",
+                    run_length=5000,
+                    temperature=T,
+                    properties=proplist,
+                    cutoff_style="cut",
+                    vdw_cutoff=cutoff,
+                    charge_cutoff=cutoff,
+                    run_name="nvt_equil_vap",
+                    prop_freq=prop_freq,
+                    coord_freq=5000,
+                    units='sweeps',
+                    steps_per_sweep=Nvap,
+                    seeds=seeds
+                    )
+            nvtendbox_vap = read_xyz("nvt_equil_vap.out.xyz")
+
+            nvtendbox_vap.box = vapbox_filled.box
+            boxlist.append(nvtendbox_vap)
+            moveset.prob_swap = p_swap
 
 
-    system = mc.System(boxlist, species_list)
+        system = mc.System(boxlist, species_list)
 
-    mc.run(
-            system=system,
-            moveset=moveset,
-            run_type="equilibration",
-            run_length=50000,
-            temperature=T,
-            pressure=P,
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="equil",
-            prop_freq=prop_freq,
-            coord_freq=coord_freq,
-            units='sweeps',
-            steps_per_sweep=N,
-            seeds=seeds
-            )
+        mc.run(
+                system=system,
+                moveset=moveset,
+                run_type="equilibration",
+                run_length=50000,
+                temperature=T,
+                pressure=P, # this line is ignored if ensemble isn't NPT
+                properties=proplist,
+                cutoff_style="cut",
+                vdw_cutoff=cutoff,
+                charge_cutoff=cutoff,
+                run_name="equil",
+                prop_freq=prop_freq,
+                coord_freq=coord_freq,
+                units='sweeps',
+                steps_per_sweep=N,
+                seeds=seeds
+                )
 
-    mc.restart(
-            restart_from="equil",
-            run_name="prod",
-            run_type="production",
-            total_run_length=170000
-            )
+        mc.restart(
+                restart_from="equil",
+                run_name="prod",
+                run_type="production",
+                total_run_length=170000
+                )
 
 if __name__ == "__main__":
     pr = Project()
