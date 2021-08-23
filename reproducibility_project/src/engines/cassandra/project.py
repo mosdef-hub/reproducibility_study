@@ -33,13 +33,12 @@ def run_cassandra(job):
     import unyt as u
     from mbuild.formats.xyz import read_xyz
 
-    from reproducibility_project.src.utils.forcefields import load_ff
-
     from reproducibility_project.src.molecules.methane_ua import MethaneUA
     from reproducibility_project.src.molecules.pentane_ua import PentaneUA
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
+    from reproducibility_project.src.utils.forcefields import load_ff
 
 
     compound_dict = {
@@ -79,7 +78,7 @@ def run_cassandra(job):
 
 
     species_list = [structure]
-    cutoff = job.sp.r_cut * u.nm 
+    cutoff = job.sp.r_cut * u.nm
 
     seedslist = [
        [   7860904,   98601355],
@@ -98,7 +97,7 @@ def run_cassandra(job):
        [2024564019, 2014788324],
        [ 133927152, 2052536489],
        [  23375750, 1951798462]]
-    
+
 
     seeds = seedslist[job.sp.replica]
 
