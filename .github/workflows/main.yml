@@ -46,5 +46,8 @@ jobs:
           use-mamba: true
       - shell: bash -l {0}
         run: |
+          pip install .
+      - shell: bash -l {0}
+        run: |
           python -m pytest -v --color=yes
           echo "tests finished"

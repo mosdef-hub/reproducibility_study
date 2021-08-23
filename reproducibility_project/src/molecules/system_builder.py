@@ -6,7 +6,7 @@ from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
 
-def construct_system(sp):
+def construct_system(sp, scale=1.0):
     """Construct systems according to job statepoint.
 
     Parameters
@@ -30,6 +30,9 @@ def construct_system(sp):
          "forcefield_name": str,
          "cutoff_style": str,
          "r_cut": float (in nm)}
+    scale : float, default 1.0
+        Scale factor by which to scale the box. Useful for system initialization
+        if a shrink step makes equilibration easier.
 
     Returns
     -------
@@ -46,13 +49,13 @@ def construct_system(sp):
     }
     molecule = molecule_dict[sp["molecule"]]
     molecule.name = sp["molecule"]
-    liq_box = mb.Box([sp["box_L_liq"]] * 3)
+    liq_box = mb.Box([sp["box_L_liq"] * scale] * 3)
     filled_liq_box = mb.fill_box(
         compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
     )
 
     if sp["box_L_vap"] and sp["N_vap"]:
-        vap_box = mb.Box([sp["box_L_vap"]] * 3)
+        vap_box = mb.Box([sp["box_L_vap"] * scale] * 3)
         filled_vap_box = mb.fill_box(
             compound=[molecule], n_compounds=[sp["N_vap"]], box=vap_box
         )

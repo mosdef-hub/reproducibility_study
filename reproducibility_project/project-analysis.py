@@ -13,7 +13,7 @@ class Project(flow.FlowProject):
 @Project.pre(lambda j: j.isfile("trajectory.gsd"))
 def run_analysis(job):
     """Run analysis."""
-    from src.analysis.rdf import gsd_rdf
+    from reproducibility_project.src.analysis.rdf import gsd_rdf
 
     # RDF
     gsd_rdf(job)
