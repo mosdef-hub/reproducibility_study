@@ -21,11 +21,12 @@ class Project(flow.FlowProject):
 def is_cassandra(job):
     return job.sp.simulation_engine == "cassandra"
 
+
 @Project.operation
 @Project.post(cassandra_complete)
 @directives(omp_num_threads=4)
 def run_cassandra(job):
-    ""
+    """"""
 
     import foyer
     import mbuild as mb
@@ -40,14 +41,13 @@ def run_cassandra(job):
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
-
     compound_dict = {
-            "methaneUA": MethaneUA(),
-            "pentaneUA": PentaneUA(),
-            "benzeneUA": BenzeneUA(),
-            "waterSPC/E": mb.lib.molecules.water.WaterSPC(),
-            "ethanolAA": mb.load("CCO", smiles=True),
-            }
+        "methaneUA": MethaneUA(),
+        "pentaneUA": PentaneUA(),
+        "benzeneUA": BenzeneUA(),
+        "waterSPC/E": mb.lib.molecules.water.WaterSPC(),
+        "ethanolAA": mb.load("CCO", smiles=True),
+    }
     molecule = job.sp.molecule
 
     compound = compound_dict[molecule]
@@ -55,13 +55,13 @@ def run_cassandra(job):
     ensemble = job.sp.production_ensemble
 
     cass_ensembles = {
-            "NPT": "npt",
-            "GEMC-NVT": "gemc",
-            }
+        "NPT": "npt",
+        "GEMC-NVT": "gemc",
+    }
 
     Nliq = job.sp.N_liquid
     Nvap = job.sp.N_vap
-    N = Nliq+Nvap
+    N = Nliq + Nvap
 
     filled_boxes = construct_system(job.sp)
 
@@ -76,31 +76,29 @@ def run_cassandra(job):
     T = job.sp.temperature * u.K
     P = job.sp.pressure * u.kPa
 
-
     species_list = [structure]
     cutoff = job.sp.r_cut * u.nm
 
     seedslist = [
-       [   7860904,   98601355],
-       [ 955793508,  417823039],
-       [ 254420642, 2130720464],
-       [  58120272, 1465850411],
-       [ 757616664, 1940492980],
-       [ 966844679, 1326087693],
-       [1992175335, 1840317929],
-       [ 650725500,  646331893],
-       [1204247127, 1521385831],
-       [2000946981, 1969870819],
-       [1488434295,  648017520],
-       [1128424221, 1140005446],
-       [  58870203, 2133009902],
-       [2024564019, 2014788324],
-       [ 133927152, 2052536489],
-       [  23375750, 1951798462]]
-
+        [7860904, 98601355],
+        [955793508, 417823039],
+        [254420642, 2130720464],
+        [58120272, 1465850411],
+        [757616664, 1940492980],
+        [966844679, 1326087693],
+        [1992175335, 1840317929],
+        [650725500, 646331893],
+        [1204247127, 1521385831],
+        [2000946981, 1969870819],
+        [1488434295, 648017520],
+        [1128424221, 1140005446],
+        [58870203, 2133009902],
+        [2024564019, 2014788324],
+        [133927152, 2052536489],
+        [23375750, 1951798462],
+    ]
 
     seeds = seedslist[job.sp.replica]
-
 
     cbmc_n_ins = 12
     cbmc_n_dihed = 50
@@ -108,36 +106,31 @@ def run_cassandra(job):
     prop_freq = 10
     coord_freq = 10
     if ff_name == "oplsaa":
-        comb_rule = 'geometric'
+        comb_rule = "geometric"
     else:
-        comb_rule = 'lb'
-
+        comb_rule = "lb"
 
     proplist = [
-            "energy_total",
-            "volume",
-            "nmols",
-            "pressure"
-            "mass_density",
-            "energy_angle",
-            "energy_dihedral",
-            "energy_intravdw",
-            "energy_intraq",
-            "energy_inter",
-            "energy_intervdw",
-            "energy_lrc",
-            "energy_interq",
-            "energy_recip",
-            "energy_self",
-            "enthalpy"]
-
-
-
+        "energy_total",
+        "volume",
+        "nmols",
+        "pressure" "mass_density",
+        "energy_angle",
+        "energy_dihedral",
+        "energy_intravdw",
+        "energy_intraq",
+        "energy_inter",
+        "energy_intervdw",
+        "energy_lrc",
+        "energy_interq",
+        "energy_recip",
+        "energy_self",
+        "enthalpy",
+    ]
 
     meltsystem_liq = mc.System([liqbox_filled], species_list)
 
-
-    nvtmoves = mc.MoveSet('nvt', species_list)
+    nvtmoves = mc.MoveSet("nvt", species_list)
     nvtmoves.prob_rotate = p_rotate
     nvtmoves.prob_translate = p_translate
     nvtmoves.prob_regrow = p_regrow
@@ -150,28 +143,24 @@ def run_cassandra(job):
     moveset.cbmc_n_ins = cbmc_n_ins
     moveset.cbmc_n_dihed = cbmc_n_dihed
 
-
-
-
-
     with job:
         mc.run(
-                system=meltsystem_liq,
-                moveset=nvtmoves,
-                run_type="equilibration",
-                run_length=5000,
-                temperature=1000,
-                properties=proplist,
-                cutoff_style="cut",
-                vdw_cutoff=cutoff,
-                charge_cutoff=cutoff,
-                run_name="nvt_melt",
-                prop_freq=prop_freq,
-                coord_freq=5000,
-                units='sweeps',
-                steps_per_sweep=Nliq,
-                seeds=seeds
-                )
+            system=meltsystem_liq,
+            moveset=nvtmoves,
+            run_type="equilibration",
+            run_length=5000,
+            temperature=1000,
+            properties=proplist,
+            cutoff_style="cut",
+            vdw_cutoff=cutoff,
+            charge_cutoff=cutoff,
+            run_name="nvt_melt",
+            prop_freq=prop_freq,
+            coord_freq=5000,
+            units="sweeps",
+            steps_per_sweep=Nliq,
+            seeds=seeds,
+        )
 
         nvtendbox_liq = read_xyz("nvt_melt.out.xyz")
 
@@ -180,22 +169,22 @@ def run_cassandra(job):
         nvtsystem_liq = mc.System([nvtendbox_liq], species_list)
 
         mc.run(
-                system=nvtsystem_liq,
-                moveset=nvtmoves,
-                run_type="equilibration",
-                run_length=5000,
-                temperature=T,
-                properties=proplist,
-                cutoff_style="cut",
-                vdw_cutoff=cutoff,
-                charge_cutoff=cutoff,
-                run_name="nvt_equil",
-                prop_freq=prop_freq,
-                coord_freq=5000,
-                units='sweeps',
-                steps_per_sweep=Nliq,
-                seeds=seeds
-                )
+            system=nvtsystem_liq,
+            moveset=nvtmoves,
+            run_type="equilibration",
+            run_length=5000,
+            temperature=T,
+            properties=proplist,
+            cutoff_style="cut",
+            vdw_cutoff=cutoff,
+            charge_cutoff=cutoff,
+            run_name="nvt_equil",
+            prop_freq=prop_freq,
+            coord_freq=5000,
+            units="sweeps",
+            steps_per_sweep=Nliq,
+            seeds=seeds,
+        )
 
         nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
 
@@ -205,77 +194,77 @@ def run_cassandra(job):
         if ensemble == "GEMC-NVT":
             meltsystem_vap = mc.System([vapbox_filled], species_list)
             mc.run(
-                    system=meltsystem_vap,
-                    moveset=nvtmoves,
-                    run_type="equilibration",
-                    run_length=5000,
-                    temperature=1000,
-                    properties=proplist,
-                    cutoff_style="cut",
-                    vdw_cutoff=cutoff,
-                    charge_cutoff=cutoff,
-                    run_name="nvt_melt_vap",
-                    prop_freq=prop_freq,
-                    coord_freq=5000,
-                    units='sweeps',
-                    steps_per_sweep=Nvap,
-                    seeds=seeds
-                    )
+                system=meltsystem_vap,
+                moveset=nvtmoves,
+                run_type="equilibration",
+                run_length=5000,
+                temperature=1000,
+                properties=proplist,
+                cutoff_style="cut",
+                vdw_cutoff=cutoff,
+                charge_cutoff=cutoff,
+                run_name="nvt_melt_vap",
+                prop_freq=prop_freq,
+                coord_freq=5000,
+                units="sweeps",
+                steps_per_sweep=Nvap,
+                seeds=seeds,
+            )
             meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
 
             meltendbox_vap.box = vapbox_filled.box
             nvtsystem_vap = mc.System([meltendbox_vap], species_list)
             mc.run(
-                    system=nvtsystem_vap,
-                    moveset=nvtmoves,
-                    run_type="equilibration",
-                    run_length=5000,
-                    temperature=T,
-                    properties=proplist,
-                    cutoff_style="cut",
-                    vdw_cutoff=cutoff,
-                    charge_cutoff=cutoff,
-                    run_name="nvt_equil_vap",
-                    prop_freq=prop_freq,
-                    coord_freq=5000,
-                    units='sweeps',
-                    steps_per_sweep=Nvap,
-                    seeds=seeds
-                    )
+                system=nvtsystem_vap,
+                moveset=nvtmoves,
+                run_type="equilibration",
+                run_length=5000,
+                temperature=T,
+                properties=proplist,
+                cutoff_style="cut",
+                vdw_cutoff=cutoff,
+                charge_cutoff=cutoff,
+                run_name="nvt_equil_vap",
+                prop_freq=prop_freq,
+                coord_freq=5000,
+                units="sweeps",
+                steps_per_sweep=Nvap,
+                seeds=seeds,
+            )
             nvtendbox_vap = read_xyz("nvt_equil_vap.out.xyz")
 
             nvtendbox_vap.box = vapbox_filled.box
             boxlist.append(nvtendbox_vap)
             moveset.prob_swap = p_swap
 
-
         system = mc.System(boxlist, species_list)
 
         mc.run(
-                system=system,
-                moveset=moveset,
-                run_type="equilibration",
-                run_length=50000,
-                temperature=T,
-                pressure=P, # this line is ignored if ensemble isn't NPT
-                properties=proplist,
-                cutoff_style="cut",
-                vdw_cutoff=cutoff,
-                charge_cutoff=cutoff,
-                run_name="equil",
-                prop_freq=prop_freq,
-                coord_freq=coord_freq,
-                units='sweeps',
-                steps_per_sweep=N,
-                seeds=seeds
-                )
+            system=system,
+            moveset=moveset,
+            run_type="equilibration",
+            run_length=50000,
+            temperature=T,
+            pressure=P,  # this line is ignored if ensemble isn't NPT
+            properties=proplist,
+            cutoff_style="cut",
+            vdw_cutoff=cutoff,
+            charge_cutoff=cutoff,
+            run_name="equil",
+            prop_freq=prop_freq,
+            coord_freq=coord_freq,
+            units="sweeps",
+            steps_per_sweep=N,
+            seeds=seeds,
+        )
 
         mc.restart(
-                restart_from="equil",
-                run_name="prod",
-                run_type="production",
-                total_run_length=170000
-                )
+            restart_from="equil",
+            run_name="prod",
+            run_type="production",
+            total_run_length=170000,
+        )
+
 
 if __name__ == "__main__":
     pr = Project()
