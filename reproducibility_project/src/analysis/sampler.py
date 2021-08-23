@@ -27,8 +27,8 @@ def sample_job(job, variable="potential_energy", threshold=0.75):
         job.doc["sampling_results"] = {}
 
     data = np.genfromtxt(job.fn("log.txt"), names=True)[variable]
-    start, stop, step = _decorr_sampling(data, threshold)
-    job.doc["sampling_results"][variable] = range(start, stop, step)
+    start, stop, step, Neff = _decorr_sampling(data, threshold)
+    job.doc["sampling_results"][variable] = (range(start, stop, step), Neff)
 
 
 def _decorr_sampling(data, threshold):
@@ -41,7 +41,7 @@ def _decorr_sampling(data, threshold):
     threshold : float
         Fraction of data expected to be equilibrated.
     """
-    is_equil, prod_start, ineff = is_equilibrated(data, threshold, nskip=1)
+    is_equil, prod_start, ineff, Neff= is_equilibrated(data, threshold, nskip=1)
     if is_equil:
         uncorr_indices = timeseries.subsampleCorrelatedData(
             data[prod_start:], g=ineff, conservative=True
@@ -50,6 +50,7 @@ def _decorr_sampling(data, threshold):
             uncorr_indices.start + prod_start,
             uncorr_indices.stop + prod_start,
             uncorr_indices.step,
+            Neff
         )
     else:
         raise ValueError(
