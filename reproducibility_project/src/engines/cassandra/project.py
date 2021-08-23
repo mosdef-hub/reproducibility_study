@@ -136,8 +136,6 @@ def run_cassandra(job):
 
     meltsystem_liq = mc.System([liqbox_filled], species_list)
 
-    if molecule == "methaneUA":
-        if ensemble == "NPT"
 
     nvtmoves = mc.MoveSet('nvt', species_list)
     nvtmoves.prob_rotate = p_rotate
