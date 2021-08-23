@@ -85,6 +85,7 @@ def built_lammps(job):
     from mbuild.formats.lammpsdata import write_lammpsdata
 
     from reproducibility_project.src.utils.forcefields import load_ff
+
     sys.path.append(Project().root_directory() + "/..")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
@@ -93,9 +94,13 @@ def built_lammps(job):
     system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
     ff = load_ff(job.sp.forcefield_name)
-    system.save('box.json') # save the compound as a json object for reading back in to mbuild
+    system.save(
+        "box.json"
+    )  # save the compound as a json object for reading back in to mbuild
     typed_surface = ff.apply(parmed_structure)
-    typed_surface.save('box.top') #save to gromacs topology for later conversions in mdtraj
+    typed_surface.save(
+        "box.top"
+    )  # save to gromacs topology for later conversions in mdtraj
     write_lammpsdata(
         typed_surface,
         "box.lammps",
@@ -104,7 +109,7 @@ def built_lammps(job):
         mins=[system.get_boundingbox().vectors[0]],
         maxs=[system.get_boundingbox().vectors[1]],
         use_rb_torsions=True,
-    ) # write out a lammps topology
+    )  # write out a lammps topology
     return
 
 
