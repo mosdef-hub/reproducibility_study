@@ -4,9 +4,11 @@ import pathlib
 import sys
 
 import flow
+import panedr
 import unyt as u
 from flow import environments
 
+from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.engine_input.gromacs import mdp
 from reproducibility_project.src.utils.forcefields import load_ff
 
@@ -96,73 +98,58 @@ def init_job(job):
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("init.gro"))
 @Project.pre(lambda j: j.isfile("init.top"))
-@Project.post(lambda j: j.isfile("em.tpr"))
-@flow.with_job
-@flow.cmd
-def grompp_em(job):
-    """Run GROMACS grompp for the energy minimization step."""
-    em_mdp_path = "em.mdp"
-    msg = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("em.tpr"))
 @Project.post(lambda j: j.isfile("em.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_em(job):
-    """Run GROMACS mdrun for the energy minimization step."""
-    return _mdrun_str("em")
+    """Run GROMACS grompp for the energy minimization step."""
+    em_mdp_path = "em.mdp"
+    grompp = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
+    mdrun = _mdrun_str("em")
+    return f"{grompp} && {mdrun}"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("em.gro"))
-@Project.post(lambda j: j.isfile("nvt.tpr"))
-@flow.with_job
-@flow.cmd
-def grompp_nvt(job):
-    """Run GROMACS grompp for the nvt step."""
-    nvt_mdp_path = "nvt.mdp"
-    msg = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("nvt.tpr"))
 @Project.post(lambda j: j.isfile("nvt.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_nvt(job):
-    """Run GROMACS mdrun for the nvt step."""
-    return _mdrun_str("nvt")
+    """Run GROMACS grompp for the nvt step."""
+    nvt_mdp_path = "nvt.mdp"
+    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+    mdrun = _mdrun_str("nvt")
+    return f"{grompp} && {mdrun}"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("nvt.gro"))
-@Project.post(lambda j: j.isfile("npt.tpr"))
-@flow.with_job
-@flow.cmd
-def grompp_npt(job):
-    """Run GROMACS grompp for the npt step."""
-    npt_mdp_path = "npt.mdp"
-    msg = f"gmx grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("npt.tpr"))
 @Project.post(lambda j: j.isfile("npt.gro"))
 @flow.with_job
 @flow.cmd
 def gmx_npt(job):
-    """Run GROMACS mdrun for the npt step."""
-    return _mdrun_str("npt")
+    """Run GROMACS grompp for the npt step."""
+    npt_mdp_path = "npt.mdp"
+    grompp = f"gmx grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
+    mdrun = _mdrun_str("npt")
+    return f"{grompp} && {mdrun}"
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("npt.gro"))
+@Project.pre(lambda j: equil_status(j, "npt", "Potential"))
+@Project.post(lambda j: j.isfile("rerun_npt.tpr"))
+@flow.with_job
+@flow.cmd
+def extend_gmx_npt(job):
+    """Run GROMACS grompp for the npt step."""
+    # Extend the npt run by 1000 ps (1 ns)
+    extend = "gmx convert-tpr -s npt.tpr -extend 1000 -o npt.tpr"
+    mdrun = _mdrun_str("npt")
+    return f"{extend} && {mdrun}"
 
 
 def _mdrun_str(op):
@@ -206,6 +193,13 @@ def _setup_mdp(fname, template, data, overwrite=False):
         f.write(rendered)
 
     return None
+
+
+def equil_status(job, op, att):
+    """Check equilibrication status of specific attributes of specific operation."""
+    p = pathlib.Path(job.workspace())
+    data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
+    return is_equilibrated(data[att])[0]
 
 
 if __name__ == "__main__":
