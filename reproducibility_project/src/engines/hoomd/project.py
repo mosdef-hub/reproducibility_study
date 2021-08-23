@@ -60,7 +60,9 @@ def run_hoomd(job):
         # Ignore the vapor box
         # Initialize with box expanded by factor of 5
         # We will shrink it later
-        filled_box, _ = construct_system(job.sp, scale=5)
+        filled_box, _ = construct_system(
+            job.sp, scale_liq_box=5, scale_vap_box=5
+        )
     except AttributeError:
         return
 
