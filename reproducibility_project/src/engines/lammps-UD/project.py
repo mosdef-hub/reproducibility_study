@@ -129,7 +129,8 @@ def lammps_cp_files(job):
 @flow.cmd
 def lammps_em_nvt(job):
     in_script_name = "in.minimize"
-    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -143,7 +144,8 @@ def lammps_em_nvt(job):
 @flow.cmd
 def lammps_equil_npt(job):
     in_script_name = "in.equil"
-    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -155,7 +157,8 @@ def lammps_equil_npt(job):
 @flow.cmd
 def lammps_prod(job):
     in_script_name = "in.prod"
-    msg = f"sbatch submit.slurm {in_script_name} {job.sp.seed} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -188,13 +191,13 @@ def lammps_calc_rdf(job):
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
 
-
-def modify_submit_lammps(filename, statepoint, cores):
+#TODO: modify this for your purpose
+def modify_submit_lammps(filename, statepoint):
     # Modify Submit Scripts
-    with open("submit.pbs", "r") as f:
+    with open("submit.slurm", "r") as f:
         lines = f.readlines()
         lines[1] = "#SBATCH -J {}{}\n".format(filename, statepoint)
-    with open("submit.pbs", "w") as f:
+    with open("submit.slurm", "w") as f:
         f.write(lines)
     return
 
