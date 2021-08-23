@@ -35,20 +35,15 @@ def lammps_copy_files(job):
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-def lammps_minimized(job):
-    return job.isfile("minimized.restart")
-
-
-@Project.label
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-def lammps_equilibrated_nvt(job):
-    return job.isfile("equilibrated_nvt.restart")
+def lammps_minimized_equilibrated_nvt(job):
+    return job.isfile("minimized.restart_0")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_equilibrated_npt(job):
-    return job.isfile("equilibrated_npt.restart")
+    #TODO: modify the following line to properly checking equlibration
+    return job.isfile("equilibrated_npt.restart") and True
 
 
 @Project.label
@@ -86,7 +81,7 @@ def built_lammps(job):
     system = SystemBuilder(job)
     parmed_structure = system.to_parmed()
     # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "Trappe_UA":
+    if job.sp.forcefield_name == "trappe-ua":
         ff = foyer.Forcefield(name="trappe-ua")
     elif job.sp.forcefield_name == "oplsaa":
         ff = foyer.Forcefield(name="oplsaa")
@@ -118,58 +113,39 @@ def built_lammps(job):
 @flow.with_job
 @flow.cmd
 def lammps_cp_files(job):
-    molecule = job.sp.molecule
-    dict_of_lammps_files = {
-        "methaneUA": "UAmethane",
-        "pentaneUA": "UApentane",
-        "benzeneUA": "UAbenzene",
-        "waterSPC/E": "SPCEwater",
-        "ethanolAA": "AAethanol",
-    }
-
-    lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.pbs"
+    lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.slurm"
     lmps_run_path = (
-        "../../src/engine_input/lammps/input_scripts/in."
-        + dict_of_lammps_files[molecule]
+        "../../src/engine_input/lammps/input_scripts/in.*"
     )
-    msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
+    msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 @Project.pre(lammps_copy_files)
-@Project.post(lammps_minimized)
+@Project.post(lammps_minimized_equilibrated_nvt)
 @flow.with_job
 @flow.cmd
-def lammps_em(job):
-    modify_lammps_scripts("in.*", job)
-    modify_submit_scripts("in.em", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+def lammps_em_nvt(job):
+    in_script_name = "in.minimize"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
+
+
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-@Project.pre(lammps_minimized)
-@Project.post(lammps_equilibrated_nvt)
-@flow.with_job
-@flow.cmd
-def lammps_nvt(job):
-    modify_submit_scripts("in.nvt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
-@Project.pre(lammps_equilibrated_nvt)
+@Project.pre(lammps_minimized_equilibrated_nvt)
 @Project.post(lammps_equilibrated_npt)
 @flow.with_job
 @flow.cmd
-def lammps_npt(job):
-    modify_submit_scripts("in.npt", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+def lammps_equil_npt(job):
+    in_script_name = "in.equil"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
@@ -180,13 +156,14 @@ def lammps_npt(job):
 @flow.with_job
 @flow.cmd
 def lammps_prod(job):
-    modify_submit_scripts("in.prod", str(job.sp.molecule), 8)
-    msg = f"qsub submit.pbs"
+    in_script_name = "in.prod"
+    modify_submit_lammps(in_script_name,job.sp)
+    msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-Ud")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 @Project.pre(lammps_production)
 @flow.with_job
 @flow.cmd
@@ -214,35 +191,15 @@ def lammps_calc_rdf(job):
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
 
-
-def modify_submit_lammps(filename, statepoint, cores):
+#TODO: modify this for your purpose
+def modify_submit_lammps(filename, statepoint):
     # Modify Submit Scripts
-    with open("submit.pbs", "r") as f:
+    with open("submit.slurm", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}{}\n".format(filename, statepoint)
-        lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
-    with open("submit.pbs", "w") as f:
+        lines[1] = "#SBATCH -J {}{}\n".format(filename, statepoint)
+    with open("submit.slurm", "w") as f:
         f.write(lines)
     return
-
-
-def modify_lammps_scripts(filename, job):
-    with open(filename, "r") as f:
-        lines = f.readlines()
-        lines[7] = "pair_style     lj/cut/coul/cut {}\n".format(
-            job.sp.r_cut * 10
-        )  # nm to angstrom
-        lines[21] = "variable tsample equal {} #kelvin\n".format(
-            job.sp.temperature
-        )  # kelvin
-        lines[22] = "variable psample equal {} #atm\n".format(
-            job.sp.pressure / 101.325
-        )  # kPa to atm
-        lines[42] = "velocity all create {} {} dist gaussian\n".format(
-            job.sp.temperature, job.sp.replica
-        )
-    with open(filename, "w") as f:
-        f.writelines(lines)
 
 
 if __name__ == "__main__":
