@@ -124,11 +124,20 @@ def plot_data_with_t0_line(
     ymin = np.min(a_t) * scale
     ymax = np.max(a_t) * scale
 
-    line1,= plt.plot(
-        a_t, 'b-', label=f"Property",
+    (line1,) = plt.plot(
+        a_t,
+        "b-",
+        label=f"Property",
     )
-    vline1 = plt.vlines(x=t0, ymin=ymin, ymax=ymax, colors='r', linestyles='--', label=f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}")
-    plt.legend(loc='best')
+    vline1 = plt.vlines(
+        x=t0,
+        ymin=ymin,
+        ymax=ymax,
+        colors="r",
+        linestyles="--",
+        label=f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}",
+    )
+    plt.legend(loc="best")
     plt.savefig(
         str(path.absolute()),
     )
