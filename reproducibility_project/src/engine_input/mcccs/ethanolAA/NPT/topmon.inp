@@ -1,0 +1,112 @@
+
+ &io
+     io_output=           2
+     run_num=           1
+     suffix=a
+     L_movie_xyz= T
+ /
+
+
+ &system
+     lnpt= F
+     lgibbs= T
+     lgrand= F
+     lanes= F
+     lvirial= F
+     lmipsw= F
+     lexpee= F
+     ldielect= F
+     lpbc= T
+     lpbcx= T
+     lpbcy= T
+     lpbcz= T
+     lfold= T
+     lijall= F
+     lchgall= F
+     lewald= T
+     lcutcm= T
+     ltailc= T
+     lshift= F
+     ldual= T
+     L_Coul_CBMC= T
+     lneigh= F
+     lexzeo= F
+     lslit= F
+     lgraphite= F
+     lsami= F
+     lmuir= F
+     lelect_field= F
+     lgaro= F
+     lionic= F
+     L_Ewald_Auto= T
+     lmixlb= T
+     lmixjo= F
+     L_spline= F
+     L_linear= F
+     L_vib_table= F
+     L_bend_table= F
+     L_elect_table= F
+ /
+
+
+ATOMS
+!i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+1 1 85.5479 3.12 -0.59150000 15.999 O #alcohol O
+2 1 33.2127 3.5 0.01230000 12.011 CO # carbon attached to O
+3 1 33.2127 3.5 -0.24610000 12.011 C # carbon
+4 1 0 0 0.40700000 1.008 HO # hydrogen of oxygen
+5 1 15.0967 2.50000 0.06710000 1.008 H #H
+6 1 15.0967 2.50000 0.06710000 1.008 H #H
+7 1 15.0967 2.50000 0.09470000 1.008 H #H
+8 1 15.0967 2.50000 0.09470000 1.008 H #H
+9 1 15.0967 2.50000 0.09470000 1.008 H #H
+END ATOMS
+
+NONBOND
+!i j type(ij) epsi(ij) sigi(ij) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+END NONBOND
+
+BONDS
+!i type(i) brvib(i) brvibk(i) [Angstrom]; type 1: U = brvibk * ( r_ij - brvib ) ^ 2
+1 1 1.41 0.0000
+2 1 1.529 0.000
+3 1 0.9450 0.000
+4 1 1.0900 0.0000
+5 1 1.0900 0.0000
+6 1 1.0900 0.0000
+7 1 1.0900 0.0000
+8 1 1.0900 0.0000
+END BONDS
+
+ANGLES
+!i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
+1 1 109.500 25161.14
+2 1 108.500 27677.25
+3 1 109.500 17612.8
+4 1 109.500 17612.8
+5 1 110.700 18870.85
+6 1 110.700 18870.85
+7 1 110.700 18870.85
+8 1 107.800 16606.349666
+9 1 107.800 16606.349666
+10 1 107.800 16606.349666
+11 1 110.700 18870.85
+12 1 110.700 18870.85
+13 1 107.800 16606.35
+END ANGLES
+
+DIHEDRALS
+!i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
+1 1 0 -179.147 -87.5608 247.586 0.0  0.0  0.0  0.0  0.0  0.0
+2 1 0 0 0 235.508 0.0  0.0  0.0  0.0  0.0  0.0
+3 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+4 1 0 0 0 235.508 0.0  0.0  0.0  0.0  0.0  0.0
+5 1 0 0 0 235.508 0.0  0.0  0.0  0.0  0.0  0.0
+6 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+7 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+8 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+9 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+10 1 0 0 177.134 0.0  0.0  0.0  0.0  0.0  0.0
+11 1 0 0 177.134 0.0  0.0  0.0  0.0  0.0  0.0
+12 1 0 0 0 150.967 0.0  0.0  0.0  0.0  0.0  0.0
+END DIHEDRALS
