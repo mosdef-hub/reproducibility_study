@@ -6,14 +6,14 @@ from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestEthanolAA(BaseTest):
-    """Test to ensure BenzeneUA behaves as expected."""
+    """Test to ensure EthanolAA behaves as expected."""
 
     def test_creation(self):
         etoh = EthanolAA()
         assert isinstance(etoh, mb.Compound)
         assert etoh.name == "EthanolAA"
-        assert etoh.n_particles == 6
-        assert etoh.n_bonds == 6
+        assert etoh.n_particles == 9
+        assert etoh.n_bonds == 8
         assert len(etoh.labels) == 1
 
     def test_paramters(self):

@@ -35,7 +35,7 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
     scale_liq_box: float, optional, default=1.0
         Option to scale sizes of the liquid box.
     scale_vap_box: float, optional, default=1.0
-        Option to scaple sizes of the vapor box.
+        Option to scale sizes of the vapor box.
 
     Returns
     -------

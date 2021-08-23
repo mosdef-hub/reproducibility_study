@@ -17,17 +17,17 @@ class TestBenzeneUA(BaseTest):
         assert [p.name == "_CH" for p in benz.particles()]
         assert len(benz.labels) == 1
 
-    def test_paramters(self, benzene_uaff):
-        param_struct = benzene_uaff.apply(BenzeneUA())
+    def test_parameters(self, benzene_ua_ff):
+        param_struct = benzene_ua_ff.apply(BenzeneUA())
 
-        nonbonded = benzene_uaff.get_parameters("atoms", key="CH_sp2")
-        bond = benzene_uaff.get_parameters(
+        nonbonded = benzene_ua_ff.get_parameters("atoms", key="CH_sp2")
+        bond = benzene_ua_ff.get_parameters(
             "harmonic_bonds", key=["CH_E"] * 2, keys_are_atom_classes=True
         )
-        angle = benzene_uaff.get_parameters(
+        angle = benzene_ua_ff.get_parameters(
             "harmonic_angles", key=["CH_E"] * 3, keys_are_atom_classes=True
         )
-        rbtorsion = benzene_uaff.get_parameters(
+        rbtorsion = benzene_ua_ff.get_parameters(
             "rb_propers", key=["CH_E"] * 4, keys_are_atom_classes=True
         )
 
@@ -51,6 +51,6 @@ class TestBenzeneUA(BaseTest):
 
         assert np.isclose(
             angle["theta"],
-            np.deg2rad(param_struct.angle_types[0].thetaq).round(8),
+            np.deg2rad(param_struct.angle_types[0].theteq).round(8),
         )
         assert np.isclose(angle["k"], param_struct.angle_types[0].k * 4.184 * 2)

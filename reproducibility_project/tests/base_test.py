@@ -36,7 +36,7 @@ class BaseTest:
         return foyer.forcefields.load_TRAPPE_UA()
 
     @pytest.fixture
-    def benzene_uaff(self):
+    def benzene_ua_ff(self):
         abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
         return foyer.Forcefield(
             forcefield_files=f"{abs_path}/benzene_trappe-ua_like.xml"
