@@ -172,11 +172,12 @@ def lammps_calc_rdf(job):
     # Create rdf data from the production run
     import mbuild as mb
     import mdtraj
-    
-    traj = md.load('prod.xtc', top='box.gro')
+
+    traj = md.load("prod.xtc", top="box.gro")
     traj.save("prod.gsd")
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
+
 
 def modify_submit_scripts(filename, jobid, cores):
     # Modify Submit Scripts
