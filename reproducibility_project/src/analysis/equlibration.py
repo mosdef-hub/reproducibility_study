@@ -112,7 +112,7 @@ def plot_data_with_t0_line(
     plt_kwargs : dict, optional, default=None
         keyword dictionary for matplotlib.pyplot.plot command.
     """
-    scale = 1.25
+    scale = 1.5
     path = pathlib.Path(filename)
     if path.is_file() and not overwrite:
         raise FileExistsError(
@@ -124,10 +124,11 @@ def plot_data_with_t0_line(
     ymin = np.min(a_t) * scale
     ymax = np.max(a_t) * scale
 
-    plt.plot(
-        a_t,
+    line1,= plt.plot(
+        a_t, 'b-', label=f"Property",
     )
-    plt.vlines(x=t0, ymin=ymin, ymax=ymax)
+    vline1 = plt.vlines(x=t0, ymin=ymin, ymax=ymax, colors='r', linestyles='--', label=f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}")
+    plt.legend(loc='best')
     plt.savefig(
         str(path.absolute()),
     )
