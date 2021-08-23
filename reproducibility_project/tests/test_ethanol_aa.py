@@ -19,3 +19,17 @@ class TestEthanolAA(BaseTest):
     def test_paramters(self):
         oplsaa = foyer.Forcefield(name="oplsaa")
         param_struct = oplsaa.apply(EthanolAA())
+
+        expected_types = [
+            "opls_135",
+            "opls_140",
+            "opls_154",
+            "opls_155",
+            "opls_157",
+        ]
+        for atom in param_struct.atoms:
+            assert atom.atom_type.name in expected_types
+
+        assert len(param_struct.bond_types) == 4
+        assert len(param_struct.angle_types) == 5
+        assert len(param_struct.rb_torsion_types) == 4
