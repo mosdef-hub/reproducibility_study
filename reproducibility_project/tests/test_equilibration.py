@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from pymbar import testsystems
 
-from reproducibility_project.src.analysis.equlibration import (
+from reproducibility_project.src.analysis.equilibration import (
     is_equilibrated,
     trim_non_equilibrated,
 )

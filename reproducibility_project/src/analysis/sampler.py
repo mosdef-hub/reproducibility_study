@@ -3,7 +3,7 @@
 import numpy as np
 from pymbar import timeseries
 
-from reproducibility_project.src.analysis.equlibration import is_equilibrated
+from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 def sample_job(job, variable="potential_energy", threshold=0.75):

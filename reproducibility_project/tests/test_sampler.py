@@ -1,7 +1,7 @@
 import pytest
 from pymbar import testsystems
 
-from reproducibility_project.src.analysis.equlibration import is_equilibrated
+from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.analysis.sampler import _decorr_sampling
 from reproducibility_project.tests.base_test import BaseTest
 
