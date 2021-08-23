@@ -41,4 +41,3 @@ class TestEquilibration(BaseTest):
         )
         with pytest.raises(ValueError, match=r"Data with a threshold"):
             [new_a_t, t0, g, Neff] = trim_non_equilibrated(data, threshold=0.98)
-
