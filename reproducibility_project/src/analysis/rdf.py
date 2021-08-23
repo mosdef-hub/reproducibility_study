@@ -11,7 +11,7 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     """Compute the RDF given a Signac Job object.
 
     The job folder is expected to contain the file "trajectory.gsd" with lengths
-    in Angstroms.
+    in nanometers.
     This function is a convenience wrapper for freud's RDF module
     https://freud.readthedocs.io/en/latest/modules/density.html#freud.density.RDF
     After execution, the files "rdf.png" and "rdf.txt" are created in the job
