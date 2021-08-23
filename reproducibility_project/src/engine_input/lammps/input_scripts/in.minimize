@@ -11,7 +11,7 @@ angle_style harmonic
 dihedral_style  opls
 read_data box.lammps
 
-pair_modify shift no  
+pair_modify shift no
 
 neighbor        2.5 bin #skin cutoff
 
@@ -37,7 +37,7 @@ unfix integrator
 minimize 1e-4 1e-4 1000 1000
 fix integrator all nvt temp ${tsample} ${tsample} 100.0
 run 50000
-timestep 2.0 
+timestep 2.0
 run 50000
 unfix integrator
 reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name
