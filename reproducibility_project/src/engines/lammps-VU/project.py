@@ -196,7 +196,6 @@ def lammps_create_density_csv(job):
     thermo = lammps_thermo.load("log.lammps", skip_sections=9)
     density = thermo.prop("Density")
     list_d = np.concatenate(density).ravel() 
-    print(list_d)
     np.savetxt('density.csv', list_d, delimiter=',', fmt='%f')
     return
 
@@ -224,7 +223,7 @@ def modify_lammps_scripts(filename, job):
             job.sp.pressure / 101.325
         )  # kPa to atm
         lines[42] = "velocity all create {} {} dist gaussian\n".format(
-            job.sp.temperature, job.sp.replica
+            job.sp.temperature, job.sp.replica+1
         )
     with open(filename, "w") as f:
         f.writelines(lines)
