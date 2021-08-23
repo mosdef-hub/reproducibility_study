@@ -96,6 +96,7 @@ def built_lammps(job):
     system.save('box.json') # save the compound as a json object for reading back in to mbuild
     typed_surface = ff.apply(parmed_structure)
     typed_surface.save('box.top') #save to gromacs topology for later conversions in mdtraj
+    typed_surface.save('box.gro') #save to gromacs gro topology for later conversions in mdtraj
     write_lammpsdata(
         typed_surface,
         "box.lammps",
@@ -166,33 +167,12 @@ def run_lammps(job):
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
     import mbuild as mb
-    import MDAnalysis as mda
-
-    u = mda.Universe("box.lammps", topology_format="DATA")
-    u.load_new("prod.xtc")
-    u.trajectory[-1]
-    parmed_structure = u.atoms.convert_to("PARMED")
-    mb.formats.gsdwriter.write_gsd(parmed_structure, "prod.gsd")
+    import mdtraj
+    
+    traj = md.load('prod.xtc', top='box.gro')
+    traj.save("prod.gsd")
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_production)
-@Project.post(lambda j: j.isfile("density.csv"))
-@flow.with_job
-@flow.cmd
-def lammps_create_density_csv(job):
-    # Create rdf data from the production run
-    import lammps_thermo
-
-    thermo = lammps_thermo.load("log.lammps", skip_sections=9)
-    density = thermo.prop("Density")
-    list_d = np.concatenate(density).ravel()
-    np.savetxt("density.csv", list_d, delimiter=",", fmt="%f")
-    return
-
 
 def modify_submit_scripts(filename, jobid, cores):
     # Modify Submit Scripts
