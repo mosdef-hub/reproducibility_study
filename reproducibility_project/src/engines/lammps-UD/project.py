@@ -36,7 +36,7 @@ def lammps_copy_files(job):
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_minimized_equilibrated_nvt(job):
-    return job.isfile("equilibrated_nvt.restart")
+    return job.isfile("minimized.restart_0")
 
 
 @Project.label
@@ -113,21 +113,11 @@ def built_lammps(job):
 @flow.with_job
 @flow.cmd
 def lammps_cp_files(job):
-    molecule = job.sp.molecule
-    dict_of_lammps_files = {
-        "methaneUA": "UAmethane",
-        "pentaneUA": "UApentane",
-        "benzeneUA": "UAbenzene",
-        "waterSPC/E": "SPCEwater",
-        "ethanolAA": "AAethanol",
-    }
-
     lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.slurm"
     lmps_run_path = (
-        "../../src/engine_input/lammps/input_scripts/in."
-        + dict_of_lammps_files[molecule]
+        "../../src/engine_input/lammps/input_scripts/in.*"
     )
-    msg = f"cp {lmps_inpt_path} {lmps_run_path} ./"
+    msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
 
@@ -203,8 +193,7 @@ def modify_submit_lammps(filename, statepoint, cores):
     # Modify Submit Scripts
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}{}\n".format(filename, statepoint)
-        lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
+        lines[1] = "#SBATCH -J {}{}\n".format(filename, statepoint)
     with open("submit.pbs", "w") as f:
         f.write(lines)
     return
