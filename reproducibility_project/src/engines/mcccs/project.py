@@ -65,6 +65,7 @@ def get_molecules(job):
     import sys
 
     sys.path.append(Project().root_directory() + "/src/molecules/")
+    sys.path.append(Project().root_directory() + "/../")
     from benzene_ua import BenzeneUA
     from ethanol_aa import EthanolAA
     from mbuild.lib.molecules.water import WaterSPC
@@ -73,7 +74,7 @@ def get_molecules(job):
 
     molecule_dict = {
         "methaneUA": MethaneUA(),
-        "pentaneUA": PentaneUA(),
+        "ethanolAA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
         "waterSPC/E": WaterSPC(),
         "ethanolAA": EthanolAA(),
@@ -99,7 +100,7 @@ def has_fort_files(job):
 @Project.label
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 def files_ready_npt(job):
@@ -107,7 +108,14 @@ def files_ready_npt(job):
     # Link: https://stackoverflow.com/questions/32749350/check-if-a-string-is-in-a-file-with-python
     job.doc.files_ready = False
     file_names = ["melt", "cool", "equil", "prod"]
-    keywords = ["NCHAIN", "LENGTH", "TEMPERATURE", "PRESSURE", "VARIABLES"]
+    keywords = [
+        "NCHAIN",
+        "LENGTH",
+        "TEMPERATURE",
+        "PRESSURE",
+        "RCUT",
+        "VARIABLES",
+    ]
     c = 0
     for name in file_names:
         file_name = job.ws + "/fort.4." + name
@@ -279,7 +287,7 @@ def prod_finished(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.post(equil_replicate_set)
@@ -291,7 +299,7 @@ def set_equil_replicates(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.post(replicate_set)
@@ -305,7 +313,7 @@ def set_prod_replicates(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.post(has_fort_files)
@@ -324,7 +332,7 @@ def copy_files(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.post(has_fort77maker)
@@ -341,7 +349,7 @@ def copy_fort77maker(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.post(has_topmon)
@@ -360,7 +368,7 @@ def copy_topmon(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort_files)
@@ -373,8 +381,9 @@ def replace_keyword_fort_files_npt(job):
     length = job.sp.box_L_liq * 10  # nm to A
     temperature = job.sp.temperature
     pressure = job.sp.pressure / 1000  # kPa to MPa
-    variables = [nchain, length, temperature, pressure, seed]
-    keywords = ["NCHAIN", "LENGTH", "TEMPERATURE", "PRESSURE", "SEED"]
+    rcut = job.sp.r_cut * 10
+    variables = [nchain, length, temperature, pressure, seed, rcut]
+    keywords = ["NCHAIN", "LENGTH", "TEMPERATURE", "PRESSURE", "SEED", "RCUT"]
     for name in file_names:
         file_name = job.ws + "/fort.4." + name
         i = 0
@@ -388,7 +397,7 @@ def replace_keyword_fort_files_npt(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort77maker)
@@ -412,7 +421,7 @@ def make_restart_file(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
@@ -452,7 +461,7 @@ def run_melt(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
@@ -490,7 +499,7 @@ def run_cool(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
@@ -530,7 +539,7 @@ def run_equil(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("pentaneUA")
+    and j.sp.molecule == ("ethanolAA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_restart_file)
