@@ -33,6 +33,8 @@ def run_cassandra(job):
     import unyt as u
     from mbuild.formats.xyz import read_xyz
 
+    from reproducibility_project.src.utils.forcefields import load_ff
+
     from reproducibility_project.src.molecules.methane_ua import MethaneUA
     from reproducibility_project.src.molecules.pentane_ua import PentaneUA
     from reproducibility_project.src.molecules.system_builder import (
@@ -53,6 +55,11 @@ def run_cassandra(job):
 
     ensemble = job.sp.production_ensemble
 
+    cass_ensembles = {
+            "NPT": "npt",
+            "GEMC-NVT": "gemc",
+            }
+
     Nliq = job.sp.N_liquid
     Nvap = job.sp.N_vap
     N = Nliq+Nvap
@@ -63,8 +70,8 @@ def run_cassandra(job):
     if ensemble == "GEMC-NVT":
         vapbox_filled = filled_boxes[1]
 
-    ffname = job.sp.forcefield
-    ff = get_ff(ffname) # make this function exist
+    ffname = job.sp.forcefield_name
+    ff = load_ff(ffname)
     structure = ff.apply(compound)
 
     T = job.sp.temperature * u.K
@@ -72,19 +79,26 @@ def run_cassandra(job):
 
 
     species_list = [structure]
-    cutoff_dict = {
-            "Trappe_UA": 10.0,
-            "spce": 9.0,
-            "oplsaa": 14.0
-    cutoff = cutoff_dict[ffname] * u.Angstrom
+    cutoff = job.sp.r_cut * u.nm 
 
     seedslist = [
-        [576243192, 277516412],
-        [276640023, 802773011],
-        [911197026, 307764101],
-        [774491056, 422678105],
-        [723488469, 111294037],
-        ]
+       [   7860904,   98601355],
+       [ 955793508,  417823039],
+       [ 254420642, 2130720464],
+       [  58120272, 1465850411],
+       [ 757616664, 1940492980],
+       [ 966844679, 1326087693],
+       [1992175335, 1840317929],
+       [ 650725500,  646331893],
+       [1204247127, 1521385831],
+       [2000946981, 1969870819],
+       [1488434295,  648017520],
+       [1128424221, 1140005446],
+       [  58870203, 2133009902],
+       [2024564019, 2014788324],
+       [ 133927152, 2052536489],
+       [  23375750, 1951798462]]
+    
 
     seeds = seedslist[job.sp.replica]
 
@@ -123,12 +137,15 @@ def run_cassandra(job):
 
     meltsystem_liq = mc.System([liqbox_filled], species_list)
 
+    if molecule == "methaneUA":
+        if ensemble == "NPT"
+
     nvtmoves = mc.MoveSet('nvt', species_list)
     nvtmoves.prob_rotate = p_rotate
     nvtmoves.prob_translate = p_translate
     nvtmoves.prob_regrow = p_regrow
 
-    moveset = mc.MoveSet(ensemble, species_list)
+    moveset = mc.MoveSet(cass_ensembles[ensemble], species_list)
     moveset.prob_volume = p_volume
     moveset.prob_translate = p_translate
     moveset.prob_rotate = p_rotate
