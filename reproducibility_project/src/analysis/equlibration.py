@@ -59,9 +59,10 @@ def trim_non_equilibrated(
     Refer to equilibration.is_equilibrated for addtional information.
 
     This method returns a list of length 3, where list[0] is the trimmed array,
-    list[1] is the calculated statistical inefficiency and list[2] is the
-    index of the original dataset where equilibration begins, which can be used
-    when subsampling the data using `pymbar.timseries.subsampleCorrelatedData`.
+    list[1] is the index of the original dataset where equilibration begins,
+    list[2] is the calculated statistical inefficiency, which can be used
+    when subsampling the data using `pymbar.timseries.subsampleCorrelatedData`,
+    list[3] is the number of effective uncorrelated data points.
 
     Refer to https://pymbar.readthedocs.io/en/master/timeseries.html for
     additional information.
@@ -87,7 +88,7 @@ def trim_non_equilibrated(
             f"Data with a threshold of {threshold} is not equilibrated!"
         )
 
-    return [a_t[t0:], g, t0, Neff]
+    return [a_t[t0:], t0, g, Neff]
 
 
 def plot_data_with_t0_line(
