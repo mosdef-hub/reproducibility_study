@@ -42,7 +42,7 @@ def lammps_minimized_equilibrated_nvt(job):
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_equilibrated_npt(job):
-    #TODO: modify the following line to properly checking equlibration
+    # TODO: modify the following line to properly checking equlibration
     return job.isfile("equilibrated_npt.restart") and True
 
 
@@ -114,9 +114,7 @@ def built_lammps(job):
 @flow.cmd
 def lammps_cp_files(job):
     lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.slurm"
-    lmps_run_path = (
-        "../../src/engine_input/lammps/input_scripts/in.*"
-    )
+    lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
@@ -129,11 +127,9 @@ def lammps_cp_files(job):
 @flow.cmd
 def lammps_em_nvt(job):
     in_script_name = "in.minimize"
-    modify_submit_lammps(in_script_name,job.sp)
+    modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
-
-
 
 
 @Project.operation
@@ -144,7 +140,7 @@ def lammps_em_nvt(job):
 @flow.cmd
 def lammps_equil_npt(job):
     in_script_name = "in.equil"
-    modify_submit_lammps(in_script_name,job.sp)
+    modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
@@ -157,7 +153,7 @@ def lammps_equil_npt(job):
 @flow.cmd
 def lammps_prod(job):
     in_script_name = "in.prod"
-    modify_submit_lammps(in_script_name,job.sp)
+    modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
     return msg
 
@@ -191,7 +187,8 @@ def lammps_calc_rdf(job):
     # TODO: Use freud rdf PR to create an RDF from the gsd file
     return
 
-#TODO: modify this for your purpose
+
+# TODO: modify this for your purpose
 def modify_submit_lammps(filename, statepoint):
     # Modify Submit Scripts
     with open("submit.slurm", "r") as f:

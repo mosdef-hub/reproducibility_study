@@ -1,4 +1,4 @@
-#! /bin/bash 
+#! /bin/bash
 #SBATCH --job-name="rpd-uamethane"
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=36
@@ -10,7 +10,7 @@
 # SBATCH --partition=_workgroup_
 #SBATCH --mem=8G
 
-export VALET_PATH=$VALET_PATH:$WORKDIR/udsw/valet/etc 
+export VALET_PATH=$VALET_PATH:$WORKDIR/udsw/valet/etc
 vpkg_require jlab-lammps
 
 OPENMPI_VERSION='unknown'
@@ -46,4 +46,3 @@ if [ $((1)) ]
     rc=$?
     echo "-- end OPENMPI run --"
 fi
-
