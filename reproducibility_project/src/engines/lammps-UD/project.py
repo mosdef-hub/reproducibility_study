@@ -86,7 +86,7 @@ def built_lammps(job):
     system = SystemBuilder(job)
     parmed_structure = system.to_parmed()
     # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "Trappe_UA":
+    if job.sp.forcefield_name == "trappe-ua":
         ff = foyer.Forcefield(name="trappe-ua")
     elif job.sp.forcefield_name == "oplsaa":
         ff = foyer.Forcefield(name="oplsaa")
@@ -127,7 +127,7 @@ def lammps_cp_files(job):
         "ethanolAA": "AAethanol",
     }
 
-    lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.pbs"
+    lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.slurm"
     lmps_run_path = (
         "../../src/engine_input/lammps/input_scripts/in."
         + dict_of_lammps_files[molecule]
@@ -186,7 +186,7 @@ def lammps_prod(job):
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.simulation_engine == "lammps-Ud")
+@Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 @Project.pre(lammps_production)
 @flow.with_job
 @flow.cmd
