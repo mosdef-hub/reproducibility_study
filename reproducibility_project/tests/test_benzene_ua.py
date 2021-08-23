@@ -14,11 +14,11 @@ class TestBenzeneUA(BaseTest):
         assert benz.name == "BenzeneUA"
         assert benz.n_particles == 6
         assert benz.n_bonds == 6
-        assert [p.name == "_CH" for p in benz.particles]
+        assert [p.name == "_CH" for p in benz.particles()]
         assert len(benz.labels) == 1
 
     def test_paramters(self, benzene_uaff):
-        param_struct = benzene_uaff.apply(BenzeneUA)
+        param_struct = benzene_uaff.apply(BenzeneUA())
 
         nonbonded = benzene_uaff.get_parameters("atoms", key="CH_sp2")
         bond = benzene_uaff.get_parameters(

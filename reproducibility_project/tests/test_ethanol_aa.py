@@ -11,7 +11,7 @@ class TestEthanolAA(BaseTest):
     def test_creation(self):
         etoh = EthanolAA()
         assert isinstance(etoh, mb.Compound)
-        assert etoh.name == "BenzeneUA"
+        assert etoh.name == "EthanolAA"
         assert etoh.n_particles == 6
         assert etoh.n_bonds == 6
         assert len(etoh.labels) == 1
