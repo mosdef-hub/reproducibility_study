@@ -12,7 +12,7 @@ class EthanolAA(mb.Compound):
     def __init__(self):
         super(EthanolAA, self).__init__()
         abs_path = os.path.dirname(os.path.abspath(molecules.__file__))
-        self.add(mb.load(f"{abs_path}/ethanol_aa.mol2"))
+        self.add(mb.load(f"{abs_path}/ethanol_aa.mol2"), label="ETO")
 
 
 def main():

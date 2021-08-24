@@ -13,7 +13,7 @@ class BenzeneUA(mb.Compound):
     def __init__(self):
         super(BenzeneUA, self).__init__()
         abs_path = os.path.dirname(os.path.abspath(molecules.__file__))
-        self.add(mb.load(f"{abs_path}/benzene_ua.mol2"))
+        self.add(mb.load(f"{abs_path}/benzene_ua.mol2"), label="BEN")
 
 
 def main():
