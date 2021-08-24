@@ -10,14 +10,16 @@ from scipy import stats
 
 
 def gsd_msd(job, skip=2, stride=1):
-    """Compute the MSD given a Signac Job object.
+    """Compute the MSD and diffusion coefficient given a Signac Job object.
 
     The job folder is expected to contain the file "trajectory.gsd" with lengths
     in nanometers.
     This function is a convenience wrapper for freud's MSD module
     https://freud.readthedocs.io/en/latest/modules/msd.html
+    The diffusion coefficient is calculated as the slope/6 of a linear fit to
+    the MSD following https://doi.org/10.1002/jcc.21939
     After execution, the files "msd.png" and "msd.txt" are created in the job
-    folder.
+    folder and the "diffusion_coefficent" (in nm^2/ps) is set in the job.doc.
 
     Parameters
     ----------
