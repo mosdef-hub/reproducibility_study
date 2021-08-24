@@ -8,8 +8,6 @@ import pandas as pd
 from pymbar import timeseries
 from signac.contrib.job import Job
 
-from reproducibility_project.src.utils.plotting import plot_data_with_t0_line
-
 
 def is_equilibrated(
     a_t: npt.ArrayLike, threshold: float = 0.8, nskip: int = 1
@@ -126,6 +124,10 @@ def plot_job_property_with_t0(
     vline_plt_kwargs : dict, optional, default={}
         Pass in a dictionary of keyword arguments for the vertical line denoting t0.
     """
+    from reproducibility_project.src.utils.plotting import (
+        plot_data_with_t0_line,
+    )
+
     fname = pathlib.Path(filename)
     fname = fname.name
     a_t = pd.read_csv(
