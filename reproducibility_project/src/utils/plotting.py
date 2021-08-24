@@ -14,6 +14,7 @@ def plot_data_with_t0_line(
     vline_scale: float = 1.5,
     threshold: float = 0.0,
     overwrite: bool = False,
+    title: str = None,
     data_plt_kwargs: dict = {},
     vline_plt_kwargs: dict = {},
 ) -> None:
@@ -30,6 +31,8 @@ def plot_data_with_t0_line(
     overwrite : bool, optional, default=False
         Do not write to filename if a file already exists with the same name.
         Set to True to overwrite exisiting files.
+    title : str, optional
+        Set the title of the plot
     data_plt_kwargs : dict, optional, default={}
         Pass in a dictionary of keyword arguments to plot the data.
     vline_plt_kwargs : dict, optional, default={}
@@ -69,7 +72,10 @@ def plot_data_with_t0_line(
 
     ax.legend(loc="best")
 
-    plt.suptitle("Property")
+    if title is None:
+        plt.suptitle("Property")
+    else:
+        plt.suptitle(title)
 
     plt.tight_layout()
     fig.savefig(

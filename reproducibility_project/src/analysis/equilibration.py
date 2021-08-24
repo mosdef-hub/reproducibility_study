@@ -95,6 +95,7 @@ def plot_job_property_with_t0(
     job: Job,
     filename: str,
     property_name: str,
+    title: str = None,
     vline_scale: float = 1.5,
     threshold: float = 0.0,
     overwrite: bool = False,
@@ -110,8 +111,10 @@ def plot_job_property_with_t0(
     filename : str, required
         The name of the output image.
         Only the name of the file and extension is expected, the location will be within the job.
-    property : str, required
+    property_name : str, required
         The name of the property to plot.
+    title : str, optional, default = Property
+        Title of the plot
     vline_scale : float, optional, default=1.5
         Scale the min and max components of the vertical line.
     threshold : float, optional, default=0.0
@@ -140,6 +143,7 @@ def plot_job_property_with_t0(
             filename=fname,
             a_t=a_t[property_name].to_numpy(),
             vline_scale=vline_scale,
+            title=title,
             overwrite=overwrite,
             threshold=threshold,
             data_plt_kwargs=data_plt_kwargs,
