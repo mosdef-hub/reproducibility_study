@@ -1,5 +1,6 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 import fileinput
+import math
 import os
 import pathlib
 import shutil
@@ -74,10 +75,10 @@ def get_molecules(job):
 
     molecule_dict = {
         "methaneUA": MethaneUA(),
-        "ethanolAA": PentaneUA(),
+        "methaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
         "waterSPC/E": WaterSPC(),
-        "ethanolAA": EthanolAA(),
+        "methaneUA": EthanolAA(),
     }
     molecule = molecule_dict[job.sp.molecule]
     return [molecule]
@@ -99,43 +100,76 @@ def has_fort_files(job):
 
 @Project.label
 @Project.pre(
-    lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    lambda j: j.sp.engine == "mcccs" and j.sp.molecule == ("methaneUA")
 )
-def files_ready_npt(job):
+def files_ready(job):
     """Check if the keywords in the fort.4 files have been replaced."""
     # Link: https://stackoverflow.com/questions/32749350/check-if-a-string-is-in-a-file-with-python
-    job.doc.files_ready = False
-    file_names = ["melt", "cool", "equil", "prod"]
-    keywords = [
-        "NCHAIN",
-        "LENGTH",
-        "TEMPERATURE",
-        "PRESSURE",
-        "RCUT",
-        "VARIABLES",
-    ]
-    c = 0
-    for name in file_names:
-        file_name = job.ws + "/fort.4." + name
-        i = 0
-        if not job.isfile("fort.4." + name):
-            continue
-        for i in range(len(keywords)):
-            with open(file_name) as myfile:
-                if keywords[i] in myfile.read():
-                    c += 1
-    if c == 0:
-        job.doc.files_ready = True
+    if job.doc.ensemble == "GEMC-NVT":
+        job.doc.files_ready = False
+        file_names = ["melt", "cool", "equil", "prod"]
+        keywords = [
+            "NCHAIN1",
+            "NCHAIN2",
+            "LENGTH1",
+            "LENGTH2",
+            "TEMPERATURE",
+            "RCUT",
+            "NCHAINTOT",
+            "INIX1",
+            "INIY1",
+            "INIZ1",
+            "INIX2",
+            "INIY2",
+            "INIZ2",
+            "VARIABLES",
+        ]
+        c = 0
+        for name in file_names:
+            file_name = job.ws + "/fort.4." + name
+            i = 0
+            if not job.isfile("fort.4." + name):
+                continue
+            for i in range(len(keywords)):
+                with open(file_name) as myfile:
+                    if keywords[i] in myfile.read():
+                        c += 1
+        if c == 0:
+            job.doc.files_ready = True
 
-    return job.doc.files_ready
+        return job.doc.files_ready
+
+    if job.doc.ensemble == "NPT":
+        job.doc.files_ready = False
+        file_names = ["melt", "cool", "equil", "prod"]
+        keywords = [
+            "NCHAIN",
+            "LENGTH",
+            "TEMPERATURE",
+            "PRESSURE",
+            "RCUT",
+            "VARIABLES",
+        ]
+        c = 0
+        for name in file_names:
+            file_name = job.ws + "/fort.4." + name
+            i = 0
+            if not job.isfile("fort.4." + name):
+                continue
+            for i in range(len(keywords)):
+                with open(file_name) as myfile:
+                    if keywords[i] in myfile.read():
+                        c += 1
+        if c == 0:
+            job.doc.files_ready = True
+
+        return job.doc.files_ready
 
 
 @Project.label
 def has_restart_file(job):
     """Check if the job has a restart file."""
-    return job.isfile("fort.77")
+    return job.sp.ensemble == "GEMC-NVT" or job.isfile("fort.77")
 
 
 @Project.label
@@ -158,7 +192,7 @@ def has_fort77maker(job):
 def equil_replicate_set(job):
     """Check if number of equil replicates done has been set."""
     try:
-        return job.doc.equil_replicates_done
+        return isinstance(job.doc.equil_replicates_done, int)
     except AttributeError:
         return False
 
@@ -287,24 +321,26 @@ def prod_finished(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(equil_replicate_set)
 def set_equil_replicates(job):
     """Copy the files for simulation from engine_input folder."""
+    print("equil replicates set")
     job.doc.equil_replicates_done = 0
 
 
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(replicate_set)
 def set_prod_replicates(job):
     """Copy the files for simulation from engine_input folder."""
+    print("prod replicates set")
     job.doc.num_prod_replicates = 4
     job.doc.prod_replicates_done = 0
 
@@ -313,8 +349,8 @@ def set_prod_replicates(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_fort_files)
 def copy_files(job):
@@ -332,8 +368,8 @@ def copy_files(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_fort77maker)
 def copy_fort77maker(job):
@@ -349,8 +385,8 @@ def copy_fort77maker(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_topmon)
 def copy_topmon(job):
@@ -368,11 +404,11 @@ def copy_topmon(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
+    and j.sp.molecule == ("methaneUA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort_files)
-@Project.post(files_ready_npt)
+@Project.post(files_ready)
 def replace_keyword_fort_files_npt(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
     file_names = ["melt", "cool", "equil", "prod"]
@@ -397,14 +433,87 @@ def replace_keyword_fort_files_npt(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
+)
+@Project.pre(has_fort_files)
+@Project.post(files_ready)
+def replace_keyword_fort_files_gemc(job):
+    """Replace keywords with the values of the variables defined in signac statepoint."""
+    file_names = ["melt", "cool", "equil", "prod"]
+    seed = job.sp.replica
+    nchain1 = job.sp.N_liquid
+    length1 = job.sp.box_L_liq * 10  # nm to A
+    nchain2 = job.sp.N_vap
+    length2 = job.sp.box_L_vap * 10  # nm to A
+    temperature = job.sp.temperature
+    pressure = job.sp.pressure / 1000  # kPa to MPa
+    rcut = job.sp.r_cut * 10
+    nchaintot = nchain1 + nchain2
+    inix1 = 1 + math.ceil(nchain1 ** 0.33)
+    iniy1 = 1 + math.ceil(nchain1 ** 0.33)
+    iniz1 = 1 + math.ceil(nchain1 ** 0.33)
+    inix2 = 1 + math.ceil(nchain2 ** 0.33)
+    iniy2 = 1 + math.ceil(nchain2 ** 0.33)
+    iniz2 = 1 + math.ceil(nchain2 ** 0.33)
+    variables = [
+        nchain1,
+        length1,
+        nchain2,
+        length2,
+        temperature,
+        pressure,
+        seed,
+        rcut,
+        nchaintot,
+        inix1,
+        iniy1,
+        iniz1,
+        inix2,
+        iniy2,
+        iniz2,
+    ]
+    keywords = [
+        "NCHAIN1",
+        "LENGTH1",
+        "NCHAIN2",
+        "LENGTH2",
+        "TEMPERATURE",
+        "PRESSURE",
+        "SEED",
+        "RCUT",
+        "NCHAINTOT",
+        "INIX1",
+        "INIY1",
+        "INIZ1",
+        "INIX2",
+        "INIY2",
+        "INIZ2",
+    ]
+    for name in file_names:
+        file_name = job.ws + "/fort.4." + name
+        i = 0
+        for i in range(len(variables)):
+            with fileinput.FileInput(file_name, inplace=True) as file:
+                for line in file:
+                    print(line.replace(keywords[i], str(variables[i])), end="")
+
+
+@ex
+@Project.operation
+@Project.pre(
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_fort77maker)
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a fort77 file for the job."""
     from fort77maker_onebox import fort77writer
+
+    if job.sp.ensemble == "GEMC-NVT":
+        return
 
     molecules = get_molecules(job)
     filled_box = get_system(job)[0]
@@ -421,8 +530,8 @@ def make_restart_file(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(has_fort_files)
@@ -461,8 +570,8 @@ def run_melt(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(melt_finished)
@@ -499,8 +608,8 @@ def run_cool(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
@@ -539,8 +648,8 @@ def run_equil(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    and j.sp.molecule == ("ethanolAA")
-    and j.sp.ensemble == "NPT"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(system_equilibrated)
