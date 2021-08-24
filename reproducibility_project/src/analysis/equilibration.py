@@ -2,11 +2,13 @@
 import pathlib
 from typing import List
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 from pymbar import timeseries
-from unyt import matplotlib_support
+from signac.contrib.job import Job
+
+from reproducibility_project.src.utils.plotting import plot_data_with_t0_line
 
 
 def is_equilibrated(
@@ -91,59 +93,53 @@ def trim_non_equilibrated(
     return [a_t[t0:], t0, g, Neff]
 
 
-def plot_data_with_t0_line(
+def plot_job_property_with_t0(
+    job: Job,
     filename: str,
-    a_t: npt.ArrayLike,
+    property_name: str,
+    vline_scale: float = 1.5,
     threshold: float = 0.0,
     overwrite: bool = False,
-    data_plt_kwargs: dict = None,
-    vline_plt_kwargs: dict = None,
+    data_plt_kwargs: dict = {},
+    vline_plt_kwargs: dict = {},
 ) -> None:
-    """Plot data with a vertical line at beginning of equilibration.
+    """Plot data with a vertical line at beginning of equilibration for a specifc job and property.
 
     Parameters
     ----------
-    a_t : numpy.typing.ArrayLike
-        1-D time dependent data
+    job : signac.contrib.job.Job, required
+        The signac job to access the necessary data files.
+    filename : str, required
+        The name of the output image.
+        Only the name of the file and extension is expected, the location will be within the job.
+    property : str, required
+        The name of the property to plot.
+    vline_scale : float, optional, default=1.5
+        Scale the min and max components of the vertical line.
     threshold : float, optional, default=0.0
         Threshold to error out on if threshold fraction of data is not equilibrated.
     overwrite : bool, optional, default=False
         Do not write to filename if a file already exists with the same name.
         Set to True to overwrite exisiting files.
-    plt_kwargs : dict, optional, default=None
-        keyword dictionary for matplotlib.pyplot.plot command.
+    data_plt_kwargs : dict, optional, default={}
+        Pass in a dictionary of keyword arguments to plot the data.
+    vline_plt_kwargs : dict, optional, default={}
+        Pass in a dictionary of keyword arguments for the vertical line denoting t0.
     """
-    scale = 1.5
-    path = pathlib.Path(filename)
-    if path.is_file() and not overwrite:
-        raise FileExistsError(
-            f"Cannot write {path.name}, file already exists at: {path.absolute()}. Set overwrite=True to replace file."
-        )
-
-    _, t0, g, Neff = is_equilibrated(a_t, threshold=threshold, nskip=1)
-
-    ymin = np.min(a_t) * scale
-    ymax = np.max(a_t) * scale
-
-    fig, ax = plt.subplots()
-
-    if data_plt_kwargs is None:
-        data_plt_kwargs = {"color": "b", "linestyle": "-", "label": "Property"}
-    if vline_plt_kwargs is None:
-        vline_plt_kwargs = {
-            "colors": "r",
-            "linestyles": "--",
-            "label": f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}",
-        }
-
-    (line1,) = ax.plot(a_t, **data_plt_kwargs)
-    vline1 = ax.vlines(x=t0, ymin=ymin, ymax=ymax, **vline_plt_kwargs)
-
-    ax.legend(loc="best")
-
-    plt.suptitle("Property")
-
-    plt.tight_layout()
-    fig.savefig(
-        str(path.absolute()),
+    fname = pathlib.Path(filename)
+    fname = fname.name
+    a_t = pd.read_csv(
+        job.fn("log.txt"),
+        delim_whitespace=True,
+        header=0,
     )
+    with job:
+        plot_data_with_t0_line(
+            filename=fname,
+            a_t=a_t[property_name].to_numpy(),
+            vline_scale=vline_scale,
+            overwrite=overwrite,
+            threshold=threshold,
+            data_plt_kwargs=data_plt_kwargs,
+            vline_plt_kwargs=vline_plt_kwargs,
+        )
