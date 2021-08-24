@@ -47,7 +47,7 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
-        "waterSPC/E": WaterSPC(),
+        "waterSPCE": WaterSPC(),
         "ethanolAA": EthanolAA(),
     }
     molecule = molecule_dict[sp["molecule"]]
