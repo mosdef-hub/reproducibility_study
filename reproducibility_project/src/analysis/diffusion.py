@@ -3,9 +3,9 @@
 import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
+import unyt as u
 from freud.box import Box
 from freud.msd import MSD
-import unyt as u
 from scipy import stats
 
 
@@ -42,8 +42,8 @@ def gsd_msd(job, skip=2, stride=1):
     fig, ax = plt.subplots()
     ax.plot(
         timesteps,
-        m*timesteps+b,
-        label=f"linear fit\ny = {m:.1e}x + {b:.1e}\n(r = {r:.3f})"
+        m * timesteps + b,
+        label=f"linear fit\ny = {m:.1e}x + {b:.1e}\n(r = {r:.3f})",
     )
     ax.plot(timesteps, msd.msd, label="MSD")
     ax.set_xlabel("$Time (ps)$")
@@ -57,7 +57,7 @@ def gsd_msd(job, skip=2, stride=1):
     # calculated according to
     # https://doi.org/10.1002/jcc.21939
     # units nm^2/ps
-    job.doc["diffusion_coefficient"] = m/6
+    job.doc["diffusion_coefficient"] = m / 6
     return msd
 
 
