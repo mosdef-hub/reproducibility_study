@@ -9,7 +9,7 @@ from freud.msd import MSD
 from scipy import stats
 
 
-def gsd_msd(job, skip=2, stride=1):
+def gsd_msd(job, skip=2, stride=1, unwrapped=False):
     """Compute the MSD and diffusion coefficient given a Signac Job object.
 
     The job folder is expected to contain the file "trajectory.gsd" with lengths
@@ -29,13 +29,18 @@ def gsd_msd(job, skip=2, stride=1):
         The number of frames from the trajectory to skip.
     stride : int, default 1
         The step size between frames.
+    unwrapped : bool, default False
+        Whether the trajectory has unwrapped positions. By default, it is
+        assumed that the positions are not unwrapped and the box and image
+        information will be used to unwrap the positions. Otherwise only the
+        particle positions will be used.
 
     Returns
     -------
     freud.msd.MSD
         Computed MSD object
     """
-    msd, timesteps = _gsd_msd(job.fn("trajectory.gsd"), skip, stride)
+    msd, timesteps = _gsd_msd(job.fn("trajectory.gsd"), skip, stride, unwrapped)
 
     m, b, r, p, std_err = stats.linregress(timesteps, msd.msd)
 
@@ -61,23 +66,34 @@ def gsd_msd(job, skip=2, stride=1):
     return msd
 
 
-def _gsd_msd(gsdfile, skip, stride=1):
+def _gsd_msd(gsdfile, skip, stride, unwrapped):
     """Compute the MSD given a GSD file."""
-    with gsd.hoomd.open(gsdfile) as trajectory:
-        boxes = []
-        images = []
-        positions = []
-        timesteps = []
-        for frame in trajectory[skip::stride]:
-            boxes.append(frame.configuration.box)
-            images.append(frame.particles.image)
-            positions.append(frame.particles.position)
-            timesteps.append(frame.configuration.step)
+    if not unwrapped:
+        with gsd.hoomd.open(gsdfile) as trajectory:
+            boxes = []
+            images = []
+            positions = []
+            timesteps = []
+            for frame in trajectory[skip::stride]:
+                boxes.append(frame.configuration.box)
+                images.append(frame.particles.image)
+                positions.append(frame.particles.position)
+                timesteps.append(frame.configuration.step)
 
-    if not all(all(i == boxes[0]) for i in boxes):
-        raise ValueError(
-            "MSD calculation requires that the box size does not change."
-        )
-    msd = MSD(Box.from_box(boxes[0]))
+        if not all(all(i == boxes[0]) for i in boxes):
+            raise ValueError(
+                "MSD calculation requires that the box size does not change."
+            )
+        msd = MSD(Box.from_box(boxes[0]))
+    else:
+        with gsd.hoomd.open(gsdfile) as trajectory:
+            images = None
+            positions = []
+            timesteps = []
+            for frame in trajectory[skip::stride]:
+                positions.append(frame.particles.position)
+                timesteps.append(frame.configuration.step)
+
+        msd = MSD()
     msd.compute(positions, images=images)
     return msd, np.array(timesteps)
