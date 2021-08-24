@@ -33,6 +33,7 @@ def run_cassandra(job):
     import mosdef_cassandra as mc
     import unyt as u
     from mbuild.formats.xyz import read_xyz
+    from pymbar.timeseries import detectEquilibration
 
     from reproducibility_project.src.molecules.methane_ua import MethaneUA
     from reproducibility_project.src.molecules.pentane_ua import PentaneUA
@@ -40,8 +41,6 @@ def run_cassandra(job):
         construct_system,
     )
     from reproducibility_project.src.utils.forcefields import load_ff
-
-    from pymbar.timeseries import detectEquilibration
 
     compound_dict = {
         "methaneUA": MethaneUA(),
@@ -268,7 +267,7 @@ def run_cassandra(job):
             seeds=seeds,
         )
 
-        prior_run = "equil_"+str(cycles_done)
+        prior_run = "equil_" + str(cycles_done)
         cycles_done += equil_length
 
         if ensemble == "GEMC-NVT":
@@ -277,36 +276,43 @@ def run_cassandra(job):
         else:
             prpsuffix_liq = ".out.prp"
 
-        t, g, Neff_max = detectEquilibration(np.loadtxt(prior_run+prpsuffix_liq,usecols=5))
+        t, g, Neff_max = detectEquilibration(
+            np.loadtxt(prior_run + prpsuffix_liq, usecols=5)
+        )
 
         if ensemble == "GEMC-NVT":
-            tvap, gvap, Neff_max_vap = detectEquilibration(np.loadtxt(prior_run+prpsuffix_vap,usecols=5))
-            t = max(t,tvap)
+            tvap, gvap, Neff_max_vap = detectEquilibration(
+                np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
+            )
+            t = max(t, tvap)
 
         for i in range(2):
-            if t >= equil_length * 3 / (prop_freq*4):
+            if t >= equil_length * 3 / (prop_freq * 4):
                 mc.restart(
                     restart_from=prior_run,
-                    run_name="equil_"+str(cycles_done),
+                    run_name="equil_" + str(cycles_done),
                     run_type="equilibration",
-                    total_run_length=cycles_done+equil_length,
+                    total_run_length=cycles_done + equil_length,
                 )
-                prior_run = "equil_"+str(cycles_done)
+                prior_run = "equil_" + str(cycles_done)
                 cycles_done += equil_length
-                t, g, Neff_max = detectEquilibration(np.loadtxt(prior_run+prpsuffix_liq,usecols=5))
+                t, g, Neff_max = detectEquilibration(
+                    np.loadtxt(prior_run + prpsuffix_liq, usecols=5)
+                )
 
                 if ensemble == "GEMC-NVT":
-                    tvap, gvap, Neff_max_vap = detectEquilibration(np.loadtxt(prior_run+prpsuffix_vap,usecols=5))
-                    t = max(t,tvap)
+                    tvap, gvap, Neff_max_vap = detectEquilibration(
+                        np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
+                    )
+                    t = max(t, tvap)
             else:
                 break
-        
 
         mc.restart(
             restart_from=prior_run,
             run_name="prod",
             run_type="production",
-            total_run_length=cycles_done+prod_length,
+            total_run_length=cycles_done + prod_length,
         )
 
 
