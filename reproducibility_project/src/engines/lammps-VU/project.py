@@ -84,6 +84,8 @@ def built_lammps(job):
     import foyer
     from mbuild.formats.lammpsdata import write_lammpsdata
 
+    from reproducibility_project.src.utils.forcefields import load_ff
+
     sys.path.append(Project().root_directory() + "/..")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
@@ -91,20 +93,14 @@ def built_lammps(job):
 
     system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
-    # Apply forcefield from statepoint
-    if job.sp.forcefield_name == "trappe-ua":
-        ff = foyer.Forcefield(name="trappe-ua")
-    elif job.sp.forcefield_name == "oplsaa":
-        ff = foyer.Forcefield(name="oplsaa")
-    elif job.sp.forcefield_name == "spce":
-        ff = foyer.Forcefield(
-            name="spce"
-        )  # TODO: Make sure this gets applied correctly
-    else:
-        raise Exception(
-            "No forcefield has been applied to this system {}".format(job.id)
-        )
+    ff = load_ff(job.sp.forcefield_name)
+    system.save(
+        "box.json"
+    )  # save the compound as a json object for reading back in to mbuild
     typed_surface = ff.apply(parmed_structure)
+    typed_surface.save(
+        "box.top"
+    )  # save to gromacs topology for later conversions in mdtraj
     write_lammpsdata(
         typed_surface,
         "box.lammps",
@@ -113,7 +109,7 @@ def built_lammps(job):
         mins=[system.get_boundingbox().vectors[0]],
         maxs=[system.get_boundingbox().vectors[1]],
         use_rb_torsions=True,
-    )
+    )  # write out a lammps topology
     return
 
 
@@ -175,31 +171,11 @@ def run_lammps(job):
 def lammps_calc_rdf(job):
     # Create rdf data from the production run
     import mbuild as mb
-    import MDAnalysis as mda
+    import mdtraj
 
-    u = mda.Universe("box.lammps", topology_format="DATA")
-    u.load_new("prod.xtc")
-    u.trajectory[-1]
-    parmed_structure = u.atoms.convert_to("PARMED")
-    mb.formats.gsdwriter.write_gsd(parmed_structure, "prod.gsd")
+    traj = md.load("prod.xtc", top="box.gro")
+    traj.save("prod.gsd")
     # TODO: Use freud rdf PR to create an RDF from the gsd file
-    return
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_production)
-@Project.post(lambda j: j.isfile("density.csv"))
-@flow.with_job
-@flow.cmd
-def lammps_create_density_csv(job):
-    # Create rdf data from the production run
-    import lammps_thermo
-
-    thermo = lammps_thermo.load("log.lammps", skip_sections=9)
-    density = thermo.prop("Density")
-    list_d = np.concatenate(density).ravel()
-    np.savetxt("density.csv", list_d, delimiter=",", fmt="%f")
     return
 
 
