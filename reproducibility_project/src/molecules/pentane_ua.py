@@ -5,7 +5,7 @@ import numpy as np
 
 
 class PentaneUA(mb.Compound):
-    """Create a single particle methane compound."""
+    """Create a united-atom pentane compound."""
 
     def __init__(self):
         super(PentaneUA, self).__init__()
