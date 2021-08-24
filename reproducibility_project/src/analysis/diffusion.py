@@ -52,6 +52,8 @@ def gsd_msd(job, skip=2, stride=1):
 
     np.savetxt(job.fn("msd.txt"), msd.msd)
 
+    # calculated according to
+    # https://doi.org/10.1002/jcc.21939
     # units nm^2/ps
     job.doc["diffusion_coefficient"] = m/6
     return msd
