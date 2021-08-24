@@ -42,7 +42,7 @@ def plot_prod_data_with_t0(job):
             title=prop.upper(),
             overwrite=True,
             threshold=0.0,
-            vline_scale=1.5,
+            vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )
 

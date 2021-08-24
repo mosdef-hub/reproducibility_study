@@ -11,12 +11,12 @@ from reproducibility_project.src.analysis.equilibration import is_equilibrated
 def plot_data_with_t0_line(
     filename: str,
     a_t: npt.ArrayLike,
-    vline_scale: float = 1.5,
+    vline_scale: float = 1.1,
     threshold: float = 0.0,
     overwrite: bool = False,
     title: str = None,
-    data_plt_kwargs: dict = {},
-    vline_plt_kwargs: dict = {},
+    data_plt_kwargs: dict = None,
+    vline_plt_kwargs: dict = None,
 ) -> None:
     """Plot data with a vertical line at beginning of equilibration.
 
@@ -24,7 +24,7 @@ def plot_data_with_t0_line(
     ----------
     a_t : numpy.typing.ArrayLike
         1-D time dependent data
-    vline_scale : float, optional, default=1.5
+    vline_scale : float, optional, default=1.1
         Scale the min and max components of the vertical line.
     threshold : float, optional, default=0.0
         Threshold to error out on if threshold fraction of data is not equilibrated.
@@ -46,9 +46,13 @@ def plot_data_with_t0_line(
 
     _, t0, g, Neff = is_equilibrated(a_t, threshold=threshold, nskip=1)
 
-    ymin = np.min(a_t) * vline_scale
-    ymax = np.max(a_t) * vline_scale
+    ymin = np.min(a_t) - np.min(a_t) * (np.abs(1 - vline_scale))
+    ymax = np.max(a_t) + np.max(a_t) * (np.abs(1 - vline_scale))
 
+    if data_plt_kwargs is None:
+        data_plt_kwargs = {}
+    if vline_plt_kwargs is None:
+        vline_plt_kwargs = {}
     for key, val in {
         "color": "b",
         "linestyle": "-",
@@ -60,10 +64,13 @@ def plot_data_with_t0_line(
     for key, val in {
         "colors": "r",
         "linestyles": "--",
-        "label": f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}",
+        "label": "t_0={0:d}\ng={1:.2f}\nNeff={2:d}",
     }.items():
         if vline_plt_kwargs.get(key) is None:
-            vline_plt_kwargs[key] = val
+            if key == "label":
+                vline_plt_kwargs[key] = val.format(t0, g, int(Neff))
+            else:
+                vline_plt_kwargs[key] = val
 
     fig, ax = plt.subplots()
 
@@ -81,3 +88,4 @@ def plot_data_with_t0_line(
     fig.savefig(
         str(path.absolute()),
     )
+    plt.close()

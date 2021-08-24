@@ -96,11 +96,11 @@ def plot_job_property_with_t0(
     filename: str,
     property_name: str,
     title: str = None,
-    vline_scale: float = 1.5,
+    vline_scale: float = 1.1,
     threshold: float = 0.0,
     overwrite: bool = False,
-    data_plt_kwargs: dict = {},
-    vline_plt_kwargs: dict = {},
+    data_plt_kwargs: dict = None,
+    vline_plt_kwargs: dict = None,
 ) -> None:
     """Plot data with a vertical line at beginning of equilibration for a specifc job and property.
 
@@ -115,7 +115,7 @@ def plot_job_property_with_t0(
         The name of the property to plot.
     title : str, optional, default = Property
         Title of the plot
-    vline_scale : float, optional, default=1.5
+    vline_scale : float, optional, default=1.1
         Scale the min and max components of the vertical line.
     threshold : float, optional, default=0.0
         Threshold to error out on if threshold fraction of data is not equilibrated.
@@ -138,6 +138,10 @@ def plot_job_property_with_t0(
         delim_whitespace=True,
         header=0,
     )
+    if data_plt_kwargs is None:
+        data_plt_kwargs = dict()
+    if vline_plt_kwargs is None:
+        vline_plt_kwargs = dict()
     with job:
         plot_data_with_t0_line(
             filename=fname,
