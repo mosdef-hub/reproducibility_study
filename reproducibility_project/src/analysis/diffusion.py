@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from freud.box import Box
 from freud.msd import MSD
+import unyt as u
+from scipy import stats
 
 
 def gsd_msd(job, skip=2, stride=1):
@@ -31,17 +33,27 @@ def gsd_msd(job, skip=2, stride=1):
     freud.msd.MSD
         Computed MSD object
     """
-    msd = _gsd_msd(job.fn("trajectory.gsd"), skip, stride)
+    msd, timesteps = _gsd_msd(job.fn("trajectory.gsd"), skip, stride)
+
+    m, b, r, p, std_err = stats.linregress(timesteps, msd.msd)
 
     fig, ax = plt.subplots()
-    ax.plot(msd.msd)
-    ax.set_xlabel("$Frame$")
-    ax.set_ylabel(r"$MSD (nm^{2})$")  # TODO check unit
+    ax.plot(
+        timesteps,
+        m*timesteps+b,
+        label=f"linear fit\ny = {m:.1e}x + {b:.1e}\n(r = {r:.3f})"
+    )
+    ax.plot(timesteps, msd.msd, label="MSD")
+    ax.set_xlabel("$Time (ps)$")
+    ax.set_ylabel(r"$MSD (nm^{2})$")
     ax.set_title("MSD")
 
     fig.savefig(job.fn("msd.png"))
 
     np.savetxt(job.fn("msd.txt"), msd.msd)
+
+    # units nm^2/ps
+    job.doc["diffusion_coefficient"] = m/6
     return msd
 
 
@@ -51,13 +63,17 @@ def _gsd_msd(gsdfile, skip, stride=1):
         boxes = []
         images = []
         positions = []
+        timesteps = []
         for frame in trajectory[skip::stride]:
-            images.append(frame.particles.image)
             boxes.append(frame.configuration.box)
+            images.append(frame.particles.image)
             positions.append(frame.particles.position)
+            timesteps.append(frame.configuration.step)
 
-    # msd requires that the box size does not change.
-    assert all(all(i == boxes[0]) for i in boxes)
+    if not all(all(i == boxes[0]) for i in boxes):
+        raise ValueError(
+            "MSD calculation requires that the box size does not change."
+        )
     msd = MSD(Box.from_box(boxes[0]))
     msd.compute(positions, images=images)
-    return msd
+    return msd, np.array(timesteps)
