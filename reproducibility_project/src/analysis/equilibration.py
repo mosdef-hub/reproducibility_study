@@ -96,7 +96,8 @@ def plot_data_with_t0_line(
     a_t: npt.ArrayLike,
     threshold: float = 0.0,
     overwrite: bool = False,
-    plt_kwargs: dict = None,
+    data_plt_kwargs: dict = None,
+    vline_plt_kwargs: dict = None,
 ) -> None:
     """Plot data with a vertical line at beginning of equilibration.
 
@@ -124,20 +125,25 @@ def plot_data_with_t0_line(
     ymin = np.min(a_t) * scale
     ymax = np.max(a_t) * scale
 
-    (line1,) = plt.plot(
-        a_t,
-        "b-",
-        label=f"Property",
-    )
-    vline1 = plt.vlines(
-        x=t0,
-        ymin=ymin,
-        ymax=ymax,
-        colors="r",
-        linestyles="--",
-        label=f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}",
-    )
-    plt.legend(loc="best")
-    plt.savefig(
+    fig, ax = plt.subplots()
+
+    if data_plt_kwargs is None:
+        data_plt_kwargs = {"color": "b", "linestyle": "-", "label": "Property"}
+    if vline_plt_kwargs is None:
+        vline_plt_kwargs = {
+            "colors": "r",
+            "linestyles": "--",
+            "label": f"t_0={t0}\ng={g:.2f}\nNeff={Neff:.2f}",
+        }
+
+    (line1,) = ax.plot(a_t, **data_plt_kwargs)
+    vline1 = ax.vlines(x=t0, ymin=ymin, ymax=ymax, **vline_plt_kwargs)
+
+    ax.legend(loc="best")
+
+    plt.suptitle("Property")
+
+    plt.tight_layout()
+    fig.savefig(
         str(path.absolute()),
     )
