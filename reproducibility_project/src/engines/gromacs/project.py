@@ -170,7 +170,7 @@ def extend_gmx_npt(job):
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt "
+    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -nt 16"
     return msg
 
 
