@@ -30,17 +30,13 @@ def mc3s_exec():
 
 def get_system(job):
     """Return the system (mbuild filled_box) for a particular job."""
-    import sys
-
     import foyer
     from constrainmol import ConstrainedMolecule
 
-    sys.path.append(Project().root_directory())
-    from src.utils.forcefields import load_ff
-
-    sys.path.append(Project().root_directory() + "/src/molecules/")
-    sys.path.append(Project().root_directory() + "/..")
-    from system_builder import construct_system
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
 
     system = construct_system(job.sp)
     molecule = get_molecules(job)[0]
@@ -72,15 +68,12 @@ def get_system(job):
 
 def get_molecules(job):
     """Return the list of mbuild molecules being used in the job."""
-    import sys
-
-    sys.path.append(Project().root_directory() + "/src/molecules/")
-    sys.path.append(Project().root_directory() + "/../")
-    from benzene_ua import BenzeneUA
-    from ethanol_aa import EthanolAA
     from mbuild.lib.molecules.water import WaterSPC
-    from methane_ua import MethaneUA
-    from pentane_ua import PentaneUA
+
+    from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
+    from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
+    from reproducibility_project.src.molecules.methane_ua import MethaneUA
+    from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
     molecule_dict = {
         "methaneUA": MethaneUA(),
@@ -186,35 +179,15 @@ def has_topmon(job):
 
 
 @Project.label
-def has_fort77maker(job):
-    """Check if the home dir has fort77maker for one box and two box simulations."""
-    return os.path.isfile(
-        Project().root_directory()
-        + "/src/engines/mcccs/"
-        + "fort77maker_onebox.py"
-    ) and os.path.isfile(
-        Project().root_directory()
-        + "/src/engines/mcccs/"
-        + "fort77maker_twobox.py"
-    )
-
-
-@Project.label
 def equil_replicate_set(job):
     """Check if number of equil replicates done has been set."""
-    try:
-        return isinstance(job.doc.equil_replicates_done, int)
-    except AttributeError:
-        return False
+    return isinstance(job.doc.get("equil_replicates_done"), int)
 
 
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    try:
-        return job.doc.num_prod_replicates == 4
-    except AttributeError:
-        return False
+    return job.doc.get(num_prod_replicates) == 4
 
 
 @Project.label
@@ -289,6 +262,51 @@ def sanitize_npt_log(step):
     arrays[:, 2] = arrays[:, 2] / 10  # Ang to nm
     arrays[:, 3] = arrays[:, 3] * 0.008314410016255453  # K to kJ/mol
     arrays[:, 4] = arrays[:, 4]  # Pressure kPa to kPa
+    np.savetxt(
+        "{}_log.txt".format(step),
+        arrays,
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+    )
+    return arrays
+
+
+def sanitize_gemc_log(step):
+    """Sanitize the output logs for gemc simulations."""
+    import numpy as np
+
+    files = glob("fort*12*{}*".format(step))
+    arrays_box1 = []
+    arrays_box2 = []
+
+    for filecurrent in files:
+        array = np.genfromtxt(filecurrent, skip_header=1)
+        array1 = array[::2, :]
+        array2 = array[1::2, :]
+        arrays_box1.append(array1)
+        arrays_box2.append(array2)
+    arrays_box1 = np.vstack(arrays_box1)
+    arrays_box2 = np.vstack(arrays_box2)
+    arrays_box1[:, 0] = arrays_box1[:, 0] / 10  # Ang to nm
+    arrays_box1[:, 1] = arrays_box1[:, 1] / 10  # Ang to nm
+    arrays_box1[:, 2] = arrays_box1[:, 2] / 10  # Ang to nm
+    arrays_box1[:, 3] = arrays_box1[:, 3] * 0.008314410016255453  # K to kJ/mol
+    arrays_box1[:, 4] = arrays_box1[:, 4]  # Pressure kPa to kPa
+    arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
+    arrays_box2[:, 1] = arrays_box2[:, 1] / 10  # Ang to nm
+    arrays_box2[:, 2] = arrays_box2[:, 2] / 10  # Ang to nm
+    arrays_box2[:, 3] = arrays_box2[:, 3] * 0.008314410016255453  # K to kJ/mol
+    arrays_box2[:, 4] = arrays_box2[:, 4]  # Pressure kPa to kPa
+
+    np.savetxt(
+        "{}_log_box1.txt".format(step),
+        arrays_box1,
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+    )
+    np.savetxt(
+        "{}_log_box2.txt".format(step),
+        arrays_box2,
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+    )
     return arrays
 
 
@@ -301,7 +319,8 @@ def system_equilibrated(job):
             return False
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
-
+        if job.sp.ensemble == "GEMC-NVT":
+            equil_log = sanitize_gemc_log("equil")
         # run pymbar
         return True
 
@@ -360,24 +379,6 @@ def copy_files(job):
         )
     ):
         shutil.copy(file, job.workspace() + "/")
-
-
-@ex
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "mcccs")
-@Project.post(has_fort77maker)
-def copy_fort77maker(job):
-    """Copy fort77maker_onebox.py from root directory to mcccs directory."""
-    shutil.copy(
-        Project().root_directory()
-        + "/src/engine_input/mcccs/fort77maker_onebox.py",
-        Project().root_directory() + "/src/engines/mcccs/",
-    )
-    shutil.copy(
-        Project().root_directory()
-        + "/src/engine_input/mcccs/fort77maker_twobox.py",
-        Project().root_directory() + "/src/engines/mcccs/",
-    )
 
 
 @ex
@@ -489,14 +490,14 @@ def replace_keyword_fort_files_gemc(job):
 @ex
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "mcccs")
-@Project.pre(has_fort77maker)
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a fort77 file for the job."""
-    from fort77maker_onebox import fort77writer
-
     if job.sp.ensemble == "GEMC-NVT":
-        from fort77maker_twobox import fort77writer
+        #        from fort77maker_twobox import fort77writer
+        from reproducibility_project.src.engine_input.mcccs.fort77maker_twobox import (
+            fort77writer,
+        )
 
         molecules = get_molecules(job)
         filled_boxes = get_system(job)
@@ -512,7 +513,10 @@ def make_restart_file(job):
 
         return
     elif job.sp.ensemble == "NPT":
-        from fort77maker_onebox import fort77writer
+        # from fort77maker_onebox import fort77writer
+        from reproducibility_project.src.engine_input.mcccs.fort77maker_onebox import (
+            fort77writer,
+        )
 
         molecules = get_molecules(job)
         filled_box = get_system(job)[0]
