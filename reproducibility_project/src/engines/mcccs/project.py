@@ -185,6 +185,15 @@ def equil_replicate_set(job):
 
 
 @Project.label
+def equil_replicate_set(job):
+    """Check if number of equil replicates done has been set."""
+    try:
+        return isinstance(job.doc.equil_replicates_done, int)
+    except AttributeError:
+        return False
+
+
+@Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
     return job.doc.get(num_prod_replicates) == 4
