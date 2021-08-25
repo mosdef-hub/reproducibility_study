@@ -26,16 +26,23 @@ class Project(flow.FlowProject):
 class Rahman(DefaultPBSEnvironment):
     """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
 
-    hostname_pattern = "rahman.vuse.vanderbilt.edu"
     template = "rahman_gmx.sh"
 
     @classmethod
     def add_args(cls, parser):
         """Add command line arguments to the submit call."""
         parser.add_argument(
-            "--group", type=int, help="How many serial jobs at once"
+            "--bundle",
+            type=int,
+            default=16,
+            help="How many serial jobs at once",
         )
-        parser.add_argument("--walltime", type=float, help="Walltime")
+        parser.add_argument(
+            "--walltime",
+            type=float,
+            default=96,
+            help="Walltime for this submission",
+        )
 
 
 @Project.operation
