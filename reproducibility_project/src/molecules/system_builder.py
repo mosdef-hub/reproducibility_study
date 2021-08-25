@@ -66,3 +66,45 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
         return [filled_liq_box, filled_vap_box]
     else:
         return [filled_liq_box, None]
+
+
+def get_molecule(sp):
+    """Construct the mbuild molecule for the job statepoint.
+
+    Parameters
+    ----------
+    sp: dict (from job.sp)
+        Dictionary contains information necessary to construct a system.
+        Stored as state of job. The dictionary should resemble:
+        {"molecule": str,
+         "engine": str,
+         "replica": int,
+         "temperature": float (in K),
+         "pressure": float (in kPa),
+         "ensemble": str,
+         "N_liquid": int,
+         "N_vap": int,
+         "box_L_liq": int (nm),
+         "box_L_vap", int (nm),
+         "init_liq_den": float (g/cm3),
+         "init_vap_den": float (g/cm3),
+         "mass": float (g/mol),
+         "forcefield_name": str,
+         "cutoff_style": str,
+         "r_cut": float (in nm)}
+
+    Returns
+    -------
+    molecule
+        Return mBuild molecule for the statepoint.
+    """
+    molecule_dict = {
+        "methaneUA": MethaneUA(),
+        "pentaneUA": PentaneUA(),
+        "benzeneUA": BenzeneUA(),
+        "waterSPCE": WaterSPC(),
+        "ethanolAA": EthanolAA(),
+    }
+    molecule = molecule_dict[sp["molecule"]]
+    molecule.name = sp["molecule"]
+    return molecule
