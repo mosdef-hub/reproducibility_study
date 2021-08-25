@@ -21,13 +21,35 @@ class Project(flow.FlowProject):
 def is_cassandra(job):
     return job.sp.simulation_engine == "cassandra"
 
+@Project.label
+def statepoint_selection(job):
+    molecules = ["methaneUA"]
+    replicas = [0]
+    reqs = []
+    reqs.append(job.sp.molecule in molecules)
+    reqs.append(job.sp.replica in replicas)
+    return all(reqs)
+
+@Project.label
+def cassandra_complete(job):
+    complete = False
+    with open(job.fn("prod.out.log")) as f:
+        for line in f:
+            if "Cassandra simulation complete" in line:
+                complete = True
+                break
+    return complete
+
 
 @Project.operation
+@Project.pre(is_cassandra)
+@Project.pre(statepoint_selection)
 @Project.post(cassandra_complete)
 @directives(omp_num_threads=4)
 def run_cassandra(job):
     """"""
 
+    import os
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
@@ -35,8 +57,12 @@ def run_cassandra(job):
     from mbuild.formats.xyz import read_xyz
     from pymbar.timeseries import detectEquilibration
 
+    from mbuild.lib.molecules.water import WaterSPC
+
     from reproducibility_project.src.molecules.methane_ua import MethaneUA
     from reproducibility_project.src.molecules.pentane_ua import PentaneUA
+    from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
+    from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -46,8 +72,8 @@ def run_cassandra(job):
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
-        "waterSPC/E": mb.lib.molecules.water.WaterSPC(),
-        "ethanolAA": mb.load("CCO", smiles=True),
+        "waterSPC/E": WaterSPC(),
+        "ethanolAA": EthanolAA(),
     }
     molecule = job.sp.molecule
 
@@ -64,7 +90,7 @@ def run_cassandra(job):
     Nvap = job.sp.N_vap
     N = Nliq + Nvap
 
-    equil_length = 80000
+    equil_length = 40000
     prod_length = 120000
 
     filled_boxes = construct_system(job.sp)
@@ -301,10 +327,18 @@ def run_cassandra(job):
                 )
 
                 if ensemble == "GEMC-NVT":
+                    os.remove(prior_run+".out.box1.xyz")
+                    os.remove(prior_run+".out.box1.H")
+                    os.remove(prior_run+".out.box2.xyz")
+                    os.remove(prior_run+".out.box2.H")
                     tvap, gvap, Neff_max_vap = detectEquilibration(
                         np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
                     )
                     t = max(t, tvap)
+                else:
+                    os.remove(prior_run+".out.xyz")
+                    os.remove(prior_run+".out.H")
+
             else:
                 break
 
