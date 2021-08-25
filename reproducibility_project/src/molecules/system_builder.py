@@ -2,11 +2,13 @@
 import mbuild as mb
 from mbuild.lib.molecules.water import WaterSPC
 
+from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
+from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
 from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
 
-def construct_system(sp, scale=1.0):
+def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
     """Construct systems according to job statepoint.
 
     Parameters
@@ -30,9 +32,10 @@ def construct_system(sp, scale=1.0):
          "forcefield_name": str,
          "cutoff_style": str,
          "r_cut": float (in nm)}
-    scale : float, default 1.0
-        Scale factor by which to scale the box. Useful for system initialization
-        if a shrink step makes equilibration easier.
+    scale_liq_box: float, optional, default=1.0
+        Option to scale sizes of the liquid box.
+    scale_vap_box: float, optional, default=1.0
+        Option to scale sizes of the vapor box.
 
     Returns
     -------
@@ -43,19 +46,20 @@ def construct_system(sp, scale=1.0):
     molecule_dict = {
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
-        "benzeneUA": None,
-        "waterSPC/E": WaterSPC(),
-        "ethanolAA": None,
+        "benzeneUA": BenzeneUA(),
+        "waterSPCE": WaterSPC(),
+        "ethanolAA": EthanolAA(),
     }
     molecule = molecule_dict[sp["molecule"]]
     molecule.name = sp["molecule"]
-    liq_box = mb.Box([sp["box_L_liq"] * scale] * 3)
+    liq_box = mb.Box([sp["box_L_liq"] * scale_liq_box] * 3)
+
     filled_liq_box = mb.fill_box(
         compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
     )
 
     if sp["box_L_vap"] and sp["N_vap"]:
-        vap_box = mb.Box([sp["box_L_vap"] * scale] * 3)
+        vap_box = mb.Box([sp["box_L_vap"] * scale_vap_box] * 3)
         filled_vap_box = mb.fill_box(
             compound=[molecule], n_compounds=[sp["N_vap"]], box=vap_box
         )

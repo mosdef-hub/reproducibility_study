@@ -55,14 +55,10 @@ def run_hoomd(job):
         construct_system,
     )
 
-    # temporary hack until benzene and ethanol are added
-    try:
-        # Ignore the vapor box
-        # Initialize with box expanded by factor of 5
-        # We will shrink it later
-        filled_box, _ = construct_system(job.sp, scale=5)
-    except AttributeError:
-        return
+    # Ignore the vapor box
+    # Initialize with box expanded by factor of 5
+    # We will shrink it later
+    filled_box, _ = construct_system(job.sp, scale_liq_box=5)
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -110,7 +106,7 @@ def run_hoomd(job):
     file = open(job.fn("log.txt"), mode="a", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
-        trigger=hoomd.trigger.Periodic(period=5000),
+        trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
         max_header_len=7,
     )
