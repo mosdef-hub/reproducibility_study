@@ -156,8 +156,8 @@ def gmx_npt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("npt.gro"))
-@Project.pre(lambda j: equil_status(j, "npt", "Potential"))
-@Project.post(lambda j: j.isfile("rerun_npt.tpr"))
+@Project.pre(lambda j: not equil_status(j, "npt", "Potential"))
+@Project.post(lambda j: equil_status(j, "npt", "Potential"))
 @flow.with_job
 @flow.cmd
 def extend_gmx_npt(job):
