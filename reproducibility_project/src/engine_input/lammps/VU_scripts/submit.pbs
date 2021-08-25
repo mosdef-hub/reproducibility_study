@@ -9,5 +9,5 @@
 cd $PBS_O_WORKDIR
 module load lammps
 
-mpirun -np 8 lmp < in.minimize #change name so proper script is run for each molecule
+mpirun -np 8 lmp < $infile -var seed $seed -var T $T -var P $P -var rcut $rcut
 echo $PBS_JOBID $PBS_O_WORKDIR >> ~/job-id-dirs.txt

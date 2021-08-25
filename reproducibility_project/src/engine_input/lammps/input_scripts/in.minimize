@@ -10,7 +10,6 @@ bond_style  harmonic
 angle_style harmonic
 dihedral_style  opls
 read_data box.lammps
-
 pair_modify shift no
 
 neighbor        2.5 bin #skin cutoff
@@ -20,14 +19,14 @@ thermo 2000
 thermo_style custom step temp press pe epair emol ke etotal density
 
 variable tsample equal ${T} #kelvin # modify from job.sp.temperature
-variable psample equal ${P} #kPa to atm job.sp.pressure
-velocity all create 140.0 ${seed} #temperature in kelvin
+variable psample equal ${P}/101.325 #kPa to atm job.sp.pressure
+velocity all create 140.0 ${seed}+1 #temperature in kelvin
 # ________________________________________________________________________________________
 
 # Minimize energy
 minimize 1e-4 1e-4 1000 1000
 fix integrator all nve/limit 0.1
-fix zeromom all momentum 100 linear rescale yes
+fix zeromom all momentum 100 linear 1 1 1
 run 10000
 unfix integrator
 minimize 1e-4 1e-4 1000 1000
@@ -41,4 +40,5 @@ timestep 2.0
 run 50000
 unfix integrator
 reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name
-write_restart minimized.restart_* #remove once working
+write_restart minimized.restart_* 
+

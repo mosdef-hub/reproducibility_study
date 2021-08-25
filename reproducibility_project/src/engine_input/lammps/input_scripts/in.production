@@ -9,7 +9,7 @@ pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut
 bond_style  none
 angle_style none
 dihedral_style  none
-read_restart equilibrate_npt.restart
+read_restart equilibrated_npt.restart
 
 pair_modify shift no  #TODO: Look to make sure this shift is okay
 
@@ -20,17 +20,23 @@ thermo 2000
 thermo_style custom step temp press pe epair emol ke etotal density
 
 variable tsample equal ${T} #kelvin, modified by job.sp.temperature
-variable psample equal ${P} #kPa to atm modified by job.sp.pressure
+variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
 # ________________________________________________________________________________________
 
 # Production
-variable fname equal "prlog.txt"
-fix output_data all print 1000 "${step} ${temp} ${press} ${etotal} ${pe} ${ke} ${density}" append v_fname
+variable startstep equal step
+variable t equal temp
+variable pressure equal press
+variable e equal etotal
+variable p equal pe
+variable k equal ke
+variable d equal density
+variable filename string "prlog.txt"
+fix output_data all print 1000 "${startstep} ${t} ${pressure} $e $p $k $d" file ${filename} title "step temp press etotal pe ke density"
 dump traj1 all xtc 10000 prod.xtc
-timestep 1.0
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
-fix zeromom all momentum 100 linear rescale yes
+fix zeromom all momentum 100 linear 1 1 1 rescale
 run 3000000
 unfix integrator
-write_restart production.restart #remove once working
+write_restart production.restart
 undump traj1

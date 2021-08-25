@@ -7,6 +7,8 @@ import flow
 import numpy as np
 from flow import environments
 
+#from reproducibility_project.src.analysis.equilibration import is_equilibrated
+
 
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -36,20 +38,39 @@ def lammps_copy_files(job):
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_minimized(job):
-    return job.isfile("minimized.restart")
+def lammps_minimized_equilibrated_nvt(job):
+    return job.isfile("minimized.restart_0")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_equilibrated_nvt(job):
-    return job.isfile("equilibrated_nvt.restart")
-
-
-@Project.label
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@flow.with_job
 def lammps_equilibrated_npt(job):
-    return job.isfile("equilibrated_npt.restart")
+    #sys.path.append(Project().root_directory() + "/..")
+    from reproducibility_project.src.analysis.equilibration import is_equilibrated
+    import pathlib
+    import numpy as np
+    project = job._project
+    p = pathlib.Path('.')
+    list_of_filenames = list(p.glob('eqlog*.txt'))
+    # grab the filename with the largest number
+    counter = 0
+    latest_eqdata = False
+    for file in list_of_filenames:
+        step = int(file.name[5:].split('.')[0])
+        if step > counter:
+           counter=step
+           latest_eqdata = file
+    if latest_eqdata:
+        data = np.genfromtxt(latest_eqdata.name, skip_header=1)
+        check_equil = np.all([is_equilibrated(data[:,1])[0],
+                              is_equilibrated(data[:,2])[0],
+                              is_equilibrated(data[:,4])[0],
+                              is_equilibrated(data[:,6])[0]
+                              ])
+    else:
+        check_equil = False
+    return job.isfile("equilibrated_npt.restart") and check_equil
 
 
 @Project.label
@@ -78,15 +99,12 @@ def lammps_created_gsd(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.post(lammps_created_box)
 @flow.with_job
-@flow.cmd
 def built_lammps(job):
     # Create a lammps datafile for a specified molecule
     import foyer
     from mbuild.formats.lammpsdata import write_lammpsdata
 
     from reproducibility_project.src.utils.forcefields import load_ff
-
-    sys.path.append(Project().root_directory() + "/..")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -120,20 +138,8 @@ def built_lammps(job):
 @flow.with_job
 @flow.cmd
 def lammps_cp_files(job):
-    molecule = job.sp.molecule
-    dict_of_lammps_files = {
-        "methaneUA": "UAmethane",
-        "pentaneUA": "UApentane",
-        "benzeneUA": "UAbenzene",
-        "waterSPC/E": "SPCEwater",
-        "ethanolAA": "AAethanol",
-    }
-
     lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
-    lmps_run_path = (
-        "../../src/engine_input/lammps/input_scripts/in."
-        + dict_of_lammps_files[molecule]
-    )
+    lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
@@ -141,26 +147,41 @@ def lammps_cp_files(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_copy_files)
-@Project.post(lammps_minimized)
+@Project.post(lammps_minimized_equilibrated_nvt)
 @flow.with_job
 @flow.cmd
-def run_lammps(job):
-    dict_of_lammps_files = {
-        "methaneUA": "UAmethane",
-        "pentaneUA": "UApentane",
-        "benzeneUA": "UAbenzene",
-        "waterSPC/E": "SPCEwater",
-        "ethanolAA": "AAethanol",
-    }
-    modify_lammps_scripts(
-        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), job
-    )
-    modify_submit_scripts(
-        "in.{}".format(dict_of_lammps_files[job.sp.molecule]), job.id[0:3], 8
-    )
-    msg = f"qsub submit.pbs"
+def lammps_em_nvt(job):
+    in_script_name = "in.minimize"
+    r_cut = job.sp.r_cut*10
+    modify_submit_scripts(in_script_name, job.id)
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
     return msg
 
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_minimized_equilibrated_nvt)
+@Project.post(lammps_equilibrated_npt)
+@flow.with_job
+@flow.cmd
+def lammps_equil_npt(job):
+    in_script_name = "in.equilibration"
+    modify_submit_scripts(in_script_name, job.id)
+    r_cut = job.sp.r_cut*10
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
+    return msg
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_equilibrated_npt)
+@Project.post(lammps_production)
+@flow.with_job
+@flow.cmd
+def lammps_prod(job):
+    in_script_name = "in.production"
+    modify_submit_scripts(in_script_name, job.id)
+    r_cut = job.sp.r_cut*10
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
+    return msg
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -179,35 +200,15 @@ def lammps_calc_rdf(job):
     return
 
 
-def modify_submit_scripts(filename, jobid, cores):
+def modify_submit_scripts(filename, jobid, cores=8):
     # Modify Submit Scripts
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid)
-        lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
+        lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid[0:4])
+        #lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
     return
-
-
-def modify_lammps_scripts(filename, job):
-    with open(filename, "r") as f:
-        lines = f.readlines()
-        lines[7] = "pair_style     lj/cut/coul/cut {}\n".format(
-            job.sp.r_cut * 10
-        )  # nm to angstrom
-        lines[21] = "variable tsample equal {} #kelvin\n".format(
-            job.sp.temperature
-        )  # kelvin
-        lines[22] = "variable psample equal {} #atm\n".format(
-            job.sp.pressure / 101.325
-        )  # kPa to atm
-        lines[42] = "velocity all create {} {} dist gaussian\n".format(
-            job.sp.temperature, job.sp.replica + 1
-        )
-    with open(filename, "w") as f:
-        f.writelines(lines)
-
 
 if __name__ == "__main__":
     pr = Project()
