@@ -21,6 +21,7 @@ class Project(flow.FlowProject):
 def is_cassandra(job):
     return job.sp.simulation_engine == "cassandra"
 
+
 @Project.label
 def statepoint_selection(job):
     molecules = ["methaneUA"]
@@ -29,6 +30,7 @@ def statepoint_selection(job):
     reqs.append(job.sp.molecule in molecules)
     reqs.append(job.sp.replica in replicas)
     return all(reqs)
+
 
 @Project.label
 def cassandra_complete(job):
@@ -50,19 +52,19 @@ def run_cassandra(job):
     """"""
 
     import os
+
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
     import unyt as u
     from mbuild.formats.xyz import read_xyz
+    from mbuild.lib.molecules.water import WaterSPC
     from pymbar.timeseries import detectEquilibration
 
-    from mbuild.lib.molecules.water import WaterSPC
-
-    from reproducibility_project.src.molecules.methane_ua import MethaneUA
-    from reproducibility_project.src.molecules.pentane_ua import PentaneUA
     from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
     from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
+    from reproducibility_project.src.molecules.methane_ua import MethaneUA
+    from reproducibility_project.src.molecules.pentane_ua import PentaneUA
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -327,17 +329,17 @@ def run_cassandra(job):
                 )
 
                 if ensemble == "GEMC-NVT":
-                    os.remove(prior_run+".out.box1.xyz")
-                    os.remove(prior_run+".out.box1.H")
-                    os.remove(prior_run+".out.box2.xyz")
-                    os.remove(prior_run+".out.box2.H")
+                    os.remove(prior_run + ".out.box1.xyz")
+                    os.remove(prior_run + ".out.box1.H")
+                    os.remove(prior_run + ".out.box2.xyz")
+                    os.remove(prior_run + ".out.box2.H")
                     tvap, gvap, Neff_max_vap = detectEquilibration(
                         np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
                     )
                     t = max(t, tvap)
                 else:
-                    os.remove(prior_run+".out.xyz")
-                    os.remove(prior_run+".out.H")
+                    os.remove(prior_run + ".out.xyz")
+                    os.remove(prior_run + ".out.H")
 
             else:
                 break
