@@ -189,7 +189,6 @@ def run_cassandra(job):
         p_rotate = 0.33
         p_regrow = 0.33
 
-
     nvtmoves = mc.MoveSet("nvt", species_list)
     nvtmoves.prob_rotate = p_rotate
     nvtmoves.prob_translate = p_translate
