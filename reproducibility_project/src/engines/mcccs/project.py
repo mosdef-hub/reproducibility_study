@@ -1,4 +1,4 @@
-"""Setup for signac, signac-flow, signac-dashboard for this study."""
+"""Setup for signac, signac-flow, signac-dashboard for running MCCCS-MN simulations for the reproducibility study."""
 import fileinput
 import math
 import os
@@ -23,8 +23,8 @@ class Project(flow.FlowProject):
 ex = Project.make_group(name="ex")
 
 
-def mc3s_binary():
-    """Return the command to execute MCCCS-MN."""
+def mc3s_exec():
+    """Return the path of MCCCS-MN executable."""
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
 
 
@@ -44,18 +44,18 @@ def get_system(job):
 
     system = construct_system(job.sp)
     molecule = get_molecules(job)[0]
-    print("project.py has {} in job {}".format(molecule, job))
+    print("project.py has {}".format(molecule))
 
     system = construct_system(job.sp)
     parmed_molecule = molecule.to_parmed()
     # Apply forcefield from statepoint
     ff = load_ff(job.sp.forcefield_name)
-    print("The ff name is {}".format(job.sp.forcefield_name))
     typed_molecule = ff.apply(parmed_molecule)
     print("The typed molecule is {}".format(typed_molecule))
-    if job.sp.molecule == "methaneUA":
-        return system  # for methane we don't want to use constrainmol
-
+    if (
+        job.sp.molecule == "methaneUA"
+    ):  # we dont want to apply consrainmol on methane
+        return system
     constrain_mol = ConstrainedMolecule(typed_molecule)
 
     for box in system:
@@ -176,7 +176,6 @@ def files_ready(job):
 @Project.label
 def has_restart_file(job):
     """Check if the job has a restart file."""
-    # return job.sp.ensemble == "GEMC-NVT" or job.isfile("fort.77")
     return job.isfile("fort.77")
 
 
@@ -188,7 +187,7 @@ def has_topmon(job):
 
 @Project.label
 def has_fort77maker(job):
-    """Check if the job has a fort77maker file (obsolete)."""
+    """Check if the home dir has fort77maker for one box and two box simulations."""
     return os.path.isfile(
         Project().root_directory()
         + "/src/engines/mcccs/"
@@ -285,28 +284,26 @@ def sanitize_npt_log(step):
         array = np.genfromtxt(filecurrent, skip_header=1)
         arrays.append(array)
     arrays = np.vstack(arrays)
-    arrays[:, 0] = arrays[:, 0] / 10
-    arrays[:, 1] = arrays[:, 1] / 10
-    arrays[:, 2] = arrays[:, 2] / 10
-    arrays[:, 3] = arrays[:, 3] * 0.008314410016255453
-    arrays[:, 4] = arrays[:, 4]
+    arrays[:, 0] = arrays[:, 0] / 10  # Ang to nm
+    arrays[:, 1] = arrays[:, 1] / 10  # Ang to nm
+    arrays[:, 2] = arrays[:, 2] / 10  # Ang to nm
+    arrays[:, 3] = arrays[:, 3] * 0.008314410016255453  # K to kJ/mol
+    arrays[:, 4] = arrays[:, 4]  # Pressure kPa to kPa
     return arrays
 
 
 def system_equilibrated(job):
     """Check if the system is equilibrated."""
-    orig_dir = os.getcwd()
-    os.chdir(job.ws)
-    files = glob("fort*12*{}*".format("equil"))
-    if len(files) < 2:  # at least do two loops of equilibration
-        print("equils done is less than 2")
-        return False
-    if job.sp.ensemble == "NPT":
-        equil_log = sanitize_npt_log("equil")
+    with job:
+        files = glob("fort*12*{}*".format("equil"))
+        if len(files) < 2:  # at least do two loops of equilibration
+            print("equils done is less than 2")
+            return False
+        if job.sp.ensemble == "NPT":
+            equil_log = sanitize_npt_log("equil")
 
-    # run pymbar
-    os.chdir(orig_dir)
-    return True
+        # run pymbar
+        return True
 
 
 @Project.label
@@ -332,12 +329,7 @@ def prod_finished(job):
 
 
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    # and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(equil_replicate_set)
 def set_equil_replicates(job):
     """Copy the files for simulation from engine_input folder."""
@@ -346,12 +338,7 @@ def set_equil_replicates(job):
 
 
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    # and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(replicate_set)
 def set_prod_replicates(job):
     """Copy the files for simulation from engine_input folder."""
@@ -362,12 +349,7 @@ def set_prod_replicates(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #    and j.sp.molecule == ("methaneUA")
-    #    and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_fort_files)
 def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
@@ -382,12 +364,7 @@ def copy_files(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_fort77maker)
 def copy_fort77maker(job):
     """Copy fort77maker_onebox.py from root directory to mcccs directory."""
@@ -396,7 +373,6 @@ def copy_fort77maker(job):
         + "/src/engine_input/mcccs/fort77maker_onebox.py",
         Project().root_directory() + "/src/engines/mcccs/",
     )
-
     shutil.copy(
         Project().root_directory()
         + "/src/engine_input/mcccs/fort77maker_twobox.py",
@@ -406,12 +382,7 @@ def copy_fort77maker(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #  and j.sp.molecule == ("methaneUA")
-    #  and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_topmon)
 def copy_topmon(job):
     """Copy topmon.inp from root directory to mcccs directory."""
@@ -426,11 +397,7 @@ def copy_topmon(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    and j.sp.ensemble == "NPT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs" and j.sp.ensemble == "NPT")
 @Project.pre(has_fort_files)
 @Project.post(files_ready)
 def replace_keyword_fort_files_npt(job):
@@ -455,11 +422,7 @@ def replace_keyword_fort_files_npt(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs" and j.sp.ensemble == "GEMC-NVT")
 @Project.pre(has_fort_files)
 @Project.post(files_ready)
 def replace_keyword_fort_files_gemc(job):
@@ -525,18 +488,30 @@ def replace_keyword_fort_files_gemc(job):
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_fort77maker)
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a fort77 file for the job."""
-    if job.sp.ensemble == "NPT":
+    from fort77maker_onebox import fort77writer
 
+    if job.sp.ensemble == "GEMC-NVT":
+        from fort77maker_twobox import fort77writer
+
+        molecules = get_molecules(job)
+        filled_boxes = get_system(job)
+        fort77writer(
+            molecules,
+            filled_boxes,
+            output_file=job.ws + "/fort.77",
+            xyz_file=[
+                job.ws + "/initial_structure_box1.xyz",
+                job.ws + "/initial_structure_box2.xyz",
+            ],
+        )
+
+        return
+    elif job.sp.ensemble == "NPT":
         from fort77maker_onebox import fort77writer
 
         molecules = get_molecules(job)
@@ -548,27 +523,12 @@ def make_restart_file(job):
             output_file=job.ws + "/fort.77",
             xyz_file=job.ws + "/initial_structure.xyz",
         )
-    elif job.sp.ensemble == "GEMC-NVT":
-        from fort77maker_twobox import fort77writer
-
-        molecules = get_molecules(job)
-        filled_boxes = get_system(job)
-        print("The filled box in make_restart file is {}".format(filled_boxes))
-        fort77writer(
-            molecules,
-            filled_boxes,
-            output_file=job.ws + "/fort.77",
-        )
+        return
 
 
 @ex
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #    and j.sp.molecule == ("methaneUA")
-    #    and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(has_fort_files)
 @Project.pre(has_topmon)
@@ -581,35 +541,30 @@ def run_melt(job):
     step = "melt"
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
-    os.chdir(job.ws)
-    shutil.copyfile("fort.4.{}".format(step), "fort.4")
-    process = Popen(
-        execommand,
-        shell=True,
-        universal_newlines=True,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    output, error = process.communicate()
-    print(output)
-    shutil.move("fort.12", "fort.12.{}".format(step))
-    shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("run1a.dat", "run.{}".format(step))
-    shutil.copy("config1a.dat", "fort.77")
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-    shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-    shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+    execommand = mc3s_exec()
+    with job:
+        shutil.copyfile("fort.4.{}".format(step), "fort.4")
+        process = Popen(
+            execommand,
+            shell=True,
+            universal_newlines=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+        output, error = process.communicate()
+        print(output)
+        shutil.move("fort.12", "fort.12.{}".format(step))
+        shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
+        shutil.move("run1a.dat", "run.{}".format(step))
+        shutil.copy("config1a.dat", "fort.77")
+        shutil.move("config1a.dat", "config1a.dat.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
 
 
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(melt_finished)
 @Project.post(cool_finished)
@@ -620,35 +575,31 @@ def run_cool(job):
     step = "cool"
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
-    os.chdir(job.ws)
-    shutil.copyfile("fort.4.{}".format(step), "fort.4")
-    process = Popen(
-        execommand,
-        shell=True,
-        universal_newlines=True,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    output, error = process.communicate()
-    print(output)
-    shutil.move("fort.12", "fort.12.{}".format(step))
-    shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("run1a.dat", "run.{}".format(step))
-    shutil.copy("config1a.dat", "fort.77")
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-    shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-    shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+    execommand = mc3s_exec()
+    with job:
+
+        shutil.copyfile("fort.4.{}".format(step), "fort.4")
+        process = Popen(
+            execommand,
+            shell=True,
+            universal_newlines=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+        output, error = process.communicate()
+        print(output)
+        shutil.move("fort.12", "fort.12.{}".format(step))
+        shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
+        shutil.move("run1a.dat", "run.{}".format(step))
+        shutil.copy("config1a.dat", "fort.77")
+        shutil.move("config1a.dat", "config1a.dat.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
 
 
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
 @Project.post(equil_finished)
@@ -660,36 +611,31 @@ def run_equil(job):
     step = "equil" + str(job.doc.equil_replicates_done)
     """Run the  equil  stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
-    os.chdir(job.ws)
-    shutil.copyfile("fort.4.equil", "fort.4")
-    process = Popen(
-        execommand,
-        shell=True,
-        universal_newlines=True,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    output, error = process.communicate()
-    print(output)
-    shutil.move("fort.12", "fort.12.{}".format(step))
-    shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("run1a.dat", "run.{}".format(step))
-    shutil.copy("config1a.dat", "fort.77")
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-    shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-    shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-    job.doc.equil_replicates_done += 1
+    execommand = mc3s_exec()
+    with job:
+        shutil.copyfile("fort.4.equil", "fort.4")
+        process = Popen(
+            execommand,
+            shell=True,
+            universal_newlines=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+        output, error = process.communicate()
+        print(output)
+        shutil.move("fort.12", "fort.12.{}".format(step))
+        shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
+        shutil.move("run1a.dat", "run.{}".format(step))
+        shutil.copy("config1a.dat", "fort.77")
+        shutil.move("config1a.dat", "config1a.dat.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        job.doc.equil_replicates_done += 1
 
 
 @Project.operation
-@Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
-)
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(system_equilibrated)
 @Project.post(prod_finished)
@@ -702,30 +648,30 @@ def run_prod(job):
     step = "prod" + str(replicate)
     """Run the prod stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
-    os.chdir(job.ws)
-    shutil.copyfile("fort.4.prod", "fort.4")
-    process = Popen(
-        execommand,
-        shell=True,
-        universal_newlines=True,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    output, error = process.communicate()
-    print(output)
-    shutil.move("fort.12", "fort.12.{}".format(step))
-    shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
-    shutil.move("run1a.dat", "run.{}".format(step))
-    shutil.copy("config1a.dat", "fort.77")
-    shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-    shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-    shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-    print(job.doc.prod_replicates_done)
-    print(all_prod_replicates_done(job))
-    print(prod_finished(job))
-    job.doc.prod_replicates_done += 1
+    execommand = mc3s_exec()
+    with job:
+        shutil.copyfile("fort.4.prod", "fort.4")
+        process = Popen(
+            execommand,
+            shell=True,
+            universal_newlines=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+        output, error = process.communicate()
+        print(output)
+        shutil.move("fort.12", "fort.12.{}".format(step))
+        shutil.move("box1config1a.xyz", "box1config1a.xyz.{}".format(step))
+        shutil.move("run1a.dat", "run.{}".format(step))
+        shutil.copy("config1a.dat", "fort.77")
+        shutil.move("config1a.dat", "config1a.dat.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        print(job.doc.prod_replicates_done)
+        print(all_prod_replicates_done(job))
+        print(prod_finished(job))
+        job.doc.prod_replicates_done += 1
 
 
 if __name__ == "__main__":
