@@ -1,0 +1,79 @@
+
+ &io
+     io_output=           2
+     run_num=           1
+     suffix=a
+     L_movie_xyz= T
+ /
+
+
+ &system
+     lnpt= F
+     lgibbs= T
+     lgrand= F
+     lanes= F
+     lvirial= F
+     lmipsw= F
+     lexpee= F
+     ldielect= F
+     lpbc= T
+     lpbcx= T
+     lpbcy= T
+     lpbcz= T
+     lfold= T
+     lijall= F
+     lchgall= F
+     lewald= T
+     lcutcm= F
+     ltailc= T
+     lshift= F
+     ldual= T
+     L_Coul_CBMC= T
+     lneigh= F
+     lexzeo= F
+     lslit= F
+     lgraphite= F
+     lsami= F
+     lmuir= F
+     lelect_field= F
+     lgaro= F
+     lionic= F
+     L_Ewald_Auto= T
+     lmixlb= T
+     lmixjo= F
+     L_spline= F
+     L_linear= F
+     L_vib_table= F
+     L_bend_table= F
+     L_elect_table= F
+ /
+
+
+ATOMS
+1001  1   21.0  3.880  0.0  12.000  C  # C(-CH3), TraPPE website
+1002  1   50.5  3.695  0.0  13.000  C  # CH, TraPPE website
+1003  1   98.0  3.750  0.0  15.000  C  # CH3, TraPPE website
+1004  1   46.0  3.950  0.0  14.000  C  # CH2, TraPPE website
+END ATOMS
+
+NONBOND
+!i j type(ij) epsi(ij) sigi(ij) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+END NONBOND
+
+BONDS
+!i type(i) brvib(i)  brvibk(i) [Angstrom]; type 1: U = brvibk * ( r_ij - brvib ) ^ 2
+2001  1  1.40  0.0  # Caro-Caro, TraPPE website
+2002  1  1.54  0.0  # Caro-CHx, TraPPE website
+2003  1  1.54  0.0  # CHx-CHy, TraPPE website
+END BONDS
+
+ANGLES
+!i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
+3001  1  120.0  00000.0  # Caro-Caro-Caro, Caro-Caro-CHx, TraPPE website
+3002  1  114.0  31250.0  # Caro-CHx-CHy, TraPPE website
+END ANGLES
+
+DIHEDRALS
+!i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
+4001  3  131.0  2  0.0  # Caro-Caro-CHx-CHx, TraPPE website
+END DIHEDRALS

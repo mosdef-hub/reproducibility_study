@@ -23,11 +23,6 @@ class Project(flow.FlowProject):
 ex = Project.make_group(name="ex")
 
 
-def mc3s_binary():
-    """Return the command to execute MCCCS-MN."""
-    return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
-
-
 def get_system(job):
     """Return the system (mbuild filled_box) for a particular job."""
     import sys
@@ -44,17 +39,16 @@ def get_system(job):
 
     system = construct_system(job.sp)
     molecule = get_molecules(job)[0]
-    print("project.py has {} in job {}".format(molecule, job))
+    print("project.py has {}".format(molecule))
 
     system = construct_system(job.sp)
     parmed_molecule = molecule.to_parmed()
     # Apply forcefield from statepoint
     ff = load_ff(job.sp.forcefield_name)
-    print("The ff name is {}".format(job.sp.forcefield_name))
     typed_molecule = ff.apply(parmed_molecule)
     print("The typed molecule is {}".format(typed_molecule))
-    if job.sp.molecule == "methaneUA":
-        return system  # for methane we don't want to use constrainmol
+    if job.sp.molecule=="methaneUA":
+        return system # for methane we don't want to use constrainmol
 
     constrain_mol = ConstrainedMolecule(typed_molecule)
 
@@ -86,7 +80,7 @@ def get_molecules(job):
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
-        "waterSPCE": WaterSPC(),
+        "waterSPC/E": WaterSPC(),
         "ethanolAA": EthanolAA(),
     }
     molecule = molecule_dict[job.sp.molecule]
@@ -108,7 +102,9 @@ def has_fort_files(job):
 
 
 @Project.label
-@Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(
+    lambda j: j.sp.engine == "mcccs" and j.sp.molecule == ("methaneUA")
+)
 def files_ready(job):
     """Check if the keywords in the fort.4 files have been replaced."""
     # Link: https://stackoverflow.com/questions/32749350/check-if-a-string-is-in-a-file-with-python
@@ -176,7 +172,7 @@ def files_ready(job):
 @Project.label
 def has_restart_file(job):
     """Check if the job has a restart file."""
-    # return job.sp.ensemble == "GEMC-NVT" or job.isfile("fort.77")
+    #return job.sp.ensemble == "GEMC-NVT" or job.isfile("fort.77")
     return job.isfile("fort.77")
 
 
@@ -333,10 +329,9 @@ def prod_finished(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    # and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(equil_replicate_set)
 def set_equil_replicates(job):
@@ -347,10 +342,9 @@ def set_equil_replicates(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
-    # and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(replicate_set)
 def set_prod_replicates(job):
@@ -363,10 +357,9 @@ def set_prod_replicates(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #    and j.sp.molecule == ("methaneUA")
-    #    and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_fort_files)
 def copy_files(job):
@@ -383,10 +376,9 @@ def copy_files(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_fort77maker)
 def copy_fort77maker(job):
@@ -407,10 +399,9 @@ def copy_fort77maker(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #  and j.sp.molecule == ("methaneUA")
-    #  and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.post(has_topmon)
 def copy_topmon(job):
@@ -428,7 +419,7 @@ def copy_topmon(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
+    and j.sp.molecule == ("methaneUA")
     and j.sp.ensemble == "NPT"
 )
 @Project.pre(has_fort_files)
@@ -457,7 +448,7 @@ def replace_keyword_fort_files_npt(job):
 @Project.operation
 @Project.pre(
     lambda j: j.sp.engine == "mcccs"
-    # and j.sp.molecule == ("methaneUA")
+    and j.sp.molecule == ("methaneUA")
     and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_fort_files)
@@ -526,18 +517,20 @@ def replace_keyword_fort_files_gemc(job):
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_fort77maker)
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a fort77 file for the job."""
-    if job.sp.ensemble == "NPT":
+    if job.sp.ensemble=="NPT":
 
         from fort77maker_onebox import fort77writer
+
+        if job.sp.ensemble == "GEMC-NVT":
+            return
 
         molecules = get_molecules(job)
         filled_box = get_system(job)[0]
@@ -548,7 +541,7 @@ def make_restart_file(job):
             output_file=job.ws + "/fort.77",
             xyz_file=job.ws + "/initial_structure.xyz",
         )
-    elif job.sp.ensemble == "GEMC-NVT":
+    elif job.sp.ensemble=="GEMC-NVT":
         from fort77maker_twobox import fort77writer
 
         molecules = get_molecules(job)
@@ -561,13 +554,13 @@ def make_restart_file(job):
         )
 
 
+
 @ex
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #    and j.sp.molecule == ("methaneUA")
-    #    and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(has_fort_files)
@@ -581,7 +574,7 @@ def run_melt(job):
     step = "melt"
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
+    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.{}".format(step), "fort.4")
     process = Popen(
@@ -605,10 +598,9 @@ def run_melt(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(melt_finished)
@@ -620,7 +612,7 @@ def run_cool(job):
     step = "cool"
     """Run the melting stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
+    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.{}".format(step), "fort.4")
     process = Popen(
@@ -644,10 +636,9 @@ def run_cool(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
@@ -660,7 +651,7 @@ def run_equil(job):
     step = "equil" + str(job.doc.equil_replicates_done)
     """Run the  equil  stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
+    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.equil", "fort.4")
     process = Popen(
@@ -685,10 +676,9 @@ def run_equil(job):
 
 @Project.operation
 @Project.pre(
-    lambda j: j.sp.engine
-    == "mcccs"
-    #   and j.sp.molecule == ("methaneUA")
-    #   and j.sp.ensemble == "GEMC-NVT"
+    lambda j: j.sp.engine == "mcccs"
+    and j.sp.molecule == ("methaneUA")
+    and j.sp.ensemble == "GEMC-NVT"
 )
 @Project.pre(has_restart_file)
 @Project.pre(system_equilibrated)
@@ -702,7 +692,7 @@ def run_prod(job):
     step = "prod" + str(replicate)
     """Run the prod stage."""
     print("Running {}".format(step))
-    execommand = mc3s_binary()
+    execommand = "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
     os.chdir(job.ws)
     shutil.copyfile("fort.4.prod", "fort.4")
     process = Popen(

@@ -16,7 +16,7 @@ def dict_product(dd):
 
 
 molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPCE", "ethanolAA"]
-replicas = range(16)
+replicas = range(1)
 simulation_engines = [
     "cassandra",
     "mcccs",
@@ -38,7 +38,7 @@ for key in molecules:
         else:
             forcefields[key] = "benzene-ua"
         r_cuts[key] = 14.0 * u.angstrom
-    elif "SPC/E" in key:
+    elif "SPCE" in key:
         forcefields[key] = "spce"
         r_cuts[key] = 9 * u.angstrom
     else:

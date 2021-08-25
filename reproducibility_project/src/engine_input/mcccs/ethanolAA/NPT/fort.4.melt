@@ -4,7 +4,7 @@
      nbox=           1
      nmolty=           1
      nchain=        NCHAIN
-     nstep=         1
+     nstep=         5000
      lstop= F
      iratio=          500
      rmin=   1.00000000000000
@@ -77,9 +77,9 @@
      pmcb=  0.34
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
-     nchoi1=          16
-     nchoi=           8
-     nchoir=          8
+     nchoi1=          12
+     nchoi=           10
+     nchoir=          50
      nchoih=           1
      nchtor=         100
      nchbna=        1000
@@ -134,7 +134,7 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH LENGTH LENGTH RCUT  0.320  0.000 3  F  F  F  F  TEMPERATURE     PRESSURE
+  LENGTH LENGTH LENGTH RCUT  0.320  0.000 3  F  F  F  F  2000     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
