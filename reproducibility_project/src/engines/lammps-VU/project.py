@@ -223,7 +223,7 @@ def lammps_calc_rdf(job):
 
 
 def modify_submit_scripts(filename, jobid, cores=8):
-    """Modify the submission scripts to include the job and simulation type in the header"""
+    """Modify the submission scripts to include the job and simulation type in the header."""
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
         lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid[0:4])

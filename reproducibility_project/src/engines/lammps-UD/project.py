@@ -200,7 +200,7 @@ def lammps_calc_rdf(job):
 
 # TODO: modify this for your purpose
 def modify_submit_lammps(filename, statepoint):
-    """Modify the submission scripts to include the job and simulation type in the header"""
+    """Modify the submission scripts to include the job and simulation type in the header."""
     with open("submit.slurm", "r") as f:
         lines = f.readlines()
         lines[1] = "#SBATCH -J {}{}\n".format(filename, statepoint)
