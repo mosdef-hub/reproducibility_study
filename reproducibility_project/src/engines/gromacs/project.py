@@ -32,12 +32,6 @@ class Rahman(DefaultPBSEnvironment):
     def add_args(cls, parser):
         """Add command line arguments to the submit call."""
         parser.add_argument(
-            "--bundle",
-            type=int,
-            default=16,
-            help="How many serial jobs at once",
-        )
-        parser.add_argument(
             "--walltime",
             type=float,
             default=96,
