@@ -40,5 +40,4 @@ timestep 2.0
 run 50000
 unfix integrator
 reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name
-write_restart minimized.restart_* 
-
+write_restart minimized.restart_*

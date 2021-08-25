@@ -7,7 +7,7 @@ import flow
 import numpy as np
 from flow import environments
 
-#from reproducibility_project.src.analysis.equilibration import is_equilibrated
+# from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 class Project(flow.FlowProject):
@@ -46,28 +46,36 @@ def lammps_minimized_equilibrated_nvt(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @flow.with_job
 def lammps_equilibrated_npt(job):
-    #sys.path.append(Project().root_directory() + "/..")
-    from reproducibility_project.src.analysis.equilibration import is_equilibrated
+    # sys.path.append(Project().root_directory() + "/..")
     import pathlib
+
     import numpy as np
+
+    from reproducibility_project.src.analysis.equilibration import (
+        is_equilibrated,
+    )
+
     project = job._project
-    p = pathlib.Path('.')
-    list_of_filenames = list(p.glob('eqlog*.txt'))
+    p = pathlib.Path(".")
+    list_of_filenames = list(p.glob("eqlog*.txt"))
     # grab the filename with the largest number
     counter = 0
     latest_eqdata = False
     for file in list_of_filenames:
-        step = int(file.name[5:].split('.')[0])
+        step = int(file.name[5:].split(".")[0])
         if step > counter:
-           counter=step
-           latest_eqdata = file
+            counter = step
+            latest_eqdata = file
     if latest_eqdata:
         data = np.genfromtxt(latest_eqdata.name, skip_header=1)
-        check_equil = np.all([is_equilibrated(data[:,1])[0],
-                              is_equilibrated(data[:,2])[0],
-                              is_equilibrated(data[:,4])[0],
-                              is_equilibrated(data[:,6])[0]
-                              ])
+        check_equil = np.all(
+            [
+                is_equilibrated(data[:, 1])[0],
+                is_equilibrated(data[:, 2])[0],
+                is_equilibrated(data[:, 4])[0],
+                is_equilibrated(data[:, 6])[0],
+            ]
+        )
     else:
         check_equil = False
     return job.isfile("equilibrated_npt.restart") and check_equil
@@ -104,10 +112,10 @@ def built_lammps(job):
     import foyer
     from mbuild.formats.lammpsdata import write_lammpsdata
 
-    from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
+    from reproducibility_project.src.utils.forcefields import load_ff
 
     system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
@@ -152,10 +160,11 @@ def lammps_cp_files(job):
 @flow.cmd
 def lammps_em_nvt(job):
     in_script_name = "in.minimize"
-    r_cut = job.sp.r_cut*10
+    r_cut = job.sp.r_cut * 10
     modify_submit_scripts(in_script_name, job.id)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
     return msg
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -166,9 +175,10 @@ def lammps_em_nvt(job):
 def lammps_equil_npt(job):
     in_script_name = "in.equilibration"
     modify_submit_scripts(in_script_name, job.id)
-    r_cut = job.sp.r_cut*10
+    r_cut = job.sp.r_cut * 10
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
     return msg
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -179,9 +189,10 @@ def lammps_equil_npt(job):
 def lammps_prod(job):
     in_script_name = "in.production"
     modify_submit_scripts(in_script_name, job.id)
-    r_cut = job.sp.r_cut*10
+    r_cut = job.sp.r_cut * 10
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}' submit.pbs"
     return msg
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -205,10 +216,11 @@ def modify_submit_scripts(filename, jobid, cores=8):
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
         lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid[0:4])
-        #lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
+        # lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
     return
+
 
 if __name__ == "__main__":
     pr = Project()
