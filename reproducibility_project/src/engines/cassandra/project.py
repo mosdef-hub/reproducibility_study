@@ -164,6 +164,32 @@ def run_cassandra(job):
 
     meltsystem_liq = mc.System([liqbox_filled], species_list)
 
+    p_volume = 0.01
+    p_translate = 0.0
+    p_rotate = 0.0
+    p_regrow = 0.0
+    p_swap = 0.0
+
+    if molecule == "MethaneUA":
+        if ensemble == "NPT":
+            p_translate = 0.99
+        else:
+            p_translate = 0.7
+            p_swap = 0.29
+    elif molecule == "PentaneUA" and ensemble == "GEMC-NVT":
+        p_swap = 0.2
+        p_translate = 0.27
+        p_rotate = 0.26
+        p_regrow = 0.26
+    elif molecule == "WaterSPC/E":
+        p_translate = 0.49
+        p_rotate = 0.5
+    else:
+        p_translate = 0.33
+        p_rotate = 0.33
+        p_regrow = 0.33
+
+
     nvtmoves = mc.MoveSet("nvt", species_list)
     nvtmoves.prob_rotate = p_rotate
     nvtmoves.prob_translate = p_translate
