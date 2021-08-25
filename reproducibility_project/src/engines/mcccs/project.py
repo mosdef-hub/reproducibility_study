@@ -196,7 +196,7 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return job.doc.get(num_prod_replicates) == 4
+    return job.doc.get("num_prod_replicates") == 4
 
 
 @Project.label
@@ -217,10 +217,9 @@ def melt_finished(job):
     run_file = job.ws + "/run.{}".format(step)
     if job.isfile("run.{}".format(step)):
         with open(run_file) as myfile:
-            if "Program ended" in myfile.read():
-                return True
-            else:
-                return False
+            return "Program ended" in myfile.read()
+    else:
+        return False
 
 
 @Project.label
@@ -230,10 +229,9 @@ def cool_finished(job):
     run_file = job.ws + "/run.{}".format(step)
     if job.isfile("run.{}".format(step)):
         with open(run_file) as myfile:
-            if "Program ended" in myfile.read():
-                return True
-            else:
-                return False
+            return "Program ended" in myfile.read()
+    else:
+        return False
 
 
 @Project.label
@@ -248,10 +246,7 @@ def equil_finished(job):
     run_file = job.ws + "/run.{}".format(step)
     if job.isfile("run.{}".format(step)):
         with open(run_file) as myfile:
-            if "Program ended" in myfile.read():
-                return True
-            else:
-                return False
+            return "Program ended" in myfile.read()
     else:
         return False
 
@@ -345,10 +340,7 @@ def prod_finished(job):
     run_file = job.ws + "/run.{}".format(step)
     if job.isfile("run.{}".format(step)):
         with open(run_file) as myfile:
-            if "Program ended" in myfile.read():
-                return True
-            else:
-                return False
+            return "Program ended" in myfile.read()
     else:
         return False
 
