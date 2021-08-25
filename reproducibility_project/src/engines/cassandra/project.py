@@ -19,7 +19,7 @@ class Project(flow.FlowProject):
 
 @Project.label
 def is_cassandra(job):
-    return job.sp.simulation_engine == "cassandra"
+    return job.sp.engine == "cassandra"
 
 
 @Project.label
@@ -137,7 +137,7 @@ def run_cassandra(job):
 
     prop_freq = 10
     coord_freq = 10
-    if ff_name == "oplsaa":
+    if ff.combining_rule == "geometric":
         comb_rule = "geometric"
     else:
         comb_rule = "lb"
