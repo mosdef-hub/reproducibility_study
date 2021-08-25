@@ -24,43 +24,49 @@ class Project(flow.FlowProject):
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_created_box(job):
+    """Check if the lammps simulation box has been created for the job."""
     return job.isfile("box.lammps")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_copy_files(job):
+    """Check if the submission scripts have been copied over for the job."""
     return job.isfile("submit.pbs")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_minimized_equilibrated_nvt(job):
+    """Check if the lammps minimization step has run for the job."""
     return job.isfile("minimized.restart_0")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_equilibrated_npt(job):
-    # TODO: modify the following line to properly checking equlibration
+    """Check if the lammps equilibration step has run and passed is_equilibrated for the job."""
     return job.isfile("equilibrated_npt.restart") and True
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_production(job):
+    """Check if the lammps production step has run for the job."""
     return job.isfile("production.restart")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_density_data(job):
+    """Check if lammps has output density information for the job."""
     return job.isfile("density.dat")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.simulation_engine == "lammps-UD")
 def lammps_created_gsd(job):
+    """Check if the mdtraj has converted the production to a gsd trajectory for the job."""
     return job.isfile("prod.gsd")
 
 
@@ -74,7 +80,7 @@ def lammps_created_gsd(job):
 @flow.with_job
 @flow.cmd
 def built_lammps(job):
-    # Create a lammps datafile for a specified molecule
+    """Create initial configurations of the system statepoint."""
     from mbuild.formats.lammpsdata import write_lammpsdata
     from project.src.molecules.system_builder import SystemBuilder
 
@@ -113,6 +119,7 @@ def built_lammps(job):
 @flow.with_job
 @flow.cmd
 def lammps_cp_files(job):
+    """Copy over run files for lammps and the SLURM scheduler."""
     lmps_submit_path = "../../src/engine_input/lammps/UD_scripts/submit.slurm"
     lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
@@ -126,6 +133,7 @@ def lammps_cp_files(job):
 @flow.with_job
 @flow.cmd
 def lammps_em_nvt(job):
+    """Run energy minimization and nvt ensemble."""
     in_script_name = "in.minimize"
     modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
@@ -139,6 +147,7 @@ def lammps_em_nvt(job):
 @flow.with_job
 @flow.cmd
 def lammps_equil_npt(job):
+    """Run npt ensemble equilibration."""
     in_script_name = "in.equil"
     modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
@@ -152,6 +161,7 @@ def lammps_equil_npt(job):
 @flow.with_job
 @flow.cmd
 def lammps_prod(job):
+    """Run npt ensemble production."""
     in_script_name = "in.prod"
     modify_submit_lammps(in_script_name, job.sp)
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica} {job.sp.temperature} {job.sp.pressure} {job.sp.cutoff}"
@@ -164,7 +174,7 @@ def lammps_prod(job):
 @flow.with_job
 @flow.cmd
 def lammps_calc_density(job):
-    # Create a density datafile from the production run
+    """Create a density text file."""
     return
 
 
@@ -174,7 +184,7 @@ def lammps_calc_density(job):
 @flow.with_job
 @flow.cmd
 def lammps_calc_rdf(job):
-    # Create rdf data from the production run
+    """Create an rdf from the gsd file using Freud analysis scripts."""
     import mbuild as mb
     import MDAnalysis as mda
 
@@ -190,7 +200,7 @@ def lammps_calc_rdf(job):
 
 # TODO: modify this for your purpose
 def modify_submit_lammps(filename, statepoint):
-    # Modify Submit Scripts
+    """Modify the submission scripts to include the job and simulation type in the header"""
     with open("submit.slurm", "r") as f:
         lines = f.readlines()
         lines[1] = "#SBATCH -J {}{}\n".format(filename, statepoint)

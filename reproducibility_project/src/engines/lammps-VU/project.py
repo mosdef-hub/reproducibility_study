@@ -27,18 +27,21 @@ class Project(flow.FlowProject):
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_box(job):
+    """Check if the lammps simulation box has been created for the job."""
     return job.isfile("box.lammps")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_copy_files(job):
+    """Check if the submission scripts have been copied over for the job."""
     return job.isfile("submit.pbs")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_minimized_equilibrated_nvt(job):
+    """Check if the lammps minimization step has run for the job."""
     return job.isfile("minimized.restart_0")
 
 
@@ -46,7 +49,7 @@ def lammps_minimized_equilibrated_nvt(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @flow.with_job
 def lammps_equilibrated_npt(job):
-    # sys.path.append(Project().root_directory() + "/..")
+    """Check if the lammps equilibration step has run and passed is_equilibrated for the job."""
     import pathlib
 
     import numpy as np
@@ -84,18 +87,21 @@ def lammps_equilibrated_npt(job):
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_production(job):
+    """Check if the lammps production step has run for the job."""
     return job.isfile("production.restart")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_density_data(job):
+    """Check if lammps has output density information for the job."""
     return job.isfile("density.dat")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_gsd(job):
+    """Check if the mdtraj has converted the production to a gsd trajectory for the job."""
     return job.isfile("prod.gsd")
 
 
@@ -108,7 +114,7 @@ def lammps_created_gsd(job):
 @Project.post(lammps_created_box)
 @flow.with_job
 def built_lammps(job):
-    # Create a lammps datafile for a specified molecule
+    """Create initial configurations of the system statepoint."""
     import foyer
     from mbuild.formats.lammpsdata import write_lammpsdata
 
@@ -146,6 +152,7 @@ def built_lammps(job):
 @flow.with_job
 @flow.cmd
 def lammps_cp_files(job):
+    """Copy over run files for lammps and the PBS scheduler."""
     lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
     lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
@@ -159,6 +166,7 @@ def lammps_cp_files(job):
 @flow.with_job
 @flow.cmd
 def lammps_em_nvt(job):
+    """Run energy minimization and nvt ensemble."""
     in_script_name = "in.minimize"
     r_cut = job.sp.r_cut * 10
     modify_submit_scripts(in_script_name, job.id)
@@ -173,6 +181,7 @@ def lammps_em_nvt(job):
 @flow.with_job
 @flow.cmd
 def lammps_equil_npt(job):
+    """Run npt ensemble equilibration."""
     in_script_name = "in.equilibration"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
@@ -187,6 +196,7 @@ def lammps_equil_npt(job):
 @flow.with_job
 @flow.cmd
 def lammps_prod(job):
+    """Run npt ensemble production."""
     in_script_name = "in.production"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
@@ -201,6 +211,7 @@ def lammps_prod(job):
 @flow.with_job
 @flow.cmd
 def lammps_calc_rdf(job):
+    """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mbuild as mb
     import mdtraj
@@ -212,11 +223,10 @@ def lammps_calc_rdf(job):
 
 
 def modify_submit_scripts(filename, jobid, cores=8):
-    # Modify Submit Scripts
+    """Modify the submission scripts to include the job and simulation type in the header"""
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
         lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid[0:4])
-        # lines[11] = "mpirun -np {} lmp < {}\n".format(cores, filename)
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
     return
