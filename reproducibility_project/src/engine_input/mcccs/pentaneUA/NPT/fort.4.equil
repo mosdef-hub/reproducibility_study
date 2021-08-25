@@ -4,7 +4,7 @@
      nbox=           1
      nmolty=           1
      nchain=           NCHAIN
-     nstep=         50
+     nstep=         8000
      lstop= F
      iratio=         500
      rmin=   1
@@ -40,12 +40,12 @@
 
 
  &external_field
-     Elect_field=  0.000000000000000E+000  0.000000000000000E+000
+     Elect_field=  0.000000000000000E+000
  /
 
 
  &mc_volume
-     tavol=  0.400000000000000
+     tavol=  0.500000000000000
      iratv=         500
      pmvlmt=   1.00000000000000
      nvolb=           1
@@ -134,7 +134,7 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
+  LENGTH   LENGTH   LENGTH RCUT  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
@@ -248,7 +248,7 @@ END INTRAMOLECULAR_OH15
 
 UNIFORM_BIASING_POTENTIALS
 ! for each molecule type, give nbox values
-0.0d0 0.0d0
+0.0d0
 END UNIFORM_BIASING_POTENTIALS
 
 

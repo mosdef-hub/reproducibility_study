@@ -16,7 +16,7 @@ def dict_product(dd):
 
 
 molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPCE", "ethanolAA"]
-replicas = range(16)
+replicas = range(1)
 simulation_engines = [
     "cassandra",
     "mcccs",

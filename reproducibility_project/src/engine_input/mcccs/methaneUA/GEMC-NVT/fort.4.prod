@@ -4,19 +4,19 @@
      nbox=           2
      nmolty=           1
      nchain=         NCHAINTOT
-     nstep=         2
+     nstep=         30000
      lstop= F
-     iratio=         500
+     iratio=         50000000
      rmin=   1.0000000000000
      softcut=   100.000000000000
-     linit= T
+     linit= F
      lreadq= F
  /
 
 
  &analysis
      iprint=          50
-     imv=        1200
+     imv=        10
      iblock=          50
      iratp=           5
      idiele=      100000
@@ -46,13 +46,13 @@
 
  &mc_volume
      tavol=  0.500000000000000
-     iratv=         500
+     iratv=         5000000000
      pmvlmt=   1.00000000000000        1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.000000000000000E+000
+     pmvol=  0.0100000000000000E+000
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
      rmvolume=  1.000000000000000E-003
@@ -67,14 +67,14 @@
 
 
  &mc_swap
-     pmswap=  0.000000000000000E+000
+     pmswap=  0.29000000000000000E+000
      pmswmt=   1.00000000000000
  /
 
 
  &mc_cbmc
      rcutin=   5.00000000000000
-     pmcb=  0.340000000000000
+     pmcb=  0.00000000000000
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
      nchoi1=          32
@@ -113,7 +113,7 @@
      rmrot=  0.400000000000000
      tatra=  0.500000000000000
      tarot=  0.500000000000000
-     pmtra=  0.670000000000000
+     pmtra=  1.0000000000000
      pmtrmt=   1.00000000000000
      pmromt=   1.00000000000000
  /
@@ -133,17 +133,17 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH1 LENGTH1 LENGTH1 RCUT  0.250  0.000 3  F  F  F  F 2000     0.1
+  LENGTH1 LENGTH1 LENGTH1 RCUT  0.250  0.000 3  F  F  F  F TEMPERATURE     0.1
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN1 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
-INIX1 INIY1 INIZ1 10 0 10.0  2.000 F 0.0
+5  5 5 10 0 10.0  2.000 F 0.0
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH2 LENGTH2 LENGTH3 RCUT  0.250  0.000 3  F  F  F  F 2000     0.1
+  LENGTH2 LENGTH2 LENGTH2 RCUT  0.250  0.000 3  F  F  F  F TEMPERATURE     0.1
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN2 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
-INIX2 INIY2 INIZ2 10 0 20.0 11.250 F 0.0
+5  5 5 10 0 20.0 11.250 F 0.0
 END SIMULATION_BOX
 
 
