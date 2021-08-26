@@ -4,7 +4,7 @@ import os
 import pathlib
 
 import flow
-from flow import environments
+from flow import environments, directives
 
 
 class Project(flow.FlowProject):
@@ -50,8 +50,6 @@ def cassandra_complete(job):
 @directives(omp_num_threads=4)
 def run_cassandra(job):
     """"""
-
-    import os
 
     import foyer
     import mbuild as mb
