@@ -6,7 +6,7 @@ import sys
 import flow
 import panedr
 import unyt as u
-from flow import environments
+from flow.environment import DefaultPBSEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.engine_input.gromacs import mdp
@@ -21,6 +21,22 @@ class Project(flow.FlowProject):
         current_path = pathlib.Path(os.getcwd()).absolute()
         self.data_dir = current_path.parents[1] / "data"
         self.ff_fn = self.data_dir / "forcefield.xml"
+
+
+class Rahman(DefaultPBSEnvironment):
+    """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
+
+    template = "rahman_gmx.sh"
+
+    @classmethod
+    def add_args(cls, parser):
+        """Add command line arguments to the submit call."""
+        parser.add_argument(
+            "--walltime",
+            type=float,
+            default=96,
+            help="Walltime for this submission",
+        )
 
 
 @Project.operation
@@ -140,8 +156,8 @@ def gmx_npt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("npt.gro"))
-@Project.pre(lambda j: equil_status(j, "npt", "Potential"))
-@Project.post(lambda j: j.isfile("rerun_npt.tpr"))
+@Project.pre(lambda j: not equil_status(j, "npt", "Potential"))
+@Project.post(lambda j: equil_status(j, "npt", "Potential"))
 @flow.with_job
 @flow.cmd
 def extend_gmx_npt(job):
@@ -154,7 +170,7 @@ def extend_gmx_npt(job):
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt "
+    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -nt 16"
     return msg
 
 
@@ -198,8 +214,11 @@ def _setup_mdp(fname, template, data, overwrite=False):
 def equil_status(job, op, att):
     """Check equilibration status of specific attributes of specific operation."""
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
-    return is_equilibrated(data[att])[0]
+    if not job.isfile(f"{str(p.absolute)}/{op}.edr"):
+        return False
+    else:
+        data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
+        return is_equilibrated(data[att])[0]
 
 
 if __name__ == "__main__":
