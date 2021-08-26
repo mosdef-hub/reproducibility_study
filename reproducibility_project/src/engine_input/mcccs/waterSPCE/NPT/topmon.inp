@@ -3,7 +3,8 @@
      io_output=           2
      run_num=           1
      suffix=a
-     L_movie_xyz= F
+     L_movie_xyz= T
+     L_movie_pdb = T
  /
 
 

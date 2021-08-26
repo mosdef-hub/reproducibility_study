@@ -4,7 +4,7 @@
      nbox=           2
      nmolty=           1
      nchain=         NCHAINTOT
-     nstep=         8000
+     nstep=         40000
      lstop= F
      iratio=         500
      rmin=   1.0000000000000

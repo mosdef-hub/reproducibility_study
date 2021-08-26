@@ -6,7 +6,7 @@
      nchain=         NCHAINTOT
      nstep=         30000
      lstop= F
-     iratio=         50000000
+     iratio=         500000
      rmin=   1.0000000000000
      softcut=   100.000000000000
      linit= F
@@ -46,7 +46,7 @@
 
  &mc_volume
      tavol=  0.500000000000000
-     iratv=         5000000000
+     iratv=         500000
      pmvlmt=   1.00000000000000        1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000

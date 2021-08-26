@@ -255,7 +255,7 @@ def sanitize_npt_log(step):
     """Sanitize the output logs for NPT simulations."""
     import numpy as np
 
-    files = glob("fort*12*{}*".format(step))
+    files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
     for filecurrent in files:
         array = np.genfromtxt(filecurrent, skip_header=1)
@@ -278,7 +278,7 @@ def sanitize_gemc_log(step):
     """Sanitize the output logs for gemc simulations."""
     import numpy as np
 
-    files = glob("fort*12*{}*".format(step))
+    files = sorted(glob("fort*12*{}*".format(step)))
     arrays_box1 = []
     arrays_box2 = []
 
@@ -311,7 +311,7 @@ def sanitize_gemc_log(step):
         arrays_box2,
         header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
     )
-    return arrays
+    return arrays_box1, arrays_box2
 
 
 def system_equilibrated(job):
@@ -346,6 +346,58 @@ def prod_finished(job):
 
 
 """Setting up workflow operation"""
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.post(
+    lambda j: (
+        j.isfile("init1.pdb")
+        and j.isfile("init1.mol2")
+        and j.sp.ensemble == "NPT"
+    )
+    or (
+        (
+            j.isfile("init1.pdb")
+            and j.isfile("init2.pdb")
+            and j.isfile("init1.mol2")
+            and j.isfile("init2.mol2")
+            and j.sp.ensemble == "GEMC-NVT"
+        )
+    )
+)
+@flow.with_job
+def save_top(job):
+    """Save topology files for the two boxes."""
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
+
+    # Create a Compound and save to pdb
+    system = construct_system(job.sp)
+    ff = load_ff(job.sp.forcefield_name)
+    param_system = ff.apply(system[0])
+    param_system.save(
+        "init1.pdb",
+        overwrite=True,
+    )
+    param_system.save(
+        "init1.mol2",
+        overwrite=True,
+    )
+
+    if system[1] is None:
+        return
+    param_system = ff.apply(system[1])
+    param_system.save(
+        "init2.pdb",
+        overwrite=True,
+    )
+    param_system.save(
+        "init2.mol2",
+        overwrite=True,
+    )
 
 
 @Project.operation
