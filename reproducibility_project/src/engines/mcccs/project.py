@@ -316,6 +316,10 @@ def sanitize_gemc_log(step):
 
 def system_equilibrated(job):
     """Check if the system is equilibrated."""
+    from reproducibility_project.src.analysis.equilibration import (
+        is_equilibrated,
+    )
+
     with job:
         files = glob("fort*12*{}*".format("equil"))
         if len(files) < 2:  # at least do two loops of equilibration
@@ -324,9 +328,11 @@ def system_equilibrated(job):
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
         if job.sp.ensemble == "GEMC-NVT":
-            equil_log = sanitize_gemc_log("equil")
+            equil_log = sanitize_gemc_log("equil")[0]
         # run pymbar
-        return True
+        return is_equilibrated(equil_log[:, 1], threshold=0.3)[
+            0
+        ]  # checking if box1 length is equilibrated
 
 
 @Project.label
