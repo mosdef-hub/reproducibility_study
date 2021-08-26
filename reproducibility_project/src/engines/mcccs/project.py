@@ -323,16 +323,35 @@ def system_equilibrated(job):
     with job:
         files = glob("fort*12*{}*".format("equil"))
         if len(files) < 2:  # at least do two loops of equilibration
-            print("equils done is less than 2")
+            print("equils done is less than 2 for {}".format(job))
             return False
+        if len(files) >= 4:  # max of 4 equils
+            print("equils done is > 4 for {}".format(job))
+            return True
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
         if job.sp.ensemble == "GEMC-NVT":
             equil_log = sanitize_gemc_log("equil")[0]
         # run pymbar
-        return is_equilibrated(equil_log[:, 1], threshold=0.3)[
-            0
-        ]  # checking if box1 length is equilibrated
+        equil_status = is_equilibrated(
+            equil_log[:, 1], threshold=0.3, nskip=100
+        )
+        if equil_status[0] == False:
+            print(
+                "System {} is not equilibrated. Completed {} equil loops".format(
+                    job, job.doc.get("equil_replicates_done") + 1
+                )
+            )
+            return False
+        if equil_status[0] == True:
+            print(
+                "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                    job,
+                    equil_status[1],
+                    job.doc.get("equil_replicates_done") + 1,
+                )
+            )
+            return True
 
 
 @Project.label
@@ -411,7 +430,7 @@ def save_top(job):
 @Project.post(equil_replicate_set)
 def set_equil_replicates(job):
     """Copy the files for simulation from engine_input folder."""
-    print("equil replicates set")
+    print("equil replicates set for job {}".format(job))
     job.doc.equil_replicates_done = 0
 
 
@@ -420,7 +439,7 @@ def set_equil_replicates(job):
 @Project.post(replicate_set)
 def set_prod_replicates(job):
     """Copy the files for simulation from engine_input folder."""
-    print("prod replicates set")
+    print("prod replicates set for job {}".format(job))
     job.doc.num_prod_replicates = 4
     job.doc.prod_replicates_done = 0
 
@@ -603,7 +622,7 @@ def run_melt(job):
 
     step = "melt"
     """Run the melting stage."""
-    print("Running {}".format(step))
+    print("Running {} for {}.".format(step, job))
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.{}".format(step), "fort.4")
@@ -637,7 +656,7 @@ def run_cool(job):
 
     step = "cool"
     """Run the melting stage."""
-    print("Running {}".format(step))
+    print("Running {} for {}.".format(step, job))
     execommand = mc3s_exec()
     with job:
 
@@ -673,7 +692,7 @@ def run_equil(job):
 
     step = "equil" + str(job.doc.equil_replicates_done)
     """Run the  equil  stage."""
-    print("Running {}".format(step))
+    print("Running {} for {}.".format(step, job))
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.equil", "fort.4")
@@ -710,7 +729,7 @@ def run_prod(job):
     replicate = job.doc.prod_replicates_done
     step = "prod" + str(replicate)
     """Run the prod stage."""
-    print("Running {}".format(step))
+    print("Running {} for {}.".format(step, job))
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.prod", "fort.4")
@@ -731,9 +750,6 @@ def run_prod(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-        print(job.doc.prod_replicates_done)
-        print(all_prod_replicates_done(job))
-        print(prod_finished(job))
         job.doc.prod_replicates_done += 1
 
 
