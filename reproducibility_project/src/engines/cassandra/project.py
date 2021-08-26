@@ -4,7 +4,7 @@ import os
 import pathlib
 
 import flow
-from flow import environments, directives
+from flow import directives, environments
 
 
 class Project(flow.FlowProject):
