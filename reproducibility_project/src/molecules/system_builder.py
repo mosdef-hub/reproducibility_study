@@ -8,7 +8,7 @@ from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
 
-def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
+def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0, constrain=False):
     """Construct systems according to job statepoint.
 
     Parameters
@@ -36,6 +36,8 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
         Option to scale sizes of the liquid box.
     scale_vap_box: float, optional, default=1.0
         Option to scale sizes of the vapor box.
+    constrain: boolean, optional, default=False
+        Option to use constrainmol on bond lengths to make them exactly equal to the bond lengths in the FF file.
 
     Returns
     -------
@@ -63,9 +65,34 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0):
         filled_vap_box = mb.fill_box(
             compound=[molecule], n_compounds=[sp["N_vap"]], box=vap_box
         )
-        return [filled_liq_box, filled_vap_box]
+        boxes = [filled_liq_box, filled_vap_box]
     else:
-        return [filled_liq_box, None]
+        boxes = [filled_liq_box, None]
+
+    if not constrain or sp.molecule == "methaneUA":
+        return boxes
+
+    # If we reached this far, we need constrainmol, foyer, and load_ff
+    import foyer
+    from constrainmol import ConstrainedMolecule
+
+    from reproducibility_project.src.utils.forcefields import load_ff
+
+    ff = load_ff(sp.forcefield_name)
+    parmed_molecule = molecule.to_parmed()
+    typed_molecule = ff.apply(parmed_molecule)
+    constrain_mol = ConstrainedMolecule(typed_molecule)
+
+    for box in boxes:
+        if box is None:
+            continue
+        else:
+            for mol in box.children:
+                constrain_mol.update_xyz(mol.xyz * 10)  # nm to angstrom
+                constrain_mol.solve()
+                mol.xyz = constrain_mol.xyz / 10.0  # angstrom to nm
+
+    return boxes
 
 
 def get_molecule(sp):
