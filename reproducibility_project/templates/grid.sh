@@ -31,7 +31,7 @@ module load python/3.8
 module swap gnu7 intel/2019
 
 {% if gpus %}
-module load cuda/11.0 
+module load cuda/11.0
 {%- endif %}
 
 {% endblock body %}
