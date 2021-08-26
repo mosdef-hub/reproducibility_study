@@ -44,16 +44,7 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0, constrain=False):
     [filled_liq_box, filled_vap_box]
         Return list of system as specified.
     """
-    # Update this dict as new recipes are made
-    molecule_dict = {
-        "methaneUA": MethaneUA(),
-        "pentaneUA": PentaneUA(),
-        "benzeneUA": BenzeneUA(),
-        "waterSPCE": WaterSPC(),
-        "ethanolAA": EthanolAA(),
-    }
-    molecule = molecule_dict[sp["molecule"]]
-    molecule.name = sp["molecule"]
+    molecule = get_molecule(sp)
     liq_box = mb.Box([sp["box_L_liq"] * scale_liq_box] * 3)
 
     filled_liq_box = mb.fill_box(
