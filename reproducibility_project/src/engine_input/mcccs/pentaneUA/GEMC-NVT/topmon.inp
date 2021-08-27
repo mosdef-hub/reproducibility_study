@@ -14,8 +14,8 @@
  /
 
  &system
-     lnpt= T
-     lgibbs= F
+     lnpt= F
+     lgibbs= T
      lgrand= F
      lanes= F
      lvirial= F
