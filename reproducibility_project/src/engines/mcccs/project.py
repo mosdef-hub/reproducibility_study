@@ -297,7 +297,7 @@ def system_equilibrated(job):
         if equil_status[0] == False:
             print(
                 "System {} is not equilibrated. Completed {} equil loops".format(
-                    job, job.doc.get("equil_replicates_done") + 1
+                    job, job.doc.get("equil_replicates_done")
                 )
             )
             return False
@@ -306,7 +306,7 @@ def system_equilibrated(job):
                 "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
                     job,
                     equil_status[1],
-                    job.doc.get("equil_replicates_done") + 1,
+                    job.doc.get("equil_replicates_done"),
                 )
             )
             return True
@@ -617,6 +617,17 @@ def run_melt(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        print(
+            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+                step,
+                job,
+                job.sp.molecule,
+                job.sp.ensemble,
+                job.sp.temperature,
+                job.sp.pressure,
+                job.sp.replica,
+            )
+        )
 
 
 @Project.operation
@@ -662,6 +673,17 @@ def run_cool(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        print(
+            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+                step,
+                job,
+                job.sp.molecule,
+                job.sp.ensemble,
+                job.sp.temperature,
+                job.sp.pressure,
+                job.sp.replica,
+            )
+        )
 
 
 @Project.operation
@@ -707,6 +729,18 @@ def run_equil(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        print(
+            "Comleted {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+                step,
+                job,
+                job.sp.molecule,
+                job.sp.ensemble,
+                job.sp.temperature,
+                job.sp.pressure,
+                job.sp.replica,
+            )
+        )
+
         job.doc.equil_replicates_done += 1
 
 
@@ -754,6 +788,18 @@ def run_prod(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        print(
+            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+                step,
+                job,
+                job.sp.molecule,
+                job.sp.ensemble,
+                job.sp.temperature,
+                job.sp.pressure,
+                job.sp.replica,
+            )
+        )
+
         job.doc.prod_replicates_done += 1
         if all_prod_replicates_done:
             print(
