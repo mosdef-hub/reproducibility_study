@@ -115,7 +115,7 @@
 
 SIMULATION_BOX
 ! boxlx  boxly  boxlz  rcut    kalp   rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure (MPa)
-LENGTH LENGTH LENGTH  RCUT  0.250  0.000  3                      F      F     F      F      2000    PRESSURE
+LENGTH LENGTH LENGTH  RCUT  0.250  0.000  3                      F      F     F      F      1000    PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN       0       0                0
 

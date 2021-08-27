@@ -133,13 +133,13 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH1 LENGTH1 LENGTH1 RCUT  0.250  0.000 3  F  F  F  F 2000     0.1
+  LENGTH1 LENGTH1 LENGTH1 RCUT  0.250  0.000 3  F  F  F  F 1000     0.1
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN1 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
 INIX1 INIY1 INIZ1 10 0 10.0  2.000 F 0.0
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH2 LENGTH2 LENGTH2 RCUT  0.250  0.000 3  F  F  F  F 2000     0.1
+  LENGTH2 LENGTH2 LENGTH2 RCUT  0.250  0.000 3  F  F  F  F 1000     0.1
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN2 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax

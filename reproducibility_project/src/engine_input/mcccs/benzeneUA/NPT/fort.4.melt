@@ -108,7 +108,7 @@
 
 
  &mc_simple
-     pm_atom_tra= 0.25
+     pm_atom_tra= 0.05
      armtra=  1.000000000000000E-002
      rmtra=  0.300000000000000
      rmrot=  0.400000000000000
@@ -135,7 +135,7 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH RCUT  0.250  0.000 0  F  F  F  F 2000     PRESSURE
+  LENGTH   LENGTH   LENGTH RCUT  0.250  0.000 3  F  F  F  F 1000     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
