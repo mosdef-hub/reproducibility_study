@@ -3,10 +3,10 @@
 import os
 import pathlib
 
-import reproducibility_project.templates.ndcrc
-
 import flow
 from flow import directives
+
+import reproducibility_project.templates.ndcrc
 
 
 class Project(flow.FlowProject):
@@ -29,7 +29,7 @@ def statepoint_selection(job):
     molecules = ["methaneUA"]
     replicas = [0]
     reqs = []
-    #reqs.append(job.sp.molecule in molecules)
+    # reqs.append(job.sp.molecule in molecules)
     reqs.append(job.sp.replica in replicas)
     return all(reqs)
 

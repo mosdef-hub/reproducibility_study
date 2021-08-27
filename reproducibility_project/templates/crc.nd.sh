@@ -13,4 +13,3 @@ conda activate mosdef-study38
 {% block tasks %}
 {% endblock %}
 {% endblock %}
-

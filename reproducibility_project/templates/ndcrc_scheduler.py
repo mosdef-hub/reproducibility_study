@@ -1,42 +1,41 @@
-
-
 """Implementation of the scheduling system for SGE scheduler at UND.
 
 This module implements the Scheduler and ClusterJob classes.
 """
+import errno
 import getpass
+import logging
 import subprocess
 import tempfile
-import logging
-import errno
-
 import xml.etree.ElementTree as ET
 
-from flow.scheduling.base import Scheduler
-from flow.scheduling.base import ClusterJob, JobStatus
 from flow.errors import SubmitError
+from flow.scheduling.base import ClusterJob, JobStatus, Scheduler
 
 logger = logging.getLogger(__name__)
+
 
 def _fetch(user=None):
     "Fetch the cluster job status information from the SGE scheduler."
 
     def parse_status(s):
         s = s.strip()
-        if s == 'qw':
+        if s == "qw":
             return JobStatus.queued
-        elif s == 'r':
+        elif s == "r":
             return JobStatus.active
-        elif s in ['Eqw']:
+        elif s in ["Eqw"]:
             return JobStatus.error
         return JobStatus.registered
 
     if user is None:
         user = getpass.getuser()
 
-    cmd = ['qstat', '-u', user, '-xml']
+    cmd = ["qstat", "-u", user, "-xml"]
     try:
-        result = subprocess.check_output(cmd).decode('utf-8', errors='backslashreplace')
+        result = subprocess.check_output(cmd).decode(
+            "utf-8", errors="backslashreplace"
+        )
     except subprocess.CalledProcessError:
         raise
     except IOError as error:
@@ -45,16 +44,17 @@ def _fetch(user=None):
         else:
             raise RuntimeError("SGE not available.")
     root = ET.fromstring(result)
-    jobs = root.find('queue_info')
+    jobs = root.find("queue_info")
     for job in jobs:
-        status = job.find('state').text
-        name = job.find('JB_name').text
+        status = job.find("state").text
+        name = job.find("JB_name").text
         yield SGEJob(name, parse_status(status))
-    jobs = root.find('job_info')
+    jobs = root.find("job_info")
     for job in jobs:
-        status = job.find('state').text
-        name = job.find('JB_name').text
+        status = job.find("state").text
+        name = job.find("JB_name").text
         yield SGEJob(name, parse_status(status))
+
 
 class SGEJob(ClusterJob):
     "A SGEJob is a ClusterJob managed by a SGE scheduler."
@@ -72,8 +72,9 @@ class SGEScheduler(Scheduler):
     :type user:
         str
     """
+
     # The standard command used to submit jobs to the SLURM scheduler.
-    submit_cmd = ['qsub']
+    submit_cmd = ["qsub"]
 
     def __init__(self, user=None, **kwargs):
         super(SGEScheduler, self).__init__(**kwargs)
@@ -85,7 +86,15 @@ class SGEScheduler(Scheduler):
         for job in _fetch(user=self.user):
             yield job
 
-    def submit(self, script, after=None, hold=False, pretend=False, flags=None, **kwargs):
+    def submit(
+        self,
+        script,
+        after=None,
+        hold=False,
+        pretend=False,
+        flags=None,
+        **kwargs
+    ):
         """Submit a job script for execution to the scheduler.
 
         :param script:
@@ -117,20 +126,21 @@ class SGEScheduler(Scheduler):
         submit_cmd = self.submit_cmd + flags
 
         if after is not None:
-            submit_cmd.extend(
-                ['-hold_jid', ''.format(after.split('.')[0])])
+            submit_cmd.extend(["-hold_jid", "".format(after.split(".")[0])])
 
         if pretend:
-            print("# Submit command: {}".format('  '.join(submit_cmd)))
+            print("# Submit command: {}".format("  ".join(submit_cmd)))
             print(script)
             print()
         else:
             with tempfile.NamedTemporaryFile() as tmp_submit_script:
-                tmp_submit_script.write(str(script).encode('utf-8'))
+                tmp_submit_script.write(str(script).encode("utf-8"))
                 tmp_submit_script.flush()
                 try:
-                    subprocess.check_output(submit_cmd + [tmp_submit_script.name],
-                                            universal_newlines=True)
+                    subprocess.check_output(
+                        submit_cmd + [tmp_submit_script.name],
+                        universal_newlines=True,
+                    )
                 except subprocess.CalledProcessError as e:
                     raise SubmitError("SGE error: {}".format(e.output))
 
@@ -140,7 +150,9 @@ class SGEScheduler(Scheduler):
     def is_present(cls):
         "Return True if it appears that a SGE scheduler is available within the environment."
         try:
-            subprocess.check_output(['sge_qmaster', '-help'], stderr=subprocess.STDOUT)
+            subprocess.check_output(
+                ["sge_qmaster", "-help"], stderr=subprocess.STDOUT
+            )
         except (IOError, OSError):
             return False
         else:
