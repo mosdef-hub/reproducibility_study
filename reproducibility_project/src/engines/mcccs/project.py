@@ -28,26 +28,6 @@ def mc3s_exec():
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
 
 
-def get_system(job):
-    """Return the system (mbuild filled_box) for a particular job."""
-    from reproducibility_project.src.molecules.system_builder import (
-        construct_system,
-    )
-
-    system = construct_system(job.sp, constrain=True)
-
-    return system
-
-
-def get_molecules(job):
-    """Return the list of mbuild molecules being used in the job."""
-    from reproducibility_project.src.molecules.system_builder import (
-        get_molecule,
-    )
-
-    return [get_molecule(job.sp)]
-
-
 """Setting progress label"""
 
 
@@ -285,10 +265,26 @@ def system_equilibrated(job):
     with job:
         files = glob("fort*12*{}*".format("equil"))
         if len(files) < 2:  # at least do two loops of equilibration
-            print("equils done is less than 2 for {}".format(job))
+            print(
+                "equils done is less than 2 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                    job,
+                    job.sp.molecule,
+                    job.sp.ensemble,
+                    job.sp.temperature,
+                    job.sp.pressure,
+                )
+            )
             return False
         if len(files) >= 4:  # max of 4 equils
-            print("equils done is > 4 for {}".format(job))
+            print(
+                "equils done is >= 4 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                    job,
+                    job.sp.molecule,
+                    job.sp.ensemble,
+                    job.sp.temperature,
+                    job.sp.pressure,
+                )
+            )
             return True
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
@@ -532,6 +528,14 @@ def replace_keyword_fort_files_gemc(job):
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_restart_file)
 def make_restart_file(job):
+    """Make a restart file for the job using fort77maker."""
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+        get_molecule,
+    )
+
+    molecules = [get_molecule(job.sp)]
+    system = construct_system(job.sp, constrain=True)
     """Make a fort77 file for the job."""
     if job.sp.ensemble == "GEMC-NVT":
         #        from fort77maker_twobox import fort77writer
@@ -539,8 +543,7 @@ def make_restart_file(job):
             fort77writer,
         )
 
-        molecules = get_molecules(job)
-        filled_boxes = get_system(job)
+        filled_boxes = system
         fort77writer(
             molecules,
             filled_boxes,
@@ -558,8 +561,7 @@ def make_restart_file(job):
             fort77writer,
         )
 
-        molecules = get_molecules(job)
-        filled_box = get_system(job)[0]
+        filled_box = system[0]
         print("The filled box in make_restart file is {}".format(filled_box))
         fort77writer(
             molecules,
@@ -584,7 +586,17 @@ def run_melt(job):
 
     step = "melt"
     """Run the melting stage."""
-    print("Running {} for {}.".format(step, job))
+    print(
+        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.{}".format(step), "fort.4")
@@ -618,7 +630,17 @@ def run_cool(job):
 
     step = "cool"
     """Run the melting stage."""
-    print("Running {} for {}.".format(step, job))
+    print(
+        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
     execommand = mc3s_exec()
     with job:
 
@@ -654,7 +676,17 @@ def run_equil(job):
 
     step = "equil" + str(job.doc.equil_replicates_done)
     """Run the  equil  stage."""
-    print("Running {} for {}.".format(step, job))
+    print(
+        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.equil", "fort.4")
@@ -691,7 +723,17 @@ def run_prod(job):
     replicate = job.doc.prod_replicates_done
     step = "prod" + str(replicate)
     """Run the prod stage."""
-    print("Running {} for {}.".format(step, job))
+    print(
+        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.prod", "fort.4")
@@ -713,6 +755,16 @@ def run_prod(job):
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
         job.doc.prod_replicates_done += 1
+        if all_prod_replicates_done:
+            print(
+                "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                    job,
+                    job.sp.molecule,
+                    job.sp.ensemble,
+                    job.sp.temperature,
+                    job.sp.pressure,
+                )
+            )
 
 
 if __name__ == "__main__":
