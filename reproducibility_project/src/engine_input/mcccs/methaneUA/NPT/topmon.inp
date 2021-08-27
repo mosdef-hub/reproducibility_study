@@ -58,9 +58,6 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-  1 1   98.0000  3.75000  0.0000  15.0347000 C   #Tr-UA CH3
-  2 1   46.0000  3.95000  0.0000  14.0269000 C   #Tr-UA CH2
-  3 1   10.0000  4.68000  0.0000  13.0191000 C   #Tr-UA CH
   4 1   148.000  3.73000  0.0000  16.0424600 _CH4   #Tr-UA CH4
 END ATOMS
 

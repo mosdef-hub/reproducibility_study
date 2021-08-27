@@ -6,7 +6,7 @@
      nchain=           NCHAIN
      nstep=         30000
      lstop= F
-     iratio=         50000000
+     iratio=         500000
      rmin=   1
      softcut=   100.000000000000
      linit= F
@@ -46,7 +46,7 @@
 
  &mc_volume
      tavol=  0.500000000000000
-     iratv=         500000000
+     iratv=         500000
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
@@ -144,7 +144,7 @@ END SIMULATION_BOX
 
 MOLECULE_TYPE
 ! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lrplc lsetup lq14scale qscale iurot isolute eta
-5 5 5 5 5 5                                    F      F      F     F              F      T        0.5   0     1000000
+5 5 5 5 5 5                                    F      F      F     F              F      F        0.5   0     1000000
 ! unit ntype leaderq
 1 4 1
 ! stretching
