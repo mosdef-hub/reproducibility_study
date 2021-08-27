@@ -28,10 +28,16 @@ def is_cassandra(job):
 @Project.label
 def cassandra_complete(job):
     """Check whether job is complete."""
+    return check_complete(job.fn("prod"))
+
+
+def check_complete(run_name):
+    """Check whether MoSDeF Cassandra simulation with run_name has completed."""
     complete = False
-    if not os.path.exists(job.fn("prod.out.log")):
+    fname = run_name + ".out.log"
+    if not os.path.exists(fname):
         return complete
-    with open(job.fn("prod.out.log")) as f:
+    with open(fname) as f:
         for line in f:
             if "Cassandra simulation complete" in line:
                 complete = True
@@ -193,57 +199,9 @@ def run_cassandra(job):
     moveset.cbmc_n_dihed = cbmc_n_dihed
 
     with job:
-        mc.run(
-            system=meltsystem_liq,
-            moveset=nvtmoves,
-            run_type="equilibration",
-            run_length=5000,
-            temperature=Tmelt,
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="nvt_melt",
-            prop_freq=prop_freq,
-            coord_freq=5000,
-            units="sweeps",
-            steps_per_sweep=Nliq,
-            seeds=seeds,
-        )
-
-        nvtendbox_liq = read_xyz("nvt_melt.out.xyz")
-
-        nvtendbox_liq.box = liqbox_filled.box
-
-        nvtsystem_liq = mc.System([nvtendbox_liq], species_list, [[Nliq]])
-
-        mc.run(
-            system=nvtsystem_liq,
-            moveset=nvtmoves,
-            run_type="equilibration",
-            run_length=5000,
-            temperature=T,
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="nvt_equil",
-            prop_freq=prop_freq,
-            coord_freq=5000,
-            units="sweeps",
-            steps_per_sweep=Nliq,
-            seeds=seeds,
-        )
-
-        nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
-
-        nvtendbox_liq.box = liqbox_filled.box
-        boxlist = [nvtendbox_liq]
-
-        if ensemble == "GEMC-NVT":
-            meltsystem_vap = mc.System([vapbox_filled], species_list, [[Nvap]])
+        if not check_complete("nvt_melt"):
             mc.run(
-                system=meltsystem_vap,
+                system=meltsystem_liq,
                 moveset=nvtmoves,
                 run_type="equilibration",
                 run_length=5000,
@@ -252,19 +210,23 @@ def run_cassandra(job):
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
-                run_name="nvt_melt_vap",
+                run_name="nvt_melt",
                 prop_freq=prop_freq,
                 coord_freq=5000,
                 units="sweeps",
-                steps_per_sweep=Nvap,
+                steps_per_sweep=Nliq,
                 seeds=seeds,
             )
-            meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
 
-            meltendbox_vap.box = vapbox_filled.box
-            nvtsystem_vap = mc.System([meltendbox_vap], species_list, [[Nvap]])
+        nvtendbox_liq = read_xyz("nvt_melt.out.xyz")
+
+        nvtendbox_liq.box = liqbox_filled.box
+
+        nvtsystem_liq = mc.System([nvtendbox_liq], species_list, [[Nliq]])
+
+        if not check_complete("nvt_equil"):
             mc.run(
-                system=nvtsystem_vap,
+                system=nvtsystem_liq,
                 moveset=nvtmoves,
                 run_type="equilibration",
                 run_length=5000,
@@ -273,13 +235,61 @@ def run_cassandra(job):
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
-                run_name="nvt_equil_vap",
+                run_name="nvt_equil",
                 prop_freq=prop_freq,
                 coord_freq=5000,
                 units="sweeps",
-                steps_per_sweep=Nvap,
+                steps_per_sweep=Nliq,
                 seeds=seeds,
             )
+
+        nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
+
+        nvtendbox_liq.box = liqbox_filled.box
+        boxlist = [nvtendbox_liq]
+
+        if ensemble == "GEMC-NVT":
+            meltsystem_vap = mc.System([vapbox_filled], species_list, [[Nvap]])
+            if not check_complete("nvt_melt_vap"):
+                mc.run(
+                    system=meltsystem_vap,
+                    moveset=nvtmoves,
+                    run_type="equilibration",
+                    run_length=5000,
+                    temperature=Tmelt,
+                    properties=proplist,
+                    cutoff_style="cut",
+                    vdw_cutoff=cutoff,
+                    charge_cutoff=cutoff,
+                    run_name="nvt_melt_vap",
+                    prop_freq=prop_freq,
+                    coord_freq=5000,
+                    units="sweeps",
+                    steps_per_sweep=Nvap,
+                    seeds=seeds,
+                )
+            meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
+
+            meltendbox_vap.box = vapbox_filled.box
+            nvtsystem_vap = mc.System([meltendbox_vap], species_list, [[Nvap]])
+            if not check_complete("nvt_equil_vap"):
+                mc.run(
+                    system=nvtsystem_vap,
+                    moveset=nvtmoves,
+                    run_type="equilibration",
+                    run_length=5000,
+                    temperature=T,
+                    properties=proplist,
+                    cutoff_style="cut",
+                    vdw_cutoff=cutoff,
+                    charge_cutoff=cutoff,
+                    run_name="nvt_equil_vap",
+                    prop_freq=prop_freq,
+                    coord_freq=5000,
+                    units="sweeps",
+                    steps_per_sweep=Nvap,
+                    seeds=seeds,
+                )
             nvtendbox_vap = read_xyz("nvt_equil_vap.out.xyz")
 
             nvtendbox_vap.box = vapbox_filled.box
@@ -291,24 +301,25 @@ def run_cassandra(job):
         l_equil = False
         cycles_done = 0
 
-        mc.run(
-            system=system,
-            moveset=moveset,
-            run_type="equilibration",
-            run_length=equil_length,
-            temperature=T,
-            pressure=P,  # this line is ignored if ensemble isn't NPT
-            properties=proplist,
-            cutoff_style="cut",
-            vdw_cutoff=cutoff,
-            charge_cutoff=cutoff,
-            run_name="equil_0",
-            prop_freq=prop_freq,
-            coord_freq=coord_freq,
-            units="sweeps",
-            steps_per_sweep=N,
-            seeds=seeds,
-        )
+        if not check_complete("equil_0"):
+            mc.run(
+                system=system,
+                moveset=moveset,
+                run_type="equilibration",
+                run_length=equil_length,
+                temperature=T,
+                pressure=P,  # this line is ignored if ensemble isn't NPT
+                properties=proplist,
+                cutoff_style="cut",
+                vdw_cutoff=cutoff,
+                charge_cutoff=cutoff,
+                run_name="equil_0",
+                prop_freq=prop_freq,
+                coord_freq=coord_freq,
+                units="sweeps",
+                steps_per_sweep=N,
+                seeds=seeds,
+            )
 
         prior_run = "equil_" + str(cycles_done)
         cycles_done += equil_length
@@ -331,12 +342,13 @@ def run_cassandra(job):
 
         for i in range(2):
             if t >= equil_length * 3 / (prop_freq * 4):
-                mc.restart(
-                    restart_from=prior_run,
-                    run_name="equil_" + str(cycles_done),
-                    run_type="equilibration",
-                    total_run_length=cycles_done + equil_length,
-                )
+                if not check_complete("equil_" + str(cycles_done)):
+                    mc.restart(
+                        restart_from=prior_run,
+                        run_name="equil_" + str(cycles_done),
+                        run_type="equilibration",
+                        total_run_length=cycles_done + equil_length,
+                    )
                 prior_run = "equil_" + str(cycles_done)
                 cycles_done += equil_length
                 t, g, Neff_max = detectEquilibration(
@@ -370,4 +382,3 @@ def run_cassandra(job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
-    breakpoint()
