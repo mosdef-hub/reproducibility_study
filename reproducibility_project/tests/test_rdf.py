@@ -10,6 +10,8 @@ class TestRDF(BaseTest):
 
     def test_rdf(self, job_gsdfile):
         rdf = gsd_rdf(job_gsdfile)
+        assert job_gsdfile.isfile("rdf.txt")
+        assert job_gsdfile.isfile("rdf.png")
 
     def test_gsdfile_random(self, gsdfile_random):
         rdf = _gsd_rdf(gsdfile_random)
