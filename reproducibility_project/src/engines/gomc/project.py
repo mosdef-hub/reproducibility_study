@@ -1825,9 +1825,9 @@ def run_equilb_NVT_gomc_command(job):
 # ******************************************************
 # ******************************************************
 def test_pymbar_stabilized_equilb_design_ensemble(job):
-    """Test if the simulation has come to equilibrium via pymbar"""
+    """Test if the simulation has come to equilibrium via pymbar."""
     print("#**********************")
-    print("# Started the test_pymbar_stabilized_equilb_design_ensemble.")
+    print("# Started the test_pymbar_stabilized_equilb_design_ensemble")
     print("#**********************")
 
     fraction_data_required_for_equilbrium = 0.25  # float
