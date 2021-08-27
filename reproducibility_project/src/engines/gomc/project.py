@@ -1,5 +1,5 @@
-"""The GOMC setup for signac, signac-flow, signac-dashboard for this study."""
 # project.py
+
 import os
 import subprocess
 
@@ -31,7 +31,6 @@ class Project(FlowProject):
 
     def __init__(self):
         super().__init__()
-
 
 
 class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
@@ -657,6 +656,7 @@ def part_4d_job_production_run_completed_properly(job):
 # build system
 def build_charmm(job, write_files=True):
     """Build the Charmm object and potentially write the pdb, psd, and FF files."""
+
     print("#**********************")
     print("Started: GOMC Charmm Object")
     print("#**********************")
@@ -1746,6 +1746,7 @@ def build_psf_pdb_ff_gomc_conf(job):
 @flow.cmd
 def run_melt_equilb_NVT_gomc_command(job):
     """Run the gomc melt_equilb_NVT simulation."""
+
     print("#**********************")
     print("# Started the run_melt_NVT_gomc_command.")
     print("#**********************")
@@ -1794,6 +1795,7 @@ def run_melt_equilb_NVT_gomc_command(job):
 @flow.cmd
 def run_equilb_NVT_gomc_command(job):
     """Run the gomc equilb_NVT simulation."""
+
     print("#**********************")
     print("# Started the run_NVT_gomc_command.")
     print("#**********************")
@@ -1826,6 +1828,7 @@ def run_equilb_NVT_gomc_command(job):
 # ******************************************************
 def test_pymbar_stabilized_equilb_design_ensemble(job):
     """Test if the simulation has come to equilibrium via pymbar"""
+
     print("#**********************")
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble.")
     print("#**********************")
@@ -2060,6 +2063,7 @@ def pymbar_stabilized_equilb_design_ensemble(job):
 @flow.with_job
 def run_equilb_ensemble_gomc_command(job):
     """Run the gomc equilb_ensemble simulation."""
+
     for run_equilb_ensemble_i in range(
         job.doc.equilb_design_ensemble_number, equilb_design_ensemble_max_number
     ):
@@ -2134,6 +2138,7 @@ def run_equilb_ensemble_gomc_command(job):
 @flow.cmd
 def run_production_run_gomc_command(job):
     """Run the gomc production_run simulation."""
+
     print("#**********************")
     print("# Started the run_production_run_gomc_command function.")
     print("#**********************")
