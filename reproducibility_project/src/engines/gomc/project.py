@@ -33,7 +33,6 @@ class Project(FlowProject):
         super().__init__()
 
 
-
 class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     """Subclass of DefaultSlurmEnvironment for WSU's Grid cluster."""
 
