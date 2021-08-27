@@ -54,6 +54,7 @@ def run_hoomd(job):
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
+    print("NVT")
 
     # Ignore the vapor box
     # Initialize with box expanded by factor of 5
@@ -161,6 +162,7 @@ def run_hoomd_npt(job):
         construct_system,
     )
 
+    print("NPT")
     # Ignore the vapor box
     filled_box, _ = construct_system(job.sp)
 
@@ -185,7 +187,7 @@ def run_hoomd_npt(job):
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
-        filename=job.fn("trajectory.gsd"),
+        filename=job.fn("trajectory-npt.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode="ab",
         dynamic=["momentum"],
@@ -208,7 +210,7 @@ def run_hoomd_npt(job):
             "volume",
         ],
     )
-    file = open(job.fn("log.txt"), mode="a", newline="\n")
+    file = open(job.fn("log-npt.txt"), mode="a", newline="\n")
     table_file = hoomd.write.Table(
         output=file,
         trigger=hoomd.trigger.Periodic(period=1000),
