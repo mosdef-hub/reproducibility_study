@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def _fetch(user=None):
-    "Fetch the cluster job status information from the SGE scheduler."
+    """Fetch the cluster job status information from the SGE scheduler."""
 
     def parse_status(s):
         s = s.strip()
@@ -57,7 +57,8 @@ def _fetch(user=None):
 
 
 class SGEJob(ClusterJob):
-    "A SGEJob is a ClusterJob managed by a SGE scheduler."
+    """A SGEJob is a ClusterJob managed by a SGE scheduler."""
+
     pass
 
 
@@ -81,7 +82,7 @@ class SGEScheduler(Scheduler):
         self.user = user
 
     def jobs(self):
-        "Yield cluster jobs by querying the scheduler."
+        """Yield cluster jobs by querying the scheduler."""
         self._prevent_dos()
         for job in _fetch(user=self.user):
             yield job
@@ -148,7 +149,7 @@ class SGEScheduler(Scheduler):
 
     @classmethod
     def is_present(cls):
-        "Return True if it appears that a SGE scheduler is available within the environment."
+        """Return True if it appears that a SGE scheduler is available within the environment."""
         try:
             subprocess.check_output(
                 ["sge_qmaster", "-help"], stderr=subprocess.STDOUT

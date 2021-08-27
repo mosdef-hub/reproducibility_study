@@ -1,9 +1,11 @@
+"""Scheduler environment module for NotreDameCRC."""
 import flow
 
 from .ndcrc_scheduler import SGEScheduler
 
 
 class NotreDameCRC(flow.environment.StandardEnvironment):
+    """Scheduler environment for NotreDameCRC."""
 
     hostname_pattern = r".*\.crc\.nd\.edu$"
     template = "crc.nd.sh"

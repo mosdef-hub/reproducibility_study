@@ -21,21 +21,13 @@ class Project(flow.FlowProject):
 
 @Project.label
 def is_cassandra(job):
+    """Verify that the job is for Cassandra."""
     return job.sp.engine == "cassandra"
 
 
 @Project.label
-def statepoint_selection(job):
-    molecules = ["methaneUA"]
-    replicas = [0]
-    reqs = []
-    # reqs.append(job.sp.molecule in molecules)
-    reqs.append(job.sp.replica in replicas)
-    return all(reqs)
-
-
-@Project.label
 def cassandra_complete(job):
+    """Check whether job is complete."""
     complete = False
     if not os.path.exists(job.fn("prod.out.log")):
         return complete
@@ -49,12 +41,10 @@ def cassandra_complete(job):
 
 @Project.operation
 @Project.pre(is_cassandra)
-@Project.pre(statepoint_selection)
 @Project.post(cassandra_complete)
 @directives(omp_num_threads=4)
 def run_cassandra(job):
     """Run all simulation stages for given statepoint."""
-
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
