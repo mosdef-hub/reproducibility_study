@@ -53,7 +53,7 @@ def cassandra_complete(job):
 @Project.post(cassandra_complete)
 @directives(omp_num_threads=4)
 def run_cassandra(job):
-    """"""
+    """Run all simulation stages for given statepoint."""
 
     import foyer
     import mbuild as mb
