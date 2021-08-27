@@ -28,6 +28,36 @@ def mc3s_exec():
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
 
 
+def print_running_string(job, step):
+    """Print details about the stage that is starting."""
+    print(
+        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
+
+
+def print_completed_string(job, step):
+    """Print details about the stage that just completed."""
+    print(
+        "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
+            step,
+            job,
+            job.sp.molecule,
+            job.sp.ensemble,
+            job.sp.temperature,
+            job.sp.pressure,
+            job.sp.replica,
+        )
+    )
+
+
 """Setting progress label"""
 
 
@@ -309,6 +339,15 @@ def system_equilibrated(job):
                     job.doc.get("equil_replicates_done"),
                 )
             )
+            text_file = open("equil_information.txt", "w")
+            n = text_file.write(
+                "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                    job,
+                    equil_status[1],
+                    job.doc.get("equil_replicates_done"),
+                )
+            )
+            text_file.close()
             return True
 
 
@@ -586,17 +625,7 @@ def run_melt(job):
 
     step = "melt"
     """Run the melting stage."""
-    print(
-        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-            step,
-            job,
-            job.sp.molecule,
-            job.sp.ensemble,
-            job.sp.temperature,
-            job.sp.pressure,
-            job.sp.replica,
-        )
-    )
+    print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.{}".format(step), "fort.4")
@@ -617,17 +646,7 @@ def run_melt(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-        print(
-            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-                step,
-                job,
-                job.sp.molecule,
-                job.sp.ensemble,
-                job.sp.temperature,
-                job.sp.pressure,
-                job.sp.replica,
-            )
-        )
+        print_completed_string(job, step)
 
 
 @Project.operation
@@ -641,17 +660,7 @@ def run_cool(job):
 
     step = "cool"
     """Run the melting stage."""
-    print(
-        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-            step,
-            job,
-            job.sp.molecule,
-            job.sp.ensemble,
-            job.sp.temperature,
-            job.sp.pressure,
-            job.sp.replica,
-        )
-    )
+    print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
 
@@ -673,17 +682,7 @@ def run_cool(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-        print(
-            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-                step,
-                job,
-                job.sp.molecule,
-                job.sp.ensemble,
-                job.sp.temperature,
-                job.sp.pressure,
-                job.sp.replica,
-            )
-        )
+    print_completed_string(job, step)
 
 
 @Project.operation
@@ -698,17 +697,7 @@ def run_equil(job):
 
     step = "equil" + str(job.doc.equil_replicates_done)
     """Run the  equil  stage."""
-    print(
-        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-            step,
-            job,
-            job.sp.molecule,
-            job.sp.ensemble,
-            job.sp.temperature,
-            job.sp.pressure,
-            job.sp.replica,
-        )
-    )
+    print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.equil", "fort.4")
@@ -729,19 +718,8 @@ def run_equil(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-        print(
-            "Comleted {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-                step,
-                job,
-                job.sp.molecule,
-                job.sp.ensemble,
-                job.sp.temperature,
-                job.sp.pressure,
-                job.sp.replica,
-            )
-        )
-
         job.doc.equil_replicates_done += 1
+    print_completed_string(job, step)
 
 
 @Project.operation
@@ -757,17 +735,7 @@ def run_prod(job):
     replicate = job.doc.prod_replicates_done
     step = "prod" + str(replicate)
     """Run the prod stage."""
-    print(
-        "Running {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-            step,
-            job,
-            job.sp.molecule,
-            job.sp.ensemble,
-            job.sp.temperature,
-            job.sp.pressure,
-            job.sp.replica,
-        )
-    )
+    print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
         shutil.copyfile("fort.4.prod", "fort.4")
@@ -788,20 +756,9 @@ def run_prod(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
-        print(
-            "Completed {} for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa, replica = {}.".format(
-                step,
-                job,
-                job.sp.molecule,
-                job.sp.ensemble,
-                job.sp.temperature,
-                job.sp.pressure,
-                job.sp.replica,
-            )
-        )
-
         job.doc.prod_replicates_done += 1
-        if all_prod_replicates_done:
+        print_running_string(job, step)
+        if all_prod_replicates_done(job):
             print(
                 "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
