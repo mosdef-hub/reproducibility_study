@@ -30,60 +30,22 @@ def mc3s_exec():
 
 def get_system(job):
     """Return the system (mbuild filled_box) for a particular job."""
-    import foyer
-    from constrainmol import ConstrainedMolecule
-
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
-    from reproducibility_project.src.utils.forcefields import load_ff
 
-    system = construct_system(job.sp)
-    molecule = get_molecules(job)[0]
-    print("project.py has {}".format(molecule))
-
-    system = construct_system(job.sp)
-    parmed_molecule = molecule.to_parmed()
-    # Apply forcefield from statepoint
-    ff = load_ff(job.sp.forcefield_name)
-    typed_molecule = ff.apply(parmed_molecule)
-    print("The typed molecule is {}".format(typed_molecule))
-    if (
-        job.sp.molecule == "methaneUA"
-    ):  # we dont want to apply consrainmol on methane
-        return system
-    constrain_mol = ConstrainedMolecule(typed_molecule)
-
-    for box in system:
-        if box is None:
-            continue
-        else:
-            for mol in box.children:
-                constrain_mol.update_xyz(mol.xyz * 10)  # nm to angstrom
-                constrain_mol.solve()
-                mol.xyz = constrain_mol.xyz / 10.0  # angstrom to nm
+    system = construct_system(job.sp, constrain=True)
 
     return system
 
 
 def get_molecules(job):
     """Return the list of mbuild molecules being used in the job."""
-    from mbuild.lib.molecules.water import WaterSPC
+    from reproducibility_project.src.molecules.system_builder import (
+        get_molecule,
+    )
 
-    from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
-    from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
-    from reproducibility_project.src.molecules.methane_ua import MethaneUA
-    from reproducibility_project.src.molecules.pentane_ua import PentaneUA
-
-    molecule_dict = {
-        "methaneUA": MethaneUA(),
-        "pentaneUA": PentaneUA(),
-        "benzeneUA": BenzeneUA(),
-        "waterSPCE": WaterSPC(),
-        "ethanolAA": EthanolAA(),
-    }
-    molecule = molecule_dict[job.sp.molecule]
-    return [molecule]
+    return [get_molecule(job.sp)]
 
 
 """Setting progress label"""
