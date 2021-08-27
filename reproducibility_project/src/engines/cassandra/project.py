@@ -50,28 +50,17 @@ def run_cassandra(job):
     import mosdef_cassandra as mc
     import unyt as u
     from mbuild.formats.xyz import read_xyz
-    from mbuild.lib.molecules.water import WaterSPC
     from pymbar.timeseries import detectEquilibration
 
-    from reproducibility_project.src.molecules.benzene_ua import BenzeneUA
-    from reproducibility_project.src.molecules.ethanol_aa import EthanolAA
-    from reproducibility_project.src.molecules.methane_ua import MethaneUA
-    from reproducibility_project.src.molecules.pentane_ua import PentaneUA
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
+        get_molecule,
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
-    compound_dict = {
-        "methaneUA": MethaneUA(),
-        "pentaneUA": PentaneUA(),
-        "benzeneUA": BenzeneUA(),
-        "waterSPCE": WaterSPC(),
-        "ethanolAA": EthanolAA(),
-    }
     molecule = job.sp.molecule
 
-    compound = compound_dict[molecule]
+    compound = get_molecule(job.sp)
 
     ensemble = job.sp.ensemble
 
