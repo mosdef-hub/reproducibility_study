@@ -3,8 +3,10 @@
 import os
 import pathlib
 
+import reproducibility_project.templates.ndcrc
+
 import flow
-from flow import directives, environments
+from flow import directives
 
 
 class Project(flow.FlowProject):
@@ -27,7 +29,7 @@ def statepoint_selection(job):
     molecules = ["methaneUA"]
     replicas = [0]
     reqs = []
-    reqs.append(job.sp.molecule in molecules)
+    #reqs.append(job.sp.molecule in molecules)
     reqs.append(job.sp.replica in replicas)
     return all(reqs)
 
@@ -35,6 +37,8 @@ def statepoint_selection(job):
 @Project.label
 def cassandra_complete(job):
     complete = False
+    if not os.path.exists(job.fn("prod.out.log")):
+        return complete
     with open(job.fn("prod.out.log")) as f:
         for line in f:
             if "Cassandra simulation complete" in line:
@@ -72,14 +76,14 @@ def run_cassandra(job):
         "methaneUA": MethaneUA(),
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
-        "waterSPC/E": WaterSPC(),
+        "waterSPCE": WaterSPC(),
         "ethanolAA": EthanolAA(),
     }
     molecule = job.sp.molecule
 
     compound = compound_dict[molecule]
 
-    ensemble = job.sp.production_ensemble
+    ensemble = job.sp.ensemble
 
     cass_ensembles = {
         "NPT": "npt",
@@ -87,8 +91,14 @@ def run_cassandra(job):
     }
 
     Nliq = job.sp.N_liquid
-    Nvap = job.sp.N_vap
+    if ensemble == "GEMC-NVT":
+        Nvap = job.sp.N_vap
+    else:
+        Nvap = 0
+
     N = Nliq + Nvap
+
+    Nlist = [[Nliq]]
 
     equil_length = 40000
     prod_length = 120000
@@ -98,10 +108,13 @@ def run_cassandra(job):
     liqbox_filled = filled_boxes[0]
     if ensemble == "GEMC-NVT":
         vapbox_filled = filled_boxes[1]
+        Nlist.append([Nvap])
 
     ffname = job.sp.forcefield_name
     ff = load_ff(ffname)
     structure = ff.apply(compound)
+
+    Tmelt = 1000.0 * u.K
 
     T = job.sp.temperature * u.K
     P = job.sp.pressure * u.kPa
@@ -160,7 +173,7 @@ def run_cassandra(job):
         "enthalpy",
     ]
 
-    meltsystem_liq = mc.System([liqbox_filled], species_list)
+    meltsystem_liq = mc.System([liqbox_filled], species_list, [[Nliq]])
 
     p_volume = 0.01
     p_translate = 0.0
@@ -168,18 +181,18 @@ def run_cassandra(job):
     p_regrow = 0.0
     p_swap = 0.0
 
-    if molecule == "MethaneUA":
+    if molecule == "methaneUA":
         if ensemble == "NPT":
             p_translate = 0.99
         else:
             p_translate = 0.7
             p_swap = 0.29
-    elif molecule == "PentaneUA" and ensemble == "GEMC-NVT":
+    elif molecule == "pentaneUA" and ensemble == "GEMC-NVT":
         p_swap = 0.2
         p_translate = 0.27
         p_rotate = 0.26
         p_regrow = 0.26
-    elif molecule == "WaterSPC/E":
+    elif molecule == "waterSPCE":
         p_translate = 0.49
         p_rotate = 0.5
     else:
@@ -206,7 +219,7 @@ def run_cassandra(job):
             moveset=nvtmoves,
             run_type="equilibration",
             run_length=5000,
-            temperature=1000,
+            temperature=Tmelt,
             properties=proplist,
             cutoff_style="cut",
             vdw_cutoff=cutoff,
@@ -223,7 +236,7 @@ def run_cassandra(job):
 
         nvtendbox_liq.box = liqbox_filled.box
 
-        nvtsystem_liq = mc.System([nvtendbox_liq], species_list)
+        nvtsystem_liq = mc.System([nvtendbox_liq], species_list, [[Nliq]])
 
         mc.run(
             system=nvtsystem_liq,
@@ -249,13 +262,13 @@ def run_cassandra(job):
         boxlist = [nvtendbox_liq]
 
         if ensemble == "GEMC-NVT":
-            meltsystem_vap = mc.System([vapbox_filled], species_list)
+            meltsystem_vap = mc.System([vapbox_filled], species_list, [[Nvap]])
             mc.run(
                 system=meltsystem_vap,
                 moveset=nvtmoves,
                 run_type="equilibration",
                 run_length=5000,
-                temperature=1000,
+                temperature=Tmelt,
                 properties=proplist,
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
@@ -270,7 +283,7 @@ def run_cassandra(job):
             meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
 
             meltendbox_vap.box = vapbox_filled.box
-            nvtsystem_vap = mc.System([meltendbox_vap], species_list)
+            nvtsystem_vap = mc.System([meltendbox_vap], species_list, [[Nvap]])
             mc.run(
                 system=nvtsystem_vap,
                 moveset=nvtmoves,
@@ -294,7 +307,7 @@ def run_cassandra(job):
             boxlist.append(nvtendbox_vap)
             moveset.prob_swap = p_swap
 
-        system = mc.System(boxlist, species_list)
+        system = mc.System(boxlist, species_list, Nlist)
 
         l_equil = False
         cycles_done = 0
