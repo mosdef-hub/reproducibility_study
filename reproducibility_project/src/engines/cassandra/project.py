@@ -54,6 +54,7 @@ def run_cassandra(job):
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
+    import numpy as np
     import unyt as u
     from mbuild.formats.xyz import read_xyz
     from pymbar.timeseries import detectEquilibration
