@@ -1,3 +1,4 @@
+"""GOMC's setup for signac, signac-flow, signac-dashboard for this study."""
 # project.py
 
 import os
