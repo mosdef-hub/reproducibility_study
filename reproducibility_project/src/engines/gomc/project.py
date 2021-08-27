@@ -33,11 +33,13 @@ class Project(FlowProject):
         super().__init__()
 
 
+
 class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     """Subclass of DefaultSlurmEnvironment for WSU's Grid cluster."""
 
     hostname_pattern = "grid.wayne.edu"
     template = "grid.sh"
+    scheduler_type = DefaultSlurmEnvironment
 
     '''
     @classmethod
@@ -163,6 +165,7 @@ project = signac.init_project("mosdef_reproducibility")
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
 def part_1a_initial_data_input_to_json(job):
+    """Check that the initial job data is written to the json files."""
     data_written_bool = False
     if job.isfile(f"{'signac_job_document.json'}"):
         data_written_bool = True
@@ -174,6 +177,7 @@ def part_1a_initial_data_input_to_json(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_1a_initial_data_input_to_json)
 def intial_parameters(job):
+    """Set the initial job parameters into the jobs doc json file."""
     # select
     job.doc.ngpu = ff_info_dict.get(job.sp.forcefield_name).get("ngpu")
     if job.doc.ngpu == 0:
@@ -327,6 +331,7 @@ def intial_parameters(job):
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
 def part_1b_under_equilb_design_ensemble_run_limit(job):
+    """Check that the equilbrium design ensemble run is under it's run limit."""
     try:
         if (
             job.doc.equilb_design_ensemble_number
@@ -347,6 +352,7 @@ def part_1b_under_equilb_design_ensemble_run_limit(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def mosdef_input_written(job):
+    """Check that the mosdef files (psf, pdb, and FF files) are written ."""
     file_written_bool = False
 
     if job.doc.production_ensemble in ["NPT", "NVT"]:
@@ -393,6 +399,7 @@ def mosdef_input_written(job):
 # ******************************************************
 # function for checking if the GOMC control file is written
 def gomc_control_file_written(job, control_filename_str):
+    """General check that the gomc control files are written."""
     file_written_bool = False
     control_file = f"{control_filename_str}.conf"
 
@@ -413,6 +420,7 @@ def gomc_control_file_written(job, control_filename_str):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_2a_melt_equilb_NVT_control_file_written(job):
+    """General check that the melt_equilb_NVT_control (high temperature) gomc control file is written."""
     return gomc_control_file_written(job, melt_equilb_NVT_control_file_name_str)
 
 
@@ -421,6 +429,7 @@ def part_2a_melt_equilb_NVT_control_file_written(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_2b_equilb_NVT_control_file_written(job):
+    """General check that the equilb_NVT_control (run temperature) gomc control file is written."""
     return gomc_control_file_written(job, equilb_NVT_control_file_name_str)
 
 
@@ -429,6 +438,7 @@ def part_2b_equilb_NVT_control_file_written(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_2c_equilb_design_ensemble_control_file_written(job):
+    """General check that the equilb_design_ensemble (run temperature) gomc control file is written."""
     try:
         if job.doc.equilb_design_ensemble_max_number_under_limit is True:
             return gomc_control_file_written(
@@ -446,6 +456,7 @@ def part_2c_equilb_design_ensemble_control_file_written(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_2d_production_control_file_written(job):
+    """General check that the production run (run temperature) gomc control file is written."""
     try:
         if job.doc.equilb_design_ensemble_max_number_under_limit is True:
             return gomc_control_file_written(
@@ -471,6 +482,7 @@ def part_2d_production_control_file_written(job):
 # ******************************************************
 # function for checking if GOMC simulations are started
 def gomc_simulation_started(job, control_filename_str):
+    """General check to see if the gomc simulation is started."""
     output_started_bool = False
     if job.isfile("out_{}.dat".format(control_filename_str)) and job.isfile(
         "{}_merged.psf".format(control_filename_str)
@@ -485,6 +497,7 @@ def gomc_simulation_started(job, control_filename_str):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3a_output_melt_equilb_NVT_started(job):
+    """Check to see if the melt_equilb_NVT (high temperatuer) gomc simulation is started."""
     return gomc_simulation_started(job, melt_equilb_NVT_control_file_name_str)
 
 
@@ -493,6 +506,7 @@ def part_3a_output_melt_equilb_NVT_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3b_output_equilb_NVT_started(job):
+    """Check to see if the equilb_NVT (set temperatuer) gomc simulation is started."""
     return gomc_simulation_started(job, equilb_NVT_control_file_name_str)
 
 
@@ -501,6 +515,7 @@ def part_3b_output_equilb_NVT_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3c_output_equilb_design_ensemble_started(job):
+    """Check to see if the equilb_design_ensemble (set temperatuer) gomc simulation is started."""
     if job.isfile(
         "out_{}.dat".format(
             job.doc.equilb_design_ensemble_dict[
@@ -525,6 +540,7 @@ def part_3c_output_equilb_design_ensemble_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3d_output_production_run_started(job):
+    """Check to see if the production run (set temperatuer) gomc simulation is started."""
     if job.isfile(
         "out_{}.dat".format(
             job.doc.production_run_ensemble_dict[
@@ -557,6 +573,7 @@ def part_3d_output_production_run_started(job):
 
 # function for checking if GOMC simulations are completed properly
 def gomc_sim_completed_properly(job, control_filename_str):
+    """General check to see if the gomc simulation was completed properly."""
     job_run_properly_bool = False
     output_log_file = "out_{}.dat".format(control_filename_str)
     if job.isfile(output_log_file):
@@ -584,6 +601,7 @@ def gomc_sim_completed_properly(job, control_filename_str):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_4a_job_melt_equilb_NVT_completed_properly(job):
+    """Check to see if the melt_equilb_NVT (high temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(
         job, melt_equilb_NVT_control_file_name_str
     )
@@ -594,6 +612,7 @@ def part_4a_job_melt_equilb_NVT_completed_properly(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_4b_job_equilb_NVT_completed_properly(job):
+    """Check to see if the equilb_NVT (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, equilb_NVT_control_file_name_str)
 
 
@@ -602,6 +621,7 @@ def part_4b_job_equilb_NVT_completed_properly(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_4c_job_equilb_design_ensemble_completed_properly(job):
+    """Check to see if the equilb_design_ensemble (set temperature) gomc simulation was completed properly."""
     try:
         return gomc_sim_completed_properly(
             job,
@@ -619,6 +639,7 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_4d_job_production_run_completed_properly(job):
+    """Check to see if the production run (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, production_control_file_name_str)
 
 
@@ -635,9 +656,8 @@ def part_4d_job_production_run_completed_properly(job):
 # ******************************************************
 # build system
 def build_charmm(job, write_files=True):
-    # ***************************************************************************
-    # This should be removed for the project later as we are using the same boxes... (start)
-    # ***************************************************************************
+    """Build the Charmm object and potentially write the pdb, psd, and FF files."""
+
     print("#**********************")
     print("Started: GOMC Charmm Object")
     print("#**********************")
@@ -646,9 +666,6 @@ def build_charmm(job, write_files=True):
     [box_0, box_1] = construct_system(job.sp)
     print("Completed: box packing")
 
-    # ***************************************************************************
-    # This should be removed for the project later as we are using the same boxes... (start)
-    # ***************************************************************************
     Bead_to_atom_name_dict = {
         "_CH4": "C",
         "_CH3": "C",
@@ -731,6 +748,7 @@ def build_charmm(job, write_files=True):
 )
 @flow.with_job
 def build_psf_pdb_ff_gomc_conf(job):
+    """Build the Charmm object and write the pdb, psd, and FF files for all the simulations in the workspace."""
     charmm_object_with_files = build_charmm(job, write_files=True)
 
     # ******************************************************
@@ -1727,7 +1745,9 @@ def build_psf_pdb_ff_gomc_conf(job):
 )
 @flow.with_job
 @flow.cmd
-def run_melt_NVT_gomc_command(job):
+def run_melt_equilb_NVT_gomc_command(job):
+    """Run the gomc melt_equilb_NVT simulation."""
+
     print("#**********************")
     print("# Started the run_melt_NVT_gomc_command.")
     print("#**********************")
@@ -1774,7 +1794,9 @@ def run_melt_NVT_gomc_command(job):
 )
 @flow.with_job
 @flow.cmd
-def run_NVT_gomc_command(job):
+def run_equilb_NVT_gomc_command(job):
+    """Run the gomc equilb_NVT simulation."""
+
     print("#**********************")
     print("# Started the run_NVT_gomc_command.")
     print("#**********************")
@@ -1806,6 +1828,8 @@ def run_NVT_gomc_command(job):
 # ******************************************************
 # ******************************************************
 def test_pymbar_stabilized_equilb_design_ensemble(job):
+    """Test if the simulation has come to equilibrium via pymbar"""
+
     print("#**********************")
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble.")
     print("#**********************")
@@ -1999,6 +2023,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
 @Project.post(part_4c_job_equilb_design_ensemble_completed_properly)
 @flow.with_job
 def pymbar_stabilized_equilb_design_ensemble(job):
+    """Determine if the simulation has come to equilibrium via pymbar and update the doc json file."""
     print("#**********************")
     print(
         "# Running test if the pymbar_stabilized_equilb_design_ensemble is stable."
@@ -2038,6 +2063,8 @@ def pymbar_stabilized_equilb_design_ensemble(job):
 )
 @flow.with_job
 def run_equilb_ensemble_gomc_command(job):
+    """Run the gomc equilb_ensemble simulation."""
+
     for run_equilb_ensemble_i in range(
         job.doc.equilb_design_ensemble_number, equilb_design_ensemble_max_number
     ):
@@ -2111,6 +2138,8 @@ def run_equilb_ensemble_gomc_command(job):
 @flow.with_job
 @flow.cmd
 def run_production_run_gomc_command(job):
+    """Run the gomc production_run simulation."""
+
     print("#**********************")
     print("# Started the run_production_run_gomc_command function.")
     print("#**********************")
