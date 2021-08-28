@@ -757,7 +757,7 @@ def run_prod(job):
         shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
         job.doc.prod_replicates_done += 1
-        print_running_string(job, step)
+        print_completed_string(job, step)
         if all_prod_replicates_done(job):
             print(
                 "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
