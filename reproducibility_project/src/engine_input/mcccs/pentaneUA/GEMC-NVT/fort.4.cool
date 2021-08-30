@@ -1,13 +1,13 @@
 
  &mc_shared
      seed=           SEED
-     nbox=           1
+     nbox=           2
      nmolty=           1
-     nchain=           NCHAIN
-     nstep=         1000
+     nchain=         NCHAINTOT
+     nstep=         5000
      lstop= F
      iratio=         500
-     rmin=   1
+     rmin=   1.0000000000000
      softcut=   100.000000000000
      linit= F
      lreadq= F
@@ -17,7 +17,7 @@
  &analysis
      iprint=          50
      imv=        1000
-     iblock=          1000
+     iblock=          50
      iratp=           500
      idiele=      100000
      iheatcapacity=     1000000
@@ -45,17 +45,17 @@
 
 
  &mc_volume
-     tavol=  0.400000000000000
+     tavol=  0.500000000000000
      iratv=         500
-     pmvlmt=   1.00000000000000
+     pmvlmt=   1.00000000000000        1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.00
+     pmvol=  0.000000000000000E+000
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
-     rmvolume=  1.000000000000000E+003
+     rmvolume=  1.000000000000000E-003
  /
 
 
@@ -67,21 +67,21 @@
 
 
  &mc_swap
-     pmswap=  0.000000000000000E+000
+     pmswap=  0.00000000000000000E+000
      pmswmt=   1.00000000000000
  /
 
 
  &mc_cbmc
      rcutin=   5.00000000000000
-     pmcb=  0.340000000000000
+     pmcb=  0.4700000000000000
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
      nchoi1=          12
      nchoi=           10
      nchoir=          50
      nchoih=           1
-     nchtor=         50
+     nchtor=         100
      nchbna=        1000
      nchbnb=        1000
      icbdir=           0
@@ -113,7 +113,7 @@
      rmrot=  0.400000000000000
      tatra=  0.500000000000000
      tarot=  0.500000000000000
-     pmtra=  0.670000000000000
+     pmtra=  0.74000000000000
      pmtrmt=   1.00000000000000
      pmromt=   1.00000000000000
  /
@@ -131,20 +131,25 @@
      nchoiq=           1           1
  /
 
-
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F 2000     PRESSURE
+  LENGTH1 LENGTH1 LENGTH1 RCUT  0.250  0.000 3  F  F  F  F TEMPERATURE     0.1
 ! nchain_1 ... nchain_nmolty ghost_particles
-NCHAIN 0
+NCHAIN1 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
-10 10 2 10 0 10.0  2.000 F 0.0
+INIX1 INIY1 INIZ1 10 0 10.0  2.000 F 0.0
+! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
+  LENGTH2 LENGTH2 LENGTH2 RCUT  0.250  0.000 3  F  F  F  F TEMPERATURE     0.1
+! nchain_1 ... nchain_nmolty ghost_particles
+NCHAIN2 0
+! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
+INIX2 INIY2 INIZ2 10 0 20.0 11.250 F 0.0
 END SIMULATION_BOX
 
 
 MOLECULE_TYPE
 ! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lrplc lsetup lq14scale qscale iurot isolute eta
-5 5 5 5 5 5                                    F      F      F     F              F      T        0.5   0     1000000
+5 5 5 5 5 5                                    F      F      F     F              F      F        0.5   0     1000000
 ! unit ntype leaderq
 1 4 1
 ! stretching
@@ -179,6 +184,7 @@ MOLECULE_TYPE
 2 1 1
 4 5 1
 ! torsion
+0
 ! unit ntype leaderq
 4 5 4
 ! stretching
@@ -203,7 +209,6 @@ MOLECULE_TYPE
 1
 4 3 2 1
 END MOLECULE_TYPE
-
 
 MC_SWATCH
 ! moltyp1<->moltyp2 nsampos 2xncut
