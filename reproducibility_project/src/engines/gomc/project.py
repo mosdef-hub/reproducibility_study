@@ -2117,7 +2117,9 @@ def run_equilb_ensemble_gomc_command(job):
 @Project.operation.with_directives(
     {
         "np": lambda job: ff_info_dict.get(job.sp.forcefield_name).get("ncpu"),
-        "ngpu": lambda job: ff_info_dict.get(job.sp.forcefield_name).get("ngpu", 0),
+        "ngpu": lambda job: ff_info_dict.get(job.sp.forcefield_name).get(
+            "ngpu", 0
+        ),
         "memory": memory_needed,
         "walltime": walltime_gomc_hr,
     }
