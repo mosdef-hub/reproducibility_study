@@ -19,6 +19,7 @@ dependencies:
   - mdtraj
   - mosdef_cassandra
   - numpy
+  - openmm=7.5
   - packmol>=18
   - pandas
   - panedr
