@@ -60,10 +60,10 @@ def run_hoomd(job, method):
     import gsd.hoomd
     import hoomd
     import hoomd.md
+    import numpy as np
     import unyt as u
     from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
-    import numpy as np
 
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
@@ -86,10 +86,8 @@ def run_hoomd(job, method):
     e = 1 / 4.184
     m = 0.9999938574
 
-    # r_cut is 2.5*max_sigma scaled by ref_distance
-    r_cut = 2.5 * max([a.sigma for a in structure.atoms]) / d
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
-        structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=r_cut
+        structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=job.sp.r_cut
     )
     if method == "npt":
         print("NPT")
@@ -99,7 +97,7 @@ def run_hoomd(job, method):
             job.fn("init.gsd"),
             ref_distance=d,
             ref_energy=e,
-            ref_mass=m
+            ref_mass=m,
         )
 
         logfile = open(job.fn("log-npt.txt"), mode="a", newline="\n")
@@ -154,19 +152,17 @@ def run_hoomd(job, method):
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
     if method == "npt":
         # convert pressure to unit system
-        pressure = (job.sp.pressure * u.kPa).to("kJ/mol*nm**-3").value
+        pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
         method = hoomd.md.methods.NPT(
             filter=hoomd.filter.All(),
             kT=kT,
             tau=1.0,
             S=pressure,
             tauS=1.0,
-            couple="xyz"
+            couple="xyz",
         )
     else:
-        method = hoomd.md.methods.NVT(
-            filter=hoomd.filter.All(), kT=kT, tau=1.0
-        )
+        method = hoomd.md.methods.NVT(filter=hoomd.filter.All(), kT=kT, tau=1.0)
     integrator.methods = [method]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
