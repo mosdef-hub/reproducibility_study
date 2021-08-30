@@ -1,0 +1,9 @@
+bond length = 1.4
+K = 472022.9087 = 236011.45 where pot is 0.5*K * x^2 (x in Ang)
+
+Angle = 120 deg
+K= 63405.000 = 31702.5 where pot is 0.5 *K * theta ^2 (theta in rad)
+
+Dihedral
+c1= c3=c0=0
+c2 = 1824.16

@@ -58,9 +58,6 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-  1 1   98.0000  3.75000  0.0000  15.0347000 C   #Tr-UA CH3
-  2 1   46.0000  3.95000  0.0000  14.0269000 C   #Tr-UA CH2
-  3 1   10.0000  4.68000  0.0000  13.0191000 C   #Tr-UA CH
   4 1   148.000  3.73000  0.0000  16.0424600 _CH4   #Tr-UA CH4
 END ATOMS
 
@@ -75,12 +72,8 @@ END BONDS
 
 ANGLES
 !i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
-  1 1 114.0000   31250.0  #CHx-(CH2)-CHy
-  2 1 112.0000   31250.0  #CHx-(CH)-CHy
 END ANGLES
 
 DIHEDRALS
 !i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
-  1 1    0.00   355.03   -68.19   791.32  0.0  0.0  0.0  0.0  0.0 0.0 #CHx-(CH2)-(CH2)-CHy
-  2 1 -251.06   428.73  -111.85   441.27  0.0  0.0  0.0  0.0  0.0 0.0 #CHx-(CH2)-(CH)-CHy
 END DIHEDRALS
