@@ -163,8 +163,11 @@ def run_hoomd_npt(job):
     )
 
     print("NPT")
+
     # Ignore the vapor box
-    filled_box, _ = construct_system(job.sp)
+    # Initialize with box expanded by factor of 5
+    # We will shrink it later
+    filled_box, _ = construct_system(job.sp, scale_liq_box=5)
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -224,11 +227,35 @@ def run_hoomd_npt(job):
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
     npt = hoomd.md.methods.NPT(
-        filter=hoomd.filter.All(), kT=kT, tau=1.0, S=job.sp.pressure, tauS=1.0
+        filter=hoomd.filter.All(),
+        kT=kT,
+        tau=1.0,
+        S=job.sp.pressure,
+        tauS=1.0,
+        couple="xyz"
     )
     integrator.methods = [npt]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+
+    # Shrink step follows this example
+    # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
+    # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
+    ramp = hoomd.variant.Ramp(A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4))
+    initial_box = sim.state.box
+    L = job.sp.box_L_liq
+    final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
+    box_resize_trigger = hoomd.trigger.Periodic(10)
+    box_resize = hoomd.update.BoxResize(
+        box1=initial_box,
+        box2=final_box,
+        variant=ramp,
+        trigger=box_resize_trigger,
+    )
+    sim.operations.updaters.append(box_resize)
+    sim.run(2e4 + 1)
+    assert sim.state.box == final_box
+    sim.operations.updaters.remove(box_resize)
 
     sim.run(1e6)
     job.doc.npt_finished = True
