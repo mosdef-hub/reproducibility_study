@@ -182,8 +182,10 @@ def run_hoomd_npt(job):
         structure, job.fn("init.gsd"), ref_distance=d, ref_energy=e, ref_mass=m
     )
 
+    # r_cut is 2.5*max_sigma scaled by ref_distance
+    r_cut = 2.5 * max([a.sigma for a in structure.atoms]) / d
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
-        structure, ref_distance=d, ref_energy=e, ref_mass=m
+        structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=r_cut
     )
 
     device = hoomd.device.auto_select()
@@ -226,11 +228,13 @@ def run_hoomd_npt(job):
     integrator.forces = forcefield
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    # convert pressure to unit system
+    pressure = (job.sp.pressure * u.kPa).to("kJ/mol*nm**-3").value
     npt = hoomd.md.methods.NPT(
         filter=hoomd.filter.All(),
         kT=kT,
         tau=1.0,
-        S=job.sp.pressure,
+        S=pressure,
         tauS=1.0,
         couple="xyz"
     )
@@ -254,8 +258,9 @@ def run_hoomd_npt(job):
     )
     sim.operations.updaters.append(box_resize)
     sim.run(2e4 + 1)
-    assert sim.state.box == final_box
+    assert np.isclose(sim.state.box.matrix, final_box.matrix, atol=0.1).all()
     sim.operations.updaters.remove(box_resize)
+    print("shrink finished")
 
     sim.run(1e6)
     job.doc.npt_finished = True
