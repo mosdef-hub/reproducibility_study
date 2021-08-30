@@ -50,12 +50,10 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/Users/brad/Programs/GOMC/GOMC_dev_8_25_21/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 1 * 10 ** 2  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 1 * 10 ** 2  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_design_ensemble = (
-    1 * 10 ** 2
-)  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 1 * 10 ** 2  # set value for paper = 120 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_design_ensemble = 40 * 10 ** 3 # set value for paper = 40 * 10 ** 3
+MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10
 
@@ -92,8 +90,8 @@ production_control_file_name_str = "production_run"
 
 path_from_job_to_box_inputs = "../../"
 
-walltime_mosdef_hr = 16
-walltime_gomc_hr = 4
+walltime_mosdef_hr = 4
+walltime_gomc_hr = 368
 memory_needed = 16
 
 use_pymbar = True  # True of False
