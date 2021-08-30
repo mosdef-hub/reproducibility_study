@@ -1,7 +1,7 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 # import foyer
 import os
-import pathlib
+from pathlib import Path
 
 import flow
 from flow import directives
@@ -357,17 +357,13 @@ def run_cassandra(job):
                 )
 
                 if ensemble == "GEMC-NVT":
-                    os.remove(prior_run + ".out.box1.xyz")
-                    os.remove(prior_run + ".out.box1.H")
-                    os.remove(prior_run + ".out.box2.xyz")
-                    os.remove(prior_run + ".out.box2.H")
                     tvap, gvap, Neff_max_vap = detectEquilibration(
                         np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
                     )
                     t = max(t, tvap)
-                else:
-                    os.remove(prior_run + ".out.xyz")
-                    os.remove(prior_run + ".out.H")
+
+                for rmtgt in list(Path(".").glob("equil_*.[xH]*")):
+                    os.remove(rmtgt)
 
             else:
                 break
