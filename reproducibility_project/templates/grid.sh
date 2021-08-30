@@ -18,10 +18,6 @@
 #SBATCH -o output-%j.dat
 #SBATCH -e error-%j.dat
 
-{% endblock header %}
-
-{% block body %}
-    {{- super () -}}
 echo  "Running on host" hostname
 echo  "Time is" date
 
@@ -33,5 +29,11 @@ module swap gnu7 intel/2019
 {% if gpus %}
 module load cuda/11.0
 {%- endif %}
+
+{% endblock header %}
+
+{% block body %}
+    {{- super () -}}
+
 
 {% endblock body %}

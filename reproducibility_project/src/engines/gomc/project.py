@@ -37,22 +37,8 @@ class Project(FlowProject):
 class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     """Subclass of DefaultSlurmEnvironment for WSU's Grid cluster."""
 
-    hostname_pattern = "grid.wayne.edu"
+    hostname_pattern = r".*\.grid\.wayne\.edu"
     template = "grid.sh"
-    scheduler_type = DefaultSlurmEnvironment
-
-    '''
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--partition",
-            default="batch",
-            help="Specify the partition to submit to.",
-        )
-        parser.add_argument("--nodelist", help="Specify the node to submit to.")
-
-    '''
 
 
 # ******************************************************
@@ -173,10 +159,18 @@ def part_1a_initial_data_input_to_json(job):
     return data_written_bool
 
 
-@Project.operation
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_1a_initial_data_input_to_json)
-def intial_parameters(job):
+@Project.operation.with_directives(
+    {
+        "np": lambda job: ff_info_dict.get(job.sp.forcefield_name).get("ncpu"),
+        "ngpu": 0,
+        "memory": memory_needed,
+        "walltime": walltime_mosdef_hr,
+    }
+)
+@flow.with_job
+def initial_parameters(job):
     """Set the initial job parameters into the jobs doc json file."""
     # select
     job.doc.ngpu = ff_info_dict.get(job.sp.forcefield_name).get("ngpu")
@@ -2123,9 +2117,7 @@ def run_equilb_ensemble_gomc_command(job):
 @Project.operation.with_directives(
     {
         "np": lambda job: ff_info_dict.get(job.sp.forcefield_name).get("ncpu"),
-        "ngpu": lambda job: ff_info_dict.get(job.sp.forcefield_name).get(
-            "ngpu", 0
-        ),
+        "ngpu": lambda job: ff_info_dict.get(job.sp.forcefield_name).get("ngpu", 0),
         "memory": memory_needed,
         "walltime": walltime_gomc_hr,
     }
