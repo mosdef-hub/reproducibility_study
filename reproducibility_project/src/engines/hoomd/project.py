@@ -100,22 +100,18 @@ def run_hoomd(job, method):
             ref_mass=m,
         )
 
-        logfile = open(job.fn("log-npt.txt"), mode="a", newline="\n")
-        gsdname = job.fn("trajectory-npt.gsd")
     else:
         print("NVT")
         # nvt overwrites snapshot information with snapshot from npt run
         with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
             snapshot = t[-1]
 
-        logfile = open(job.fn("log-nvt.txt"), mode="w", newline="\n")
-        gsdname = job.fn("trajectory-nvt.gsd")
 
     device = hoomd.device.auto_select()
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
-        filename=gsdname,
+        filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode="wb",
         dynamic=["momentum"],
@@ -139,7 +135,7 @@ def run_hoomd(job, method):
         ],
     )
     table_file = hoomd.write.Table(
-        output=logfile,
+        output=open(job.fn(f"log-{method}.txt"), mode="a", newline="\n")
         trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
         max_header_len=7,
