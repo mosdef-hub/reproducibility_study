@@ -97,7 +97,7 @@ def run_hoomd(job, method, restart=False):
     # Ignore the vapor box
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
-    filled_box, _ = construct_system(job.sp, scale_liq_box=2.6)
+    filled_box, _ = construct_system(job.sp, scale_liq_box=2)
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -192,7 +192,7 @@ def run_hoomd(job, method, restart=False):
             kT=kT,
             tau=1.0,
             S=pressure,
-            tauS=1.0,
+            tauS=0.5,
             couple="xyz",
         )
     else:
