@@ -88,7 +88,6 @@ def run_hoomd(job, method, restart=False):
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
-
     if method not in ["npt", "nvt"]:
         raise ValueError("Method must be 'nvt' or 'npt'.")
 
@@ -209,8 +208,9 @@ def run_hoomd(job, method, restart=False):
 
 def check_equilibration(job, method, eq_property):
     """Check whether a simulation is equilibrated."""
-    import reproducibility_project.src.analysis.equilibration as eq
     import numpy as np
+
+    import reproducibility_project.src.analysis.equilibration as eq
 
     data = np.genfromtxt(job.fn(f"log-{method}.txt"), names=True)
     prop_data = data[eq_property]
