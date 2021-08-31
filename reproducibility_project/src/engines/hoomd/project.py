@@ -73,8 +73,8 @@ def run_hoomd(job, method):
     # This structure will only be used for npt, but we need ff info for both
     # Ignore the vapor box
     # Initializing at high density causes issues, so instead we initialize
-    # with box expanded by factor of 5 and shrink it later
-    filled_box, _ = construct_system(job.sp, scale_liq_box=5)
+    # with box expanded by factor
+    filled_box, _ = construct_system(job.sp, scale_liq_box=2.5)
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -108,7 +108,7 @@ def run_hoomd(job, method):
         with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
             snapshot = t[-1]
 
-        logfile = open(job.fn("log-nvt.txt"), mode="a", newline="\n")
+        logfile = open(job.fn("log-nvt.txt"), mode="w", newline="\n")
         gsdname = job.fn("trajectory-nvt.gsd")
 
     device = hoomd.device.auto_select()
@@ -117,7 +117,7 @@ def run_hoomd(job, method):
     gsd_writer = hoomd.write.GSD(
         filename=gsdname,
         trigger=hoomd.trigger.Periodic(10000),
-        mode="ab",
+        mode="wb",
         dynamic=["momentum"],
     )
     sim.operations.writers.append(gsd_writer)
@@ -153,7 +153,7 @@ def run_hoomd(job, method):
     if method == "npt":
         # convert pressure to unit system
         pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
-        method = hoomd.md.methods.NPT(
+        integrator_method = hoomd.md.methods.NPT(
             filter=hoomd.filter.All(),
             kT=kT,
             tau=1.0,
@@ -162,33 +162,12 @@ def run_hoomd(job, method):
             couple="xyz",
         )
     else:
-        method = hoomd.md.methods.NVT(filter=hoomd.filter.All(), kT=kT, tau=1.0)
-    integrator.methods = [method]
+        integrator_method = hoomd.md.methods.NVT(
+            filter=hoomd.filter.All(), kT=kT, tau=1.0
+        )
+    integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
-
-    if method == "npt":
-        # Shrink step follows this example
-        # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
-        # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
-        ramp = hoomd.variant.Ramp(
-            A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4)
-        )
-        initial_box = sim.state.box
-        L = job.sp.box_L_liq
-        final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
-        box_resize_trigger = hoomd.trigger.Periodic(10)
-        box_resize = hoomd.update.BoxResize(
-            box1=initial_box,
-            box2=final_box,
-            variant=ramp,
-            trigger=box_resize_trigger,
-        )
-        sim.operations.updaters.append(box_resize)
-        sim.run(2e4 + 1)
-        assert np.allclose(sim.state.box.matrix, final_box.matrix, atol=0.1)
-        sim.operations.updaters.remove(box_resize)
-        print("shrink finished")
 
     sim.run(1e6)
     if method == "npt":
