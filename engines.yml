@@ -6,5 +6,5 @@ channels:
 dependencies:
   - gromacs>=2021.1
   - lammps
-  - hoomd=*=*gpu*
+  - hoomd
   - cassandra=1.2.5
