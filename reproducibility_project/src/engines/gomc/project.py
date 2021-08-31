@@ -62,7 +62,7 @@ output_data_every_X_MC_cycles = 10
 # max number of equilibrium selected runs
 equilb_design_ensemble_max_number = 3
 
-# FF file for all simulations in that job
+# force field (FF) file for all simulations in that job
 # Note: do not add extensions
 ff_filename_str = "in_FF"
 
@@ -180,7 +180,7 @@ def initial_parameters(job):
         job.doc.cpu_or_gpu = "GPU"
     else:
         raise ValueError(
-            "CPU and GPU can not be deterimined as FF is not available in the selection."
+            "CPU and GPU can not be deterimined as force field (FF) is not available in the selection."
         )
 
     # FF type to directory and path
@@ -317,7 +317,7 @@ def initial_parameters(job):
 
 # ******************************************************
 # ******************************************************
-# check if GOMC psf, pdb, and FF files were written (start)
+# check if GOMC psf, pdb, and force field (FF) files were written (start)
 # ******************************************************
 # ******************************************************
 
@@ -346,7 +346,7 @@ def part_1b_under_equilb_design_ensemble_run_limit(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def mosdef_input_written(job):
-    """Check that the mosdef files (psf, pdb, and FF files) are written ."""
+    """Check that the mosdef files (psf, pdb, and force field (FF) files) are written ."""
     file_written_bool = False
 
     if job.doc.production_ensemble in ["NPT", "NVT"]:
@@ -491,7 +491,7 @@ def gomc_simulation_started(job, control_filename_str):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3a_output_melt_equilb_NVT_started(job):
-    """Check to see if the melt_equilb_NVT (high temperatuer) gomc simulation is started."""
+    """Check to see if the melt_equilb_NVT (high temperature) gomc simulation is started."""
     return gomc_simulation_started(job, melt_equilb_NVT_control_file_name_str)
 
 
@@ -500,7 +500,7 @@ def part_3a_output_melt_equilb_NVT_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3b_output_equilb_NVT_started(job):
-    """Check to see if the equilb_NVT (set temperatuer) gomc simulation is started."""
+    """Check to see if the equilb_NVT (set temperature) gomc simulation is started."""
     return gomc_simulation_started(job, equilb_NVT_control_file_name_str)
 
 
@@ -509,7 +509,7 @@ def part_3b_output_equilb_NVT_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3c_output_equilb_design_ensemble_started(job):
-    """Check to see if the equilb_design_ensemble (set temperatuer) gomc simulation is started."""
+    """Check to see if the equilb_design_ensemble (set temperature) gomc simulation is started."""
     if job.isfile(
         "out_{}.dat".format(
             job.doc.equilb_design_ensemble_dict[
@@ -534,7 +534,7 @@ def part_3c_output_equilb_design_ensemble_started(job):
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_3d_output_production_run_started(job):
-    """Check to see if the production run (set temperatuer) gomc simulation is started."""
+    """Check to see if the production run (set temperature) gomc simulation is started."""
     if job.isfile(
         "out_{}.dat".format(
             job.doc.production_run_ensemble_dict[
@@ -645,12 +645,12 @@ def part_4d_job_production_run_completed_properly(job):
 
 # ******************************************************
 # ******************************************************
-# build system, with option to write the FF, pdb, psf files.
+# build system, with option to write the force field (force field (FF)), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (start)
 # ******************************************************
 # build system
 def build_charmm(job, write_files=True):
-    """Build the Charmm object and potentially write the pdb, psd, and FF files."""
+    """Build the Charmm object and potentially write the pdb, psd, and force field (FF) files."""
     print("#**********************")
     print("Started: GOMC Charmm Object")
     print("#**********************")
@@ -715,13 +715,13 @@ def build_charmm(job, write_files=True):
 
 # ******************************************************
 # ******************************************************
-# build system, with option to write the FF, pdb, psf files.
+# build system, with option to write the force field (FF), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (end)
 # ******************************************************
 
 # ******************************************************
 # ******************************************************
-# Creating GOMC files (pdb, psf, ff, and gomc control files (start)
+# Creating GOMC files (pdb, psf, force field (FF), and gomc control files (start)
 # ******************************************************
 # ******************************************************
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -741,11 +741,11 @@ def build_charmm(job, write_files=True):
 )
 @flow.with_job
 def build_psf_pdb_ff_gomc_conf(job):
-    """Build the Charmm object and write the pdb, psd, and FF files for all the simulations in the workspace."""
+    """Build the Charmm object and write the pdb, psd, and force field (FF) files for all the simulations in the workspace."""
     charmm_object_with_files = build_charmm(job, write_files=True)
 
     # ******************************************************
-    # melt_NVT - psf, pdb, ff file writing and GOMC control file writing  (start)
+    # melt_NVT - psf, pdb, force field (FF) file writing and GOMC control file writing  (start)
     # ******************************************************
     print("#**********************")
     print("Starting: melt_NVT GOMC control file writing")
@@ -972,7 +972,7 @@ def build_psf_pdb_ff_gomc_conf(job):
     print("Completed: melt_NVT GOMC control file writing")
     print("#**********************")
     # ******************************************************
-    # melt_NVT - psf, pdb, ff file writing and GOMC control file writing  (end)
+    # melt_NVT - psf, pdb, force field (FF) file writing and GOMC control file writing  (end)
     # ******************************************************
 
     # ******************************************************
@@ -1711,7 +1711,7 @@ def build_psf_pdb_ff_gomc_conf(job):
 
 # ******************************************************
 # ******************************************************
-# Creating GOMC files (pdb, psf, ff, and gomc control files (end)
+# Creating GOMC files (pdb, psf, force field (FF), and gomc control files (end)
 # ******************************************************
 # ******************************************************
 
@@ -2155,20 +2155,5 @@ def run_production_run_gomc_command(job):
 # ******************************************************
 # ******************************************************
 # production run - starting the GOMC simulation (end)
-# ******************************************************
-# ******************************************************
-
-# ******************************************************
-# ******************************************************
-# signac end code (start)
-# ******************************************************
-# ******************************************************
-if __name__ == "__main__":
-    pr = Project()
-    pr.main()
-
-# ******************************************************
-# ******************************************************
-# signac end code (end)
 # ******************************************************
 # ******************************************************
