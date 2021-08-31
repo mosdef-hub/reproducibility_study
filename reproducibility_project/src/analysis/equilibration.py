@@ -18,7 +18,7 @@ def is_equilibrated(
     """Check if a dataset is equilibrated based on a fraction of equil data.
 
     Using `pymbar.timeseries` module, check if a timeseries dataset has enough
-    equilibrated data based on one or two threshold values. The threshold_fraction value
+    equilibrated data based on two threshold values. The threshold_fraction value
     translates to the fraction of total data from the dataset 'a_t' that
     can be thought of as being in the 'production' region. The threshold_neff is the minimum amount of effectively uncorrelated samples to have in a_t to consider it equilibrated.
 
