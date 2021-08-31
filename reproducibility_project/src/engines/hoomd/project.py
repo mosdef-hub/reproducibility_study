@@ -39,11 +39,11 @@ class Fry(DefaultSlurmEnvironment):
 # with the mosdef-study38 conda env active
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("npt_finished"))
+@Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("nvt_finished"))
 def run_nvt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "nvt")
+    run_hoomd(job, "nvt", restart=job.isfile("nvt-trajectory.gsd"))
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
@@ -51,18 +51,28 @@ def run_nvt(job):
 @Project.post(lambda j: j.doc.get("npt_finished"))
 def run_npt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "npt")
+    run_hoomd(job, "npt", restart=job.isfile("npt-trajectory.gsd"))
 
 
-#@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-#@Project.pre(lambda j: j.sp.engine == "hoomd")
-#@Project.post(lambda j: j.doc.get("npt_finished"))
-#def check_equilibration(job):
-#    """Run a simulation with HOOMD-blue."""
-#    run_hoomd(job, "npt")
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.pre(lambda j: j.doc.get("npt_finished"))
+@Project.post(lambda j: j.doc.get("npt_eq"))
+def check_equilibration_npt(job):
+    """Run a simulation with HOOMD-blue."""
+    job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
-def run_hoomd(job, method):
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.pre(lambda j: j.doc.get("nvt_finished"))
+@Project.post(lambda j: j.doc.get("nvt_eq"))
+def check_equilibration_nvt(job):
+    """Run a simulation with HOOMD-blue."""
+    job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
+
+
+def run_hoomd(job, method, restart=False):
     """Run a simulation with HOOMD-blue."""
     import foyer
     import gsd.hoomd
@@ -82,7 +92,8 @@ def run_hoomd(job, method):
     if method not in ["npt", "nvt"]:
         raise ValueError("Method must be 'nvt' or 'npt'.")
 
-    # This structure will only be used for npt, but we need ff info for both
+    # This structure will only be used for the initial npt run,
+    # but we need forcefield info for all sims.
     # Ignore the vapor box
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
@@ -103,21 +114,34 @@ def run_hoomd(job, method):
     )
     if method == "npt":
         print("NPT")
-
-        write_gsd(
-            structure,
-            job.fn("init.gsd"),
-            ref_distance=d,
-            ref_energy=e,
-            ref_mass=m,
-        )
+        if restart:
+            print("restart")
+            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
+                snapshot = t[-1]
+        else:
+            write_gsd(
+                structure,
+                job.fn("init.gsd"),
+                ref_distance=d,
+                ref_energy=e,
+                ref_mass=m,
+            )
 
     else:
         print("NVT")
-        # nvt overwrites snapshot information with snapshot from npt run
-        with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
-            snapshot = t[-1]
+        if restart:
+            print("restart")
+            with gsd.hoomd.open(job.fn("trajectory-nvt.gsd")) as t:
+                snapshot = t[-1]
+        else:
+            # nvt overwrites snapshot information with snapshot from npt run
+            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
+                snapshot = t[-1]
 
+    if restart:
+        writemode = "a"
+    else:
+        writemode = "w"
 
     device = hoomd.device.auto_select()
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
@@ -125,7 +149,7 @@ def run_hoomd(job, method):
     gsd_writer = hoomd.write.GSD(
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
-        mode="wb",
+        mode=f"{writemode}b",
         dynamic=["momentum"],
     )
     sim.operations.writers.append(gsd_writer)
@@ -147,7 +171,9 @@ def run_hoomd(job, method):
         ],
     )
     table_file = hoomd.write.Table(
-        output=open(job.fn(f"log-{method}.txt"), mode="a", newline="\n"),
+        output=open(
+            job.fn(f"log-{method}.txt"), mode=f"{writemode}", newline="\n"
+        ),
         trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
         max_header_len=7,
@@ -178,10 +204,7 @@ def run_hoomd(job, method):
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
 
     sim.run(1e6)
-    if method == "npt":
-        job.doc.npt_finished = True
-    else:
-        job.doc.nvt_finished = True
+    job.doc[f"{method}_finished"] = True
 
 
 def check_equilibration(job, method, eq_property):
@@ -196,9 +219,8 @@ def check_equilibration(job, method, eq_property):
         uncorr, i, g, N = eq.trim_non_equilibrated(prop_data)
         job.doc[f"avg_{eq_property}"] = np.average(uncorr)
         job.doc[f"std_{eq_property}"] = np.std(uncorr)
-        job.doc[f"{method}_eq"] = True
-    else:
-        job.doc[f"{method}_eq"] = False
+    job.doc[f"{method}_eq"] = iseq
+    return iseq
 
 
 if __name__ == "__main__":
