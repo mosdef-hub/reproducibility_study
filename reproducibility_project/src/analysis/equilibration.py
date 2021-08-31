@@ -10,7 +10,11 @@ from signac.contrib.job import Job
 
 
 def is_equilibrated(
-        a_t: npt.ArrayLike, threshold_fraction: float = 0.8, threshold_neff: int = 100, nskip: int = 1,) -> List:
+    a_t: npt.ArrayLike,
+    threshold_fraction: float = 0.8,
+    threshold_neff: int = 100,
+    nskip: int = 1,
+) -> List:
     """Check if a dataset is equilibrated based on a fraction of equil data.
 
     Using `pymbar.timeseries` module, check if a timeseries dataset has enough
@@ -45,8 +49,9 @@ def is_equilibrated(
 
     threshold_neff = int(threshold_neff)
     if threshold_neff < 1:
-        raise ValueError(f"Passed 'threshold_neff' value: {threshold_neff}, expected value 1 or greater.")
-
+        raise ValueError(
+            f"Passed 'threshold_neff' value: {threshold_neff}, expected value 1 or greater."
+        )
 
     [t0, g, Neff] = timeseries.detectEquilibration(a_t, nskip=nskip)
     frac_equilibrated = 1.0 - (t0 / np.shape(a_t)[0])
@@ -58,7 +63,10 @@ def is_equilibrated(
 
 
 def trim_non_equilibrated(
-        a_t: npt.ArrayLike, threshold_fraction: float = 0.75, threshold_neff: int = 100, nskip: int = 1
+    a_t: npt.ArrayLike,
+    threshold_fraction: float = 0.75,
+    threshold_neff: int = 100,
+    nskip: int = 1,
 ) -> List:
     """Prune timeseries array to just the production data.
 
@@ -89,7 +97,10 @@ def trim_non_equilibrated(
 
     """
     [truth, t0, g, Neff] = is_equilibrated(
-        a_t, threshold_fraction=threshold_fraction, threshold_neff=threshold_neff, nskip=nskip
+        a_t,
+        threshold_fraction=threshold_fraction,
+        threshold_neff=threshold_neff,
+        nskip=nskip,
     )
     if not truth:
         raise ValueError(

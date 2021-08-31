@@ -47,7 +47,12 @@ def plot_data_with_t0_line(
             f"Cannot write {path.name}, file already exists at: {path.absolute()}. Set overwrite=True to replace file."
         )
 
-    _, t0, g, Neff = is_equilibrated(a_t, threshold_fraction=threshold_fraction, threshold_neff=threshold_neff, nskip=1)
+    _, t0, g, Neff = is_equilibrated(
+        a_t,
+        threshold_fraction=threshold_fraction,
+        threshold_neff=threshold_neff,
+        nskip=1,
+    )
 
     ymin = np.min(a_t) - np.min(a_t) * (np.abs(1 - vline_scale))
     ymax = np.max(a_t) + np.max(a_t) * (np.abs(1 - vline_scale))
