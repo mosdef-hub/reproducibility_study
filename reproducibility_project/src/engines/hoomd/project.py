@@ -54,6 +54,14 @@ def run_npt(job):
     run_hoomd(job, "npt")
 
 
+#@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+#@Project.pre(lambda j: j.sp.engine == "hoomd")
+#@Project.post(lambda j: j.doc.get("npt_finished"))
+#def check_equilibration(job):
+#    """Run a simulation with HOOMD-blue."""
+#    run_hoomd(job, "npt")
+
+
 def run_hoomd(job, method):
     """Run a simulation with HOOMD-blue."""
     import foyer
@@ -70,11 +78,15 @@ def run_hoomd(job, method):
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
+
+    if method not in ["npt", "nvt"]:
+        raise ValueError("Method must be 'nvt' or 'npt'.")
+
     # This structure will only be used for npt, but we need ff info for both
     # Ignore the vapor box
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
-    filled_box, _ = construct_system(job.sp, scale_liq_box=2.5)
+    filled_box, _ = construct_system(job.sp, scale_liq_box=2.6)
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -135,7 +147,7 @@ def run_hoomd(job, method):
         ],
     )
     table_file = hoomd.write.Table(
-        output=open(job.fn(f"log-{method}.txt"), mode="a", newline="\n")
+        output=open(job.fn(f"log-{method}.txt"), mode="a", newline="\n"),
         trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
         max_header_len=7,
@@ -170,6 +182,23 @@ def run_hoomd(job, method):
         job.doc.npt_finished = True
     else:
         job.doc.nvt_finished = True
+
+
+def check_equilibration(job, method, eq_property):
+    """Check whether a simulation is equilibrated."""
+    import reproducibility_project.src.analysis.equilibration as eq
+    import numpy as np
+
+    data = np.genfromtxt(job.fn(f"log-{method}.txt"), names=True)
+    prop_data = data[eq_property]
+    iseq, _, _, _ = eq.is_equilibrated(prop_data)
+    if iseq:
+        uncorr, i, g, N = eq.trim_non_equilibrated(prop_data)
+        job.doc[f"avg_{eq_property}"] = np.average(uncorr)
+        job.doc[f"std_{eq_property}"] = np.std(uncorr)
+        job.doc[f"{method}_eq"] = True
+    else:
+        job.doc[f"{method}_eq"] = False
 
 
 if __name__ == "__main__":
