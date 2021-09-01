@@ -179,7 +179,7 @@ def run_hoomd(job, method, restart=False):
     )
     sim.operations.writers.append(table_file)
 
-    dt = 0.005
+    dt = 0.001
     integrator = hoomd.md.Integrator(dt=dt)
     integrator.forces = forcefield
     # convert temp in K to kJ/mol
@@ -190,18 +190,22 @@ def run_hoomd(job, method, restart=False):
         integrator_method = hoomd.md.methods.NPT(
             filter=hoomd.filter.All(),
             kT=kT,
-            tau=1.0,
+            tau=1000*dt,
             S=pressure,
-            tauS=0.5,
+            tauS=10000*dt,
             couple="xyz",
         )
     else:
         integrator_method = hoomd.md.methods.NVT(
-            filter=hoomd.filter.All(), kT=kT, tau=1.0
+            filter=hoomd.filter.All(), kT=kT, tau=1000*dt
         )
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+
+    if method == "npt":
+        sim.run(1e5)
+        integrator.tauS = 1000*dt
 
     sim.run(1e6)
     job.doc[f"{method}_finished"] = True
