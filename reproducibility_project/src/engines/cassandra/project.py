@@ -1,7 +1,7 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 # import foyer
 import os
-from pathlib import Path
+import pathlib
 
 import flow
 from flow import directives
@@ -362,7 +362,7 @@ def run_cassandra(job):
                     )
                     t = max(t, tvap)
 
-                for rmtgt in list(Path(".").glob("equil_*.[xH]*")):
+                for rmtgt in list(pathlib.Path(".").glob("equil_*.[xH]*")):
                     os.remove(rmtgt)
 
             else:
