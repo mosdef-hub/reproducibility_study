@@ -73,7 +73,7 @@ def write_subsampled_values(
 
     if not job.isfile(f"{property_filename}"):
         raise FileNotFoundError(
-            f"File {property_filename} does not exist in {job}'s workfspace."
+            f"File {property_filename} does not exist in {job}'s workspace."
         )
 
     with job:
