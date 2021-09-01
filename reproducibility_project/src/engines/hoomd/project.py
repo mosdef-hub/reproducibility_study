@@ -146,7 +146,8 @@ def run_hoomd(job, method):
     )
     sim.operations.writers.append(table_file)
 
-    integrator = hoomd.md.Integrator(dt=0.005)
+    dt = 0.005
+    integrator = hoomd.md.Integrator(dt=dt)
     integrator.forces = forcefield
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
