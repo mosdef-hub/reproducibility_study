@@ -1,6 +1,8 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
 import numpy as np
+import pandas as pd
+import signac
 from pymbar import timeseries
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
@@ -40,6 +42,46 @@ def sample_job(
         threshold_neff=threshold_neff,
     )
     job.doc["sampling_results"][variable] = (range(start, stop, step), Neff)
+
+
+def write_subsampled_values(
+    job: signac.contrib.project.Job,
+    property: str,
+    property_filename: str = "log.txt",
+    overwrite: bool = False,
+) -> None:
+    """Write out subsampled values to a Job's 'data' document."""
+    if not isinstance(job, signac.contrib.project.Job):
+        raise TypeError(
+            f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
+        )
+
+    if property is None or property == "":
+        raise ValueError(
+            f"Expected 'property' to be a name of a property, was provided {property}."
+        )
+
+    if (
+        not overwrite
+        and job.data.get(f"subsamples/{property}", None) is not None
+    ):
+        raise ValueError(
+            f"Attempting to overwrite already existing data for property: {property}, set overwrite=True to do this."
+        )
+
+    sampling_indices = job.doc["sampling_results"][f"{property}"]
+
+    if not job.isfile(f"{property_filename}"):
+        raise FileNotFoundError(
+            f"File {property_filename} does not exist in {job}'s workfspace."
+        )
+
+    with job:
+        df = pd.read_csv(
+            f"{property_filename}", delim_whitespace=True, header=0
+        )
+        property_subsamples = df[f"{property}"].to_numpy()[sampling_indices]
+        job.data[f"subsamples/{property}"] = property_subsamples
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
