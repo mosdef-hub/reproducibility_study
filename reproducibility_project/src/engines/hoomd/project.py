@@ -192,7 +192,7 @@ def run_hoomd(job, method, restart=False):
             kT=kT,
             tau=1000*dt,
             S=pressure,
-            tauS=10000*dt,
+            tauS=5000*dt,
             couple="xyz",
         )
     else:
@@ -204,8 +204,35 @@ def run_hoomd(job, method, restart=False):
     sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
 
     if method == "npt":
-        sim.run(1e5)
-        integrator.tauS = 1000*dt
+        # only run with high tauS if we are starting from scratch
+        if not restart:
+            sim.run(1e6)
+        integrator.tauS = 500*dt
+        print(f"tauS: {sim.operations.integrator.tauS}")
+    else:
+        if not restart:
+            # Shrink step follows this example
+            # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
+            # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
+            ramp = hoomd.variant.Ramp(
+                A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4)
+            )
+            # the target volume should be the average volume from NPT
+            target_volume = job.doc.avg_volume
+            initial_box = sim.state.box
+            L = target_volume**(1/3)
+            final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
+            box_resize_trigger = hoomd.trigger.Periodic(10)
+            box_resize = hoomd.update.BoxResize(
+                    box1=initial_box,
+                    box2=final_box,
+                    variant=ramp,
+                    trigger=box_resize_trigger,
+            )
+            sim.operations.updaters.append(box_resize)
+            sim.run(2e4 + 1)
+            assert sim.state.box == final_box
+            sim.operations.updaters.remove(box_resize)
 
     sim.run(1e6)
     job.doc[f"{method}_finished"] = True
