@@ -4,6 +4,7 @@ import freud
 import gsd
 import gsd.hoomd
 import matplotlib.pyplot as plt
+import MDAnalysis
 import numpy as np
 
 
@@ -130,7 +131,7 @@ def _gsd_rdf(gsdfile, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
 def _xyz_rdf(xyzfile, r_max, r_min=5.0, frames=10, stride=1, bins=50):
     """Compute the RDF given an xyz file."""
     rdf = freud.density.RDF(bins=bins, r_min=r_min, r_max=r_max)
-    with MDanalysis.coordinates.XYZ.XYZReader(xyzfile) as trajectory:
+    with MDAnalysis.coordinates.XYZ.XYZReader(xyzfile) as trajectory:
         start = -(frames * stride) + stride - 1
         for frame in trajectory[start::stride]:
             rdf.compute(frame, reset=False)
