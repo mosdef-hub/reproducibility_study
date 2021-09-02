@@ -37,17 +37,6 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
             help="Walltime for this submission",
         )
 
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--walltime",
-            type=float,
-            default=96,
-            help="Walltime for this submission",
-        )
-
-
 ex = Project.make_group(name="ex")
 
 
