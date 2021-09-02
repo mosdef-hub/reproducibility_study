@@ -242,6 +242,7 @@ def run_hoomd(job, method, restart=False):
 def check_equilibration(job, method, eq_property):
     """Check whether a simulation is equilibrated."""
     import numpy as np
+    from pymbar.timeseries import subsampleCorrelatedData as subsample
 
     import reproducibility_project.src.analysis.equilibration as eq
 
@@ -250,8 +251,9 @@ def check_equilibration(job, method, eq_property):
     iseq, _, _, _ = eq.is_equilibrated(prop_data)
     if iseq:
         uncorr, i, g, N = eq.trim_non_equilibrated(prop_data)
-        job.doc[f"avg_{eq_property}"] = np.average(uncorr)
-        job.doc[f"std_{eq_property}"] = np.std(uncorr)
+        indices = subsample(uncorr, g=g, conservative=True)
+        job.doc[f"avg_{eq_property}"] = np.average(prop_data[indices])
+        job.doc[f"std_{eq_property}"] = np.std(prop_data[indices])
     job.doc[f"{method}_eq"] = iseq
     return iseq
 
