@@ -41,7 +41,12 @@ def sample_job(
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
     )
-    job.doc["sampling_results"][variable] = (range(start, stop, step), Neff)
+    job.doc["sampling_results"][variable] = {
+        "start": start,
+        "stop": stop,
+        "step": step,
+        "Neff": Neff,
+    }
 
 
 def write_subsampled_values(
@@ -69,7 +74,11 @@ def write_subsampled_values(
             f"Attempting to overwrite already existing data for property: {property}, set overwrite=True to do this."
         )
 
-    sampling_indices = job.doc["sampling_results"][f"{property}"]
+    sampling_dict = job.doc["sampling_results"][f"{property}"]
+    start = sampling_dict["start"]
+    stop = sampling_dict["stop"]
+    step = sampling_dict["step"]
+    indices = [idx for idx in range(start, stop, step)]
 
     if not job.isfile(f"{property_filename}"):
         raise FileNotFoundError(
@@ -80,7 +89,7 @@ def write_subsampled_values(
         df = pd.read_csv(
             f"{property_filename}", delim_whitespace=True, header=0
         )
-        property_subsamples = df[f"{property}"].to_numpy()[sampling_indices]
+        property_subsamples = df[f"{property}"].to_numpy()[indices]
         job.data[f"subsamples/{property}"] = property_subsamples
 
 
