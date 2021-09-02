@@ -1,0 +1,107 @@
+conda 4.10.3
+Sun Sep 12 18:46:59 CDT 2021
+benzeneUA NPT 450.0 2260.0
+ethanolAA NPT 280.0 101.325
+ethanolAA NPT 300.0 101.325
+ethanolAA NPT 320.0 101.325
+methaneUA GEMC-NVT 140.0 1318.0
+6d071843d98cc0cd7c3b1f31395a1515
+049b0f94a5a46b614546e6854be9f0a4
+dac5170f91b97cf1b1852e717866f65e
+b836337440e161be3ce2e17e218ae776
+bb059c9d7b2f539b43378b7a516faa6c
+787e00febc557e91e85cc74619022c93
+ac58bcc115f8fc494bbb684580921db6
+d339d798db9f7d53a4ccf7e7c6d8ddf0
+be16b44eba57322b001c6e2a21bbbe3b
+29b01d894d90ff536937ce843a4a14a7
+98bf295b7bceb23c050ffb408c2d39a3
+461997689d2f6fd16b18981656138185
+a2be9ec824eef9897a99471aa9078a73
+a60bc86f2137193763b544594fd31fac
+946a876ae2131245b0b242b30e18f00d
+7ec49eb14171cde1379284ce28384738
+methaneUA NPT 140.0 1318.0
+warning, only 1  prod cycles complete for 12be67edfabd548249265625059d6c62 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for dc51ab91586ac62436e68faca04735be methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 373f6fceeabf12fa633c8502933a6552 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 16a04d449bae5cdc7bf6d649d5a8be06 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 9dacdc9db520bda50dc7f165a336280a methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 6e9e26268e7bfb95e75912f92292d213 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 2f720f092727c44183f7b9ce65e2fe6d methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 1  prod cycles complete for 7b181b671f0b0bb8d0a0796cab943870 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 11dc7d6c6bf2a6c14cf3c04797767734 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for b673bbe57733ebadf56b2e6408e626c3 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 7655dbe4b0123705204fc126dc0b87c7 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 5b5215eac4578808b38e864c449467e7 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 2376d30ef9c87dbce833700e4c33b187 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for eaf3098bc085439641a280a4163e8e9b methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 14553641aebee89ef79f5d997aa70f97 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+warning, only 2  prod cycles complete for 104cd25af8f0a4e6b5183d51761f0b40 methaneUA NPT 140.0 1318.0
+The filename is box1movie1a.prod0.pdb and the prod number is 0. These two should match.
+one traj loaded
+The filename is box1movie1a.prod1.pdb and the prod number is 1. These two should match.
+one traj loaded
+A total of 30 trajs. Ideal number should be 64
+pentaneUA GEMC-NVT 372.0 1402.0
+pentaneUA NPT 372.0 1402.0
+waterSPCE NPT 280.0 101.325
+waterSPCE NPT 300.0 101.325
+waterSPCE NPT 320.0 101.325
+Sun Sep 12 19:51:11 CDT 2021
