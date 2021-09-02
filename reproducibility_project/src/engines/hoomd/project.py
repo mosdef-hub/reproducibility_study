@@ -125,6 +125,7 @@ def run_hoomd(job, method, restart=False):
                 ref_energy=e,
                 ref_mass=m,
             )
+            filled_box.save(job.fn("starting_sompound.json"))
 
     else:
         print("NVT")
