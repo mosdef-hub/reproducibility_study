@@ -7,21 +7,24 @@ from reproducibility_project.tests.base_test import BaseTest
 
 
 class TestSampler(BaseTest):
-    def test_not_equilibrated(self):
-        data = testsystems.correlated_timeseries_example(
-            N=1000, tau=200, seed=432
-        )
+    def test_not_equilibrated(self, correlated_data_tau100_n10000):
+        data = correlated_data_tau100_n10000
         with pytest.raises(ValueError):
-            start, stop, step = _decorr_sampling(data, threshold=0.80)
+            start, stop, step = _decorr_sampling(
+                data, threshold_fraction=0.80, threshold_neff=100
+            )
 
-    def test_equilibrated(self):
-        data = testsystems.correlated_timeseries_example(
-            N=1000, tau=200, seed=432
-        )
+    def test_equilibrated(self, correlated_data_tau100_n10000):
+        data = correlated_data_tau100_n10000
         is_equil, prod_start, ineff, Neff = is_equilibrated(
-            data, threshold=0.10, nskip=1
+            data,
+            threshold_fraction=0.10,
+            threshold_neff=10,
+            nskip=1,
         )
-        start, stop, step, neff_samples = _decorr_sampling(data, threshold=0.10)
+        start, stop, step, neff_samples = _decorr_sampling(
+            data, threshold_fraction=0.10, threshold_neff=10
+        )
         assert start >= prod_start
         assert step >= ineff
         assert neff_samples > 1

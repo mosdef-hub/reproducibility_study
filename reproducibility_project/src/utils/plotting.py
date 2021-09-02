@@ -12,7 +12,8 @@ def plot_data_with_t0_line(
     filename: str,
     a_t: npt.ArrayLike,
     vline_scale: float = 1.1,
-    threshold: float = 0.0,
+    threshold_fraction: float = 0.0,
+    threshold_neff: int = 1,
     overwrite: bool = False,
     title: str = None,
     data_plt_kwargs: dict = None,
@@ -26,8 +27,10 @@ def plot_data_with_t0_line(
         1-D time dependent data
     vline_scale : float, optional, default=1.1
         Scale the min and max components of the vertical line.
-    threshold : float, optional, default=0.0
-        Threshold to error out on if threshold fraction of data is not equilibrated.
+    threshold_fraction : float, optional, default=0.0
+        Threshold_fraction to error out on if threshold fraction of data is not equilibrated.
+    threshold_neff : int, optional, default=1
+        Threshold amount of uncorrelated samples to error out on if threshold amount of data is not equilibrated.
     overwrite : bool, optional, default=False
         Do not write to filename if a file already exists with the same name.
         Set to True to overwrite exisiting files.
@@ -44,7 +47,12 @@ def plot_data_with_t0_line(
             f"Cannot write {path.name}, file already exists at: {path.absolute()}. Set overwrite=True to replace file."
         )
 
-    _, t0, g, Neff = is_equilibrated(a_t, threshold=threshold, nskip=1)
+    _, t0, g, Neff = is_equilibrated(
+        a_t,
+        threshold_fraction=threshold_fraction,
+        threshold_neff=threshold_neff,
+        nskip=1,
+    )
 
     ymin = np.min(a_t) - np.min(a_t) * (np.abs(1 - vline_scale))
     ymax = np.max(a_t) + np.max(a_t) * (np.abs(1 - vline_scale))

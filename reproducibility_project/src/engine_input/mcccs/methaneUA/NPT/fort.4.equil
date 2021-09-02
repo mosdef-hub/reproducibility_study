@@ -4,7 +4,7 @@
      nbox=           1
      nmolty=         1
      nchain=   NCHAIN
-     nstep=   1
+     nstep=   40000
      lstop=          F
      iratio=   500
      rmin=      1
@@ -17,7 +17,7 @@
  &analysis
      iprint=         1000
      imv=            1000
-     iblock=         1000
+     iblock=         10
      iratp=          1000
  /
 
@@ -35,7 +35,7 @@
      pmvolb=   1.00
      box5=     1
      box6=     2
-     pmvol=    0
+     pmvol=    0.01
      rmvolume= 1.00000000000E-003
  /
 
@@ -93,7 +93,7 @@
      rmtra=  0.30
      rmrot=  0.40
      tatra=  0.50
-     tarot=  0.50
+     tarot=  0.40
      pmtra=   1
      pmtrmt= 1.0
      pmromt=  1.0
@@ -115,7 +115,7 @@
 
 SIMULATION_BOX
 ! boxlx  boxly  boxlz  rcut    kalp   rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure (MPa)
-LENGTH LENGTH LENGTH  14.000  0.250  0.000  3                      F      F     F      F      2000    PRESSURE
+LENGTH LENGTH LENGTH  RCUT  0.250  0.000  3                      F      F     F      F      TEMPERATURE    PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN       0       0                0
 
