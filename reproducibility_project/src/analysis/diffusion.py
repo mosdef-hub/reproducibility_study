@@ -9,7 +9,7 @@ from freud.msd import MSD
 from scipy import stats
 
 
-def gsd_msd(job, skip=2, stride=1, unwrapped=False):
+def gsd_msd(job, filename="trajectory.gsd", skip=2, stride=1, unwrapped=False):
     """Compute the MSD and diffusion coefficient given a Signac Job object.
 
     The job folder is expected to contain the file "trajectory.gsd" with lengths
@@ -25,6 +25,9 @@ def gsd_msd(job, skip=2, stride=1, unwrapped=False):
     ----------
     job : signac.contrib.job.Job
         The Job object.
+    filename : str, default "trajectory.gsd"
+        The relative path (from the job directory) to the trajectory file to
+        analyze.
     skip : int, default 2
         The number of frames from the trajectory to skip.
     stride : int, default 1
@@ -40,7 +43,7 @@ def gsd_msd(job, skip=2, stride=1, unwrapped=False):
     freud.msd.MSD
         Computed MSD object
     """
-    msd, timesteps = _gsd_msd(job.fn("trajectory.gsd"), skip, stride, unwrapped)
+    msd, timesteps = _gsd_msd(job.fn(filename), skip, stride, unwrapped)
 
     m, b, r, p, std_err = stats.linregress(timesteps, msd.msd)
 
