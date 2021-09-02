@@ -36,7 +36,7 @@ unfix integrator
 minimize 1e-4 1e-4 1000 1000
 fix integrator all nvt temp ${tsample} ${tsample} 100.0
 run 50000
-timestep 2.0
+timestep ${tstep}
 run 50000
 unfix integrator
 reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name

@@ -9,5 +9,5 @@
 cd $PBS_O_WORKDIR
 module load lammps
 
-mpirun -np 8 lmp < $infile -var seed $seed -var T $T -var P $P -var rcut $rcut
+mpirun -np 8 lmp < $infile -var seed $seed -var T $T -var P $P -var rcut $rcut -var tstep $tstep
 echo $PBS_JOBID $PBS_O_WORKDIR >> ~/job-id-dirs.txt

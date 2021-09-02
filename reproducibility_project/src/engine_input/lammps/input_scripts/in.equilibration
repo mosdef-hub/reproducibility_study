@@ -15,7 +15,7 @@ pair_modify shift no
 
 neighbor        2.5 bin #skin cutoff
 
-timestep 2.0
+timestep ${tstep}
 thermo 2000
 thermo_style custom step temp press pe epair emol ke etotal density
 
@@ -37,7 +37,7 @@ variable filename string eqlog${startstep0}.txt
 fix output_data all print 1000 "${startstep} ${t} ${pressure} $e $p $k $d" file ${filename} title "step temp press etotal pe ke density"
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
 fix zeromom all momentum 100 linear 1 1 1 rescale
-run 100000
+run 500000
 unfix integrator
 write_restart minimized.restart_*
 write_restart equilibrated_npt.restart

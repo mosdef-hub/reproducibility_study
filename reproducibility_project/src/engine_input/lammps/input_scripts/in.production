@@ -15,7 +15,7 @@ pair_modify shift no  #TODO: Look to make sure this shift is okay
 
 neighbor        2.5 bin #skin cutoff
 
-timestep 2.0
+timestep ${tstep}
 thermo 2000
 thermo_style custom step temp press pe epair emol ke etotal density
 
