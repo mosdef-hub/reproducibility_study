@@ -45,7 +45,6 @@ def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
     return "/home/rs/group-code/MCCCS-MN-9-21/exe-ifort-9-21/src/topmon"
 
-
 def print_running_string(job, step):
     """Print details about the stage that is starting."""
     print(
