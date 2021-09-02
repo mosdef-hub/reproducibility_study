@@ -18,9 +18,11 @@ def is_equilibrated(
     """Check if a dataset is equilibrated based on a fraction of equil data.
 
     Using `pymbar.timeseries` module, check if a timeseries dataset has enough
-    equilibrated data based on two threshold values. The threshold_fraction value
-    translates to the fraction of total data from the dataset 'a_t' that
-    can be thought of as being in the 'production' region. The threshold_neff is the minimum amount of effectively uncorrelated samples to have in a_t to consider it equilibrated.
+    equilibrated data based on two threshold values. The threshold_fraction
+    value translates to the fraction of total data from the dataset 'a_t' that
+    can be thought of as being in the 'production' region. The threshold_neff
+    is the minimum amount of effectively uncorrelated samples to have in a_t to
+    consider it equilibrated.
 
     The `pymbar.timeseries` module returns the starting index of the
     'production' region from 'a_t'. The fraction of 'production' data is
@@ -35,7 +37,8 @@ def is_equilibrated(
     threshold_fraction : float, optional, default=0.8
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=100
-        Minimum amount of effectively correlated samples to consider a_t 'equilibrated'.
+        Minimum amount of effectively correlated samples to consider a_t
+        'equilibrated'.
     nskip : int, optional, default=1
         Since the statistical inefficiency is computed for every time origin
         in a call to timeseries.detectEquilibration, for larger datasets
@@ -44,13 +47,15 @@ def is_equilibrated(
     """
     if threshold_fraction < 0.0 or threshold_fraction > 1.0:
         raise ValueError(
-            f"Passed 'threshold_fraction' value: {threshold_fraction}, expected value between 0.0-1.0."
+            f"Passed 'threshold_fraction' value: {threshold_fraction}, "
+            "expected value between 0.0-1.0."
         )
 
     threshold_neff = int(threshold_neff)
     if threshold_neff < 1:
         raise ValueError(
-            f"Passed 'threshold_neff' value: {threshold_neff}, expected value 1 or greater."
+            f"Passed 'threshold_neff' value: {threshold_neff}, expected value "
+            "1 or greater."
         )
 
     [t0, g, Neff] = timeseries.detectEquilibration(a_t, nskip=nskip)
@@ -94,7 +99,6 @@ def trim_non_equilibrated(
         in a call to timeseries.detectEquilibration, for larger datasets
         (> few hundred), increasing nskip might speed this up, while
         discarding more data.
-
     """
     [truth, t0, g, Neff] = is_equilibrated(
         a_t,
@@ -104,7 +108,8 @@ def trim_non_equilibrated(
     )
     if not truth:
         raise ValueError(
-            f"Data with a threshold_fraction of {threshold_fraction} and threshold_neff {threshold_neff} is not equilibrated!"
+            f"Data with a threshold_fraction of {threshold_fraction} and "
+            f"threshold_neff {threshold_neff} is not equilibrated!"
         )
 
     return [a_t[t0:], t0, g, Neff]
@@ -114,6 +119,7 @@ def plot_job_property_with_t0(
     job: Job,
     filename: str,
     property_name: str,
+    log_filename: str = "log.txt",
     title: str = None,
     vline_scale: float = 1.1,
     threshold_fraction: float = 0.0,
@@ -122,7 +128,7 @@ def plot_job_property_with_t0(
     data_plt_kwargs: dict = None,
     vline_plt_kwargs: dict = None,
 ) -> None:
-    """Plot data with a vertical line at beginning of equilibration for a specifc job and property.
+    """Plot data with a vertical line at beginning of equilibration for a specific job and property.
 
     Parameters
     ----------
@@ -130,9 +136,12 @@ def plot_job_property_with_t0(
         The signac job to access the necessary data files.
     filename : str, required
         The name of the output image.
-        Only the name of the file and extension is expected, the location will be within the job.
+        Only the name of the file and extension is expected, the location will
+        be within the job.
     property_name : str, required
         The name of the property to plot.
+    log_filename : str, default "log.txt"
+        The relative path (from the job directory) to the log file name to read.
     title : str, optional, default = Property
         Title of the plot
     vline_scale : float, optional, default=1.1
@@ -147,7 +156,8 @@ def plot_job_property_with_t0(
     data_plt_kwargs : dict, optional, default={}
         Pass in a dictionary of keyword arguments to plot the data.
     vline_plt_kwargs : dict, optional, default={}
-        Pass in a dictionary of keyword arguments for the vertical line denoting t0.
+        Pass in a dictionary of keyword arguments for the vertical line
+        denoting t0.
     """
     from reproducibility_project.src.utils.plotting import (
         plot_data_with_t0_line,
@@ -156,7 +166,7 @@ def plot_job_property_with_t0(
     fname = pathlib.Path(filename)
     fname = fname.name
     a_t = pd.read_csv(
-        job.fn("log.txt"),
+        job.fn(log_filename),
         delim_whitespace=True,
         header=0,
     )
