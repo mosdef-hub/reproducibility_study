@@ -28,12 +28,14 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     template = "metropolis2.sh"
 
 
+
 ex = Project.make_group(name="ex")
 
 
 def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
+
 
 
 def print_running_string(job, step):
@@ -302,7 +304,9 @@ def system_equilibrated(job):
 
     with job:
         files = glob("fort*12*{}*".format("equil"))
-        if len(files) < 1:  # at least do two loops of equilibration
+
+        if len(files) < 2:  # at least do two loops of equilibration
+
             print(
                 "equils done is less than 2 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
@@ -313,7 +317,9 @@ def system_equilibrated(job):
                 )
             )
             return False
+
         if len(files) >= 3:  # max of 3 equils
+
             print(
                 "equils done is >= 4 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
@@ -422,7 +428,6 @@ def system_equilibrated(job):
                 )
                 text_file.close()
                 return True
-
 
 @Project.label
 def prod_finished(job):

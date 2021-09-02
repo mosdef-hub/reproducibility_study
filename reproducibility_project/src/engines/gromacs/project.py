@@ -170,7 +170,7 @@ def extend_gmx_npt(job):
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt "
+    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -nt 16"
     return msg
 
 
@@ -214,8 +214,11 @@ def _setup_mdp(fname, template, data, overwrite=False):
 def equil_status(job, op, att):
     """Check equilibration status of specific attributes of specific operation."""
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
-    return is_equilibrated(data[att])[0]
+    if not job.isfile(f"{str(p.absolute)}/{op}.edr"):
+        return False
+    else:
+        data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
+        return is_equilibrated(data[att])[0]
 
 
 if __name__ == "__main__":
