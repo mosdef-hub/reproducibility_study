@@ -522,16 +522,8 @@ def system_equilibrated(job):
                             equil_status_energy1[1],
                             equil_status_length2[1],
                             equil_status_energy2[1],
-                            equil_status_toal_energy[1],
+                            equil_status_total_energy[1],
                         ),
-                        job.doc.get("equil_replicates_done"),
-                    )
-                )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        equil_status[1],
                         job.doc.get("equil_replicates_done"),
                     )
                 )
@@ -972,3 +964,4 @@ def run_prod(job):
 if __name__ == "__main__":
     pr = Project()
     pr.main()
+
