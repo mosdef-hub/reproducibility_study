@@ -28,14 +28,12 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     template = "metropolis2.sh"
 
 
-
 ex = Project.make_group(name="ex")
 
 
 def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
-
 
 
 def print_running_string(job, step):
@@ -428,6 +426,7 @@ def system_equilibrated(job):
                 )
                 text_file.close()
                 return True
+
 
 @Project.label
 def prod_finished(job):
