@@ -1,0 +1,2 @@
+/home/rs/anaconda3/envs/mosdef-study38/lib/python3.8/site-packages/mdtraj/core/trajectory.py:422: UserWarning: top= kwarg ignored since file contains topology information
+  warnings.warn('top= kwarg ignored since file contains topology information')
