@@ -8,6 +8,7 @@ from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 def sample_job(
     job,
+    filename="log.txt",
     variable="potential_energy",
     threshold_fraction=0.75,
     threshold_neff=100,
@@ -21,6 +22,9 @@ def sample_job(
     ----------
     job : signac.contrib.job.Job
         The Job object.
+    filename : str, default "log.txt"
+        The relative path (from the job directory) to the log file to be
+        analyzed.
     variable : str; default "potential_energy"
         The variable to be used in sampling.
     threshold_fraction : float, optional, default=0.75
@@ -33,7 +37,7 @@ def sample_job(
     except KeyError:
         job.doc["sampling_results"] = {}
 
-    data = np.genfromtxt(job.fn("log.txt"), names=True)[variable]
+    data = np.genfromtxt(job.fn(filename), names=True)[variable]
     start, stop, step, Neff = _decorr_sampling(
         data,
         threshold_fraction=threshold_fraction,
@@ -72,7 +76,8 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
         )
     else:
         raise ValueError(
-            "Property does not have requisite threshold of production data expected."
-            "More production data is needed, or the threshold needs to be lowered."
-            "See project.src.analysis.equilibration.is_equilibrated for more information."
+            "Property does not have requisite threshold of production data "
+            "expected. More production data is needed, or the threshold needs "
+            "to be lowered. See project.src.analysis.equilibration.is_equilibrated"
+            " for more information."
         )
