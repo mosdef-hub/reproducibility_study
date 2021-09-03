@@ -3,6 +3,7 @@ import os
 import foyer
 import pytest
 import signac
+from pymbar.testsystems import correlated_timeseries_example
 
 from reproducibility_project.src import xmls
 from reproducibility_project.tests.utils import create_gsd
@@ -19,6 +20,10 @@ class BaseTest:
         filename = tmp_job.fn("trajectory.gsd")
         create_gsd(filename)
         return tmp_job
+
+    @pytest.fixture
+    def correlated_data_tau100_n10000(self):
+        return correlated_timeseries_example(N=10000, tau=100, seed=432)
 
     @pytest.fixture
     def tmp_project(self):

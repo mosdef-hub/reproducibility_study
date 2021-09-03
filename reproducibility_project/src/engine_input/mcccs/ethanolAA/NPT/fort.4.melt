@@ -3,11 +3,11 @@
      seed=           SEED
      nbox=           1
      nmolty=           1
-     nchain=           NCHAIN
-     nstep=         20000
+     nchain=        NCHAIN
+     nstep=         5000
      lstop= F
-     iratio=         500
-     rmin=   1
+     iratio=          500
+     rmin=   1.00000000000000
      softcut=   100.000000000000
      linit= F
      lreadq= F
@@ -15,15 +15,15 @@
 
 
  &analysis
-     iprint=          50
-     imv=        1000
-     iblock=          1000
+     iprint=         2500
+     imv=            1000
+     iblock=         1000
      iratp=           500
-     idiele=      100000
-     iheatcapacity=     1000000
-     ianalyze=      100000
+     idiele=       10000
+     iheatcapacity=        5000
+     ianalyze=      1000
      nbin=         250
-     lrdf= T
+     lrdf= F
      lintra= F
      lstretch= F
      lgvst= F
@@ -40,48 +40,48 @@
 
 
  &external_field
-     Elect_field=  0.000000000000000E+000  0.000000000000000E+000
+     Elect_field=  0.000000000000000E+000
  /
 
 
  &mc_volume
-     tavol=  0.400000000000000
-     iratv=         500
+     tavol=  0.5
+     iratv=  500
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.01
+     pmvol=  0
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
-     rmvolume=  1.000000000000000E+003
+     rmvolume=  1.000000000000000E-003
  /
 
 
  &mc_swatch
-     pmswat=  0.000000000000000E+000
+     pmswat=  0.0
      nswaty=           1
      pmsatc=   1.00000000000000
  /
 
 
  &mc_swap
-     pmswap=  0.000000000000000E+000
+     pmswap=  0.0
      pmswmt=   1.00000000000000
  /
 
 
  &mc_cbmc
      rcutin=   5.00000000000000
-     pmcb=  0.340000000000000
+     pmcb=  0.34
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
      nchoi1=          12
      nchoi=           10
      nchoir=          50
      nchoih=           1
-     nchtor=         50
+     nchtor=         100
      nchbna=        1000
      nchbnb=        1000
      icbdir=           0
@@ -95,7 +95,7 @@
      pmfix=  0.000000000000000E+000
      lrig= F
      lpresim= F
-     iupdatefix=          10
+     iupdatefix=         100
  /
 
 
@@ -111,9 +111,9 @@
      armtra=  1.000000000000000E-002
      rmtra=  0.300000000000000
      rmrot=  0.400000000000000
-     tatra=  0.500000000000000
-     tarot=  0.500000000000000
-     pmtra=  0.670000000000000
+     tatra=  0.5
+     tarot=  0.5
+     pmtra=  0.67
      pmtrmt=   1.00000000000000
      pmromt=   1.00000000000000
  /
@@ -134,80 +134,161 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH   LENGTH   LENGTH 14.000  0.250  0.000 0  F  F  F  F TEMPERATURE     PRESSURE
+  LENGTH LENGTH LENGTH RCUT  0.320  0.000 3  F  F  F  F  1000     PRESSURE
 ! nchain_1 ... nchain_nmolty ghost_particles
 NCHAIN 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
-10 10 2 10 0 10.0  2.000 F 0.0
+14 14 14 0 0  0.0  1.889 F 0.0
 END SIMULATION_BOX
 
 
 MOLECULE_TYPE
-! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lrplc lsetup lq14scale qscale iurot isolute eta
-5 5 5 5 5 5                                    F      F      F     F              F      T        0.5   0     1000000
+! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lsetup lq14scale qscale iurot isolute
+9 9 9 9 9 0  T  F  F  F  F  F 0.0 0 100000
 ! unit ntype leaderq
-1 4 1
-! stretching
-1
-2 1
-! bending
-1
-2 3 1
-! torsion
-1
-2 3 4 1
-! unit ntype leaderq
-2 5 2
+1 1 1
 ! stretching
 2
-1 1
-3 1
+2 1003
+4 1004
 ! bending
-1
-3 4 1
+3
+2 5 2004
+2 6 2004
+2 3 2002
 ! torsion
-1
-3 4 5 1
+3
+2 3 7 3001
+2 3 8 3001
+2 3 9 3001
 ! unit ntype leaderq
-3 5 3
+2 2 2
 ! stretching
-2
-2 1
-4 1
+4
+1 1003
+5 1002
+3 1001
+6 1002
 ! bending
-2
-2 1 1
-4 5 1
+4
+1 4 2005
+3 7 2001
+3 8 2001
+3 9 2001
 ! torsion
+0
 ! unit ntype leaderq
-4 5 4
+3 3 3
 ! stretching
-2
-3 1
-5 1
+4
+2 1001
+7 1002
+8 1002
+9 1002
 ! bending
-1
-3 2 1
+3
+2 1 2002
+2 5 2001
+2 6 2001
 ! torsion
 1
-3 2 1 1
+2 1 4 3003
 ! unit ntype leaderq
-5 4 5
+4 4 4
 ! stretching
 1
-4 1
+1 1004
 ! bending
 1
-4 3 1
+1 2 2005
 ! torsion
+3
+1 2 3 3003
+1 2 5 3004
+1 2 6 3004
+! unit ntype leaderq
+5 5 5
+! stretching
 1
-4 3 2 1
+2 1002
+! bending
+3
+2 1 2004
+2 6 2003
+2 3 2001
+! torsion
+4
+2 1 4 3004
+2 3 7 3002
+2 3 8 3002
+2 3 9 3002
+! unit ntype leaderq
+6 6 6
+! stretching
+1
+2 1002
+! bending
+3
+2 1 2004
+2 5 2003
+2 3 2001
+! torsion
+4
+2 1 4 3004
+2 3 7 3002
+2 3 8 3002
+2 3 9 3002
+! unit ntype leaderq
+7 7 7
+! stretching
+1
+3 1002
+! bending
+3
+3 8 2003
+3 9 2003
+3 2 2001
+! torsion
+3
+3 2 1 3001
+3 2 5 3002
+3 2 6 3002
+! unit ntype leaderq
+8 8 8
+! stretching
+1
+3 1002
+! bending
+3
+3 7 2003
+3 9 2003
+3 2 2001
+! torsion
+3
+3 2 1 3001
+3 2 5 3002
+3 2 6 3002
+! unit ntype leaderq
+9 9 9
+! stretching
+1
+3 1002
+! bending
+3
+3 8 2003
+3 7 2003
+3 2 2001
+! torsion
+3
+3 2 1 3001
+3 2 5 3002
+3 2 6 3002
 END MOLECULE_TYPE
 
 
 MC_SWATCH
 ! moltyp1<->moltyp2 nsampos 2xncut
-1 2 1 1 1
+2 3 1 1 1
 ! gswatc 2x(ifrom, iprev)
 1 0 1 0
 ! splist
@@ -247,7 +328,7 @@ END INTRAMOLECULAR_OH15
 
 UNIFORM_BIASING_POTENTIALS
 ! for each molecule type, give nbox values
-0.0d0 0.0d0
+0.0d0
 END UNIFORM_BIASING_POTENTIALS
 
 

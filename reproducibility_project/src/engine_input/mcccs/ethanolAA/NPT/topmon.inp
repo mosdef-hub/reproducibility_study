@@ -1,0 +1,94 @@
+
+ &io
+     io_output=           2
+     run_num=           1
+     suffix=a
+    L_movie_xyz = T
+    L_movie_pdb = T
+
+ /
+
+
+ &system
+     lnpt= T
+     lgibbs= F
+     lgrand= F
+     lanes= F
+     lvirial= F
+     lmipsw= F
+     lexpee= F
+     ldielect= F
+     lpbc= T
+     lpbcx= T
+     lpbcy= T
+     lpbcz= T
+     lfold= T
+     lijall= F
+     lchgall= F
+     lewald= T
+     lcutcm= T
+     ltailc= T
+     lshift= F
+     ldual= T
+     L_Coul_CBMC= T
+     lneigh= F
+     lexzeo= F
+     lslit= F
+     lgraphite= F
+     lsami= F
+     lmuir= F
+     lelect_field= F
+     lgaro= F
+     lionic= F
+     L_Ewald_Auto= T
+     lmixlb= T
+     lmixjo= F
+     L_spline= F
+     L_linear= F
+     L_vib_table= F
+     L_bend_table= F
+     L_elect_table= F
+ /
+
+
+ATOMS
+!i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+1 1 85.5479 3.12 -0.683 15.999 O #alcohol O
+2 1 33.2127 3.5 0.145 12.011 C # carbon attached to O
+3 1 33.2127 3.5 -0.18 12.011 C # carbon
+4 1 0 0 0.418 1.008 H # hydrogen of oxygen
+5 1 15.0967 2.50000 0.06 1.008 H #H
+6 1 15.0967 2.50000 0.06 1.008 H #H
+7 1 15.0967 2.50000 0.06 1.008 H #H
+8 1 15.0967 2.50000 0.06 1.008 H #H
+9 1 15.0967 2.50000 0.06 1.008 H #H
+END ATOMS
+
+NONBOND
+!i j type(ij) epsi(ij) sigi(ij) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+END NONBOND
+
+BONDS
+!i type(i) brvib(i) brvibk(i) [Angstrom]; type 1: U = brvibk * ( r_ij - brvib ) ^ 2
+1001 1 1.529 0.0000 # C-C
+1002 1 1.09 0.000   # C-H
+1003 1 1.41 0.000   # C-O
+1004 1 0.94 0.0000  # O-H
+END BONDS
+
+ANGLES
+!i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
+2001 1 110.7 18871 # H-C-C
+2002 1 109.5 25200 # C-C-O
+2003 1 107.8 16600 # H-C-H
+2004 1 109.5 17600 # H-C-O
+2005 1 109.5 17600 # C-O-H
+END ANGLES
+
+DIHEDRALS
+!i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
+3001 1       0       0        0    117.754   0.0  0.0  0.0  0.0  0.0  0.0 # H-C-C-O
+3002 1       0       0        0    80.0124   0.0  0.0  0.0  0.0  0.0  0.0 # H-C-C-H
+3003 1       0    -89.5736  -43.7804 123.793 0.0  0.0  0.0  0.0  0.0  0.0 # C-C-O-H
+3004 1       0       0        0     113.225  0.0  0.0  0.0  0.0  0.0  0.0 # H-C-O-H
+END DIHEDRALS
