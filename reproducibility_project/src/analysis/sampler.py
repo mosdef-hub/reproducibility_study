@@ -1,6 +1,8 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
 import numpy as np
+import pandas as pd
+import signac
 from pymbar import timeseries
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
@@ -43,7 +45,56 @@ def sample_job(
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
     )
-    job.doc["sampling_results"][variable] = (range(start, stop, step), Neff)
+    job.doc["sampling_results"][variable] = {
+        "start": start,
+        "stop": stop,
+        "step": step,
+        "Neff": Neff,
+    }
+
+
+def write_subsampled_values(
+    job: signac.contrib.project.Job,
+    property: str,
+    property_filename: str = "log.txt",
+    overwrite: bool = False,
+) -> None:
+    """Write out subsampled values to a Job's 'data' document."""
+    if not isinstance(job, signac.contrib.project.Job):
+        raise TypeError(
+            f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
+        )
+
+    if property is None or property == "":
+        raise ValueError(
+            f"Expected 'property' to be a name of a property, was provided {property}."
+        )
+
+    if (
+        not overwrite
+        and job.data.get(f"subsamples/{property}", None) is not None
+    ):
+        raise ValueError(
+            f"Attempting to overwrite already existing data for property: {property}, set overwrite=True to do this."
+        )
+
+    sampling_dict = job.doc["sampling_results"][f"{property}"]
+    start = sampling_dict["start"]
+    stop = sampling_dict["stop"]
+    step = sampling_dict["step"]
+    indices = [idx for idx in range(start, stop, step)]
+
+    if not job.isfile(f"{property_filename}"):
+        raise FileNotFoundError(
+            f"File {property_filename} does not exist in {job}'s workspace."
+        )
+
+    with job:
+        df = pd.read_csv(
+            f"{property_filename}", delim_whitespace=True, header=0
+        )
+        property_subsamples = df[f"{property}"].to_numpy()[indices]
+        job.data[f"subsamples/{property}"] = property_subsamples
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
