@@ -7,11 +7,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
+def gsd_rdf(
+    job,
+    filename="trajectory.gsd",
+    frames=10,
+    stride=1,
+    bins=50,
+    r_min=0.5,
+    r_max=None,
+):
     """Compute the RDF given a Signac Job object.
 
-    The job folder is expected to contain the file "trajectory.gsd" with lengths
-    in nanometers.
+    The job folder is expected to contain a trajectory file with lengths in
+    nanometers.
     This function is a convenience wrapper for freud's RDF module
     https://freud.readthedocs.io/en/latest/modules/density.html#freud.density.RDF
     After execution, the files "rdf.png" and "rdf.txt" are created in the job
@@ -21,6 +29,9 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     ----------
     job : signac.contrib.job.Job
         The Job object.
+    filename : str, default "trajectory.gsd"
+        The relative path (from the job directory) to the trajectory file to be
+        analyzed.
     frames : int, default 10
         The number of frames from the trajectory to average. Up to and always
         uses the last frame.
@@ -39,7 +50,7 @@ def gsd_rdf(job, frames=10, stride=1, bins=50, r_min=0.5, r_max=None):
     freud.density.RDF
         Computed RDF object
     """
-    rdf = _gsd_rdf(job.fn("trajectory.gsd"), frames, stride, bins, r_min, r_max)
+    rdf = _gsd_rdf(job.fn(filename), frames, stride, bins, r_min, r_max)
 
     fig, ax = plt.subplots()
     ax.plot(rdf.bin_centers, rdf.rdf)
