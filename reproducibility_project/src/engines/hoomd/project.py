@@ -113,9 +113,9 @@ def run_hoomd(job, method, restart=False):
         structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=job.sp.r_cut
     )
     if method == "npt":
-        print("NPT")
+        print("Starting NPT", flush=True)
         if restart:
-            print("restart")
+            print("Restarting from last frame of existing gsd", flush=True)
             with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
                 snapshot = t[-1]
         else:
@@ -129,9 +129,9 @@ def run_hoomd(job, method, restart=False):
             filled_box.save(job.fn("starting_compound.json"))
 
     else:
-        print("NVT")
+        print("Starting NVT", flush=True)
         if restart:
-            print("restart")
+            print("Restarting from last frame of existing gsd", flush=True)
             with gsd.hoomd.open(job.fn("trajectory-nvt.gsd")) as t:
                 snapshot = t[-1]
         else:
@@ -145,12 +145,12 @@ def run_hoomd(job, method, restart=False):
         writemode = "w"
 
     device = hoomd.device.auto_select()
-    print(f"Running HOOMD version {hoomd.version.version}")
+    print(f"Running HOOMD version {hoomd.version.version}", flush=True)
     if isinstance(device, hoomd.device.GPU):
-        print("HOOMD is running on GPU")
-        print(f"GPU api version {hoomd.version.gpu_api_version}")
+        print("HOOMD is running on GPU", flush=True)
+        print(f"GPU api version {hoomd.version.gpu_api_version}", flush=True)
     else:
-        print("HOOMD is running on CPU")
+        print("HOOMD is running on CPU", flush=True)
 
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_snapshot(snapshot)
@@ -219,7 +219,6 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             sim.run(1e6)
         integrator.tauS = 500 * dt
-        print(f"tauS: {sim.operations.integrator.tauS}")
     else:
         if not restart:
             # Shrink step follows this example
@@ -247,6 +246,7 @@ def run_hoomd(job, method, restart=False):
 
     sim.run(1e6)
     job.doc[f"{method}_finished"] = True
+    print("Finished", flush=True)
 
 
 def check_equilibration(job, method, eq_property):
