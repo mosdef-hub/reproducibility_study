@@ -179,7 +179,7 @@ def run_hoomd(job, method, restart=False):
     )
 
     status = Status(sim)
-    logger[('Status', 'time_remaining')] = (status, 'time_remaining', 'string')
+    logger[("Status", "time_remaining")] = (status, "time_remaining", "string")
     table_file = hoomd.write.Table(
         output=open(
             job.fn(f"log-{method}.txt"), mode=f"{writemode}", newline="\n"
@@ -268,7 +268,7 @@ def check_equilibration(job, method, eq_property):
     return iseq
 
 
-class Status():
+class Status:
     """Monitor the status of a simulation."""
 
     def __init__(self, sim):
