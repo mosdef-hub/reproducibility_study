@@ -1,4 +1,5 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+import datetime
 import os
 import pathlib
 
@@ -144,6 +145,13 @@ def run_hoomd(job, method, restart=False):
         writemode = "w"
 
     device = hoomd.device.auto_select()
+    print(f"Running HOOMD version {hoomd.version.version}")
+    if isinstance(device, hoomd.device.GPU):
+        print("HOOMD is running on GPU")
+        print(f"GPU api version {hoomd.version.gpu_api_version}")
+    else:
+        print("HOOMD is running on CPU")
+
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_snapshot(snapshot)
     gsd_writer = hoomd.write.GSD(
@@ -154,11 +162,10 @@ def run_hoomd(job, method, restart=False):
     )
     sim.operations.writers.append(gsd_writer)
 
-    logger = hoomd.logging.Logger(categories=["scalar"])
+    logger = hoomd.logging.Logger(categories=["scalar", "string"])
     logger.add(sim, quantities=["timestep", "tps"])
-    thermo_props = hoomd.md.compute.ThermodynamicQuantities(
-        filter=hoomd.filter.All()
-    )
+    _all = hoomd.filter.All()
+    thermo_props = hoomd.md.compute.ThermodynamicQuantities(filter=_all)
     sim.operations.computes.append(thermo_props)
     logger.add(
         thermo_props,
@@ -170,6 +177,9 @@ def run_hoomd(job, method, restart=False):
             "volume",
         ],
     )
+
+    status = Status(sim)
+    logger[('Status', 'time_remaining')] = (status, 'time_remaining', 'string')
     table_file = hoomd.write.Table(
         output=open(
             job.fn(f"log-{method}.txt"), mode=f"{writemode}", newline="\n"
@@ -189,7 +199,7 @@ def run_hoomd(job, method, restart=False):
         # convert pressure to unit system
         pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
         integrator_method = hoomd.md.methods.NPT(
-            filter=hoomd.filter.All(),
+            filter=_all,
             kT=kT,
             tau=1000 * dt,
             S=pressure,
@@ -198,11 +208,11 @@ def run_hoomd(job, method, restart=False):
         )
     else:
         integrator_method = hoomd.md.methods.NVT(
-            filter=hoomd.filter.All(), kT=kT, tau=1000 * dt
+            filter=_all, kT=kT, tau=1000 * dt
         )
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
-    sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+    sim.state.thermalize_particle_momenta(filter=_all, kT=kT)
 
     if method == "npt":
         # only run with high tauS if we are starting from scratch
@@ -256,6 +266,26 @@ def check_equilibration(job, method, eq_property):
         job.doc[f"std_{eq_property}"] = np.std(prop_data[indices])
     job.doc[f"{method}_eq"] = iseq
     return iseq
+
+
+class Status():
+    """Monitor the status of a simulation."""
+
+    def __init__(self, sim):
+        self.sim = sim
+
+    @property
+    def seconds_remaining(self):
+        """Compute the seconds remaining based on the current TPS."""
+        try:
+            return (self.sim.final_timestep - self.sim.timestep) / self.sim.tps
+        except ZeroDivisionError:
+            return 0
+
+    @property
+    def time_remaining(self):
+        """Estimate the time remaining."""
+        return str(datetime.timedelta(seconds=self.seconds_remaining))
 
 
 if __name__ == "__main__":
