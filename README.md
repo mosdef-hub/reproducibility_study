@@ -20,6 +20,7 @@ GROMACS, LAMMPS, HOOMD-blue, and Cassandra can be add to the environment by runn
 ```bash
 mamba env update -f engines.yml
 ```
+NOTE: For hoomd this installation may not work unless executed on a node with a GPU. To check GPU configuration run `nvidia-smi`. The hoomd gpu api version (`python -c "import hoomd; print(hoomd.version.gpu_api_version)"`) should be the same as the cuda version.
 
 GOMC can be installed according to its documentation [here](https://gomc.eng.wayne.edu/).
 
