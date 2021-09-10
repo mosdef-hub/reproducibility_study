@@ -39,7 +39,7 @@ def cassandra2gsd(Hpath, xyzpath, gsdpath, species_list):
                     buff.write(xyzfile.readline())
                 buff.seek(0)
                 xyz = np.loadtxt(buff, usecols=(1, 2, 3)) * 0.1
-            if all(nmols != nmols_old):
+            if any(nmols != nmols_old):
                 typed_system = parmed.Structure()
                 for i, parspec in enumerate(species_list):
                     n = nmols[i]
