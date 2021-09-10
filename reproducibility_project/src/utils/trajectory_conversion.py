@@ -49,7 +49,7 @@ def cassandra2gsd(Hpath, xyzpath, gsdpath, species_list):
                 (bond.atom1.idx, bond.atom2.idx) for bond in typed_system.bonds
             ]
             all_types = [a.type for a in typed_system.atoms]
-            types = list(set(types))
+            types = list(set(all_types))
             s = gsd.hoomd.Snapshot()
             s.configuration.step = step
             s.particles.N = natoms
