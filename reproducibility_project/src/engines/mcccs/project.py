@@ -26,6 +26,15 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 
     hostname_pattern = r".*\.metropolis2\.chem\.umn\.edu"
     template = "metropolis2.sh"
+    @classmethod
+    def add_args(cls, parser):
+        """Add command line arguments to the submit call."""
+        parser.add_argument(
+            "--walltime",
+            type=float,
+            default=96,
+            help="Walltime for this submission",
+        )
 
     @classmethod
     def add_args(cls, parser):
@@ -950,6 +959,9 @@ def run_prod(job):
             text_file = open("production_information.txt", "w")
             n = text_file.write(
                 "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+=======
+                    "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+>>>>>>> remove tail c
                     job,
                     job.sp.molecule,
                     job.sp.ensemble,
