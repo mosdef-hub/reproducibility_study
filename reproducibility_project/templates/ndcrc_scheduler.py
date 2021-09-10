@@ -94,7 +94,7 @@ class SGEScheduler(Scheduler):
         hold=False,
         pretend=False,
         flags=None,
-        **kwargs
+        **kwargs,
     ):
         """Submit a job script for execution to the scheduler.
 

@@ -9,11 +9,12 @@ from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 def sample_job(
-    job,
-    filename="log.txt",
-    variable="potential_energy",
-    threshold_fraction=0.75,
-    threshold_neff=100,
+    job: signac.contrib.job.Job,
+    ensemble: str,
+    filename: str = "log.txt",
+    variable: str = "potential_energy",
+    threshold_fraction: float = 0.75,
+    threshold_neff: int = 100,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
@@ -24,6 +25,9 @@ def sample_job(
     ----------
     job : signac.contrib.job.Job
         The Job object.
+    ensemble : str
+        The ensemble of interest, affects the name of the sampled values in
+        the job.doc
     filename : str, default "log.txt"
         The relative path (from the job directory) to the log file to be
         analyzed.
@@ -34,10 +38,11 @@ def sample_job(
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
     """
+    doc_name = f"{ensemble}/sampling_results"
     try:
-        job.doc["sampling_results"]
+        job.doc[doc_name]
     except KeyError:
-        job.doc["sampling_results"] = {}
+        job.doc[doc_name] = {}
 
     data = np.genfromtxt(job.fn(filename), names=True)[variable]
     start, stop, step, Neff = _decorr_sampling(
@@ -45,7 +50,7 @@ def sample_job(
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
     )
-    job.doc["sampling_results"][variable] = {
+    job.doc[doc_name][variable] = {
         "start": start,
         "stop": stop,
         "step": step,
@@ -56,10 +61,41 @@ def sample_job(
 def write_subsampled_values(
     job: signac.contrib.project.Job,
     property: str,
-    property_filename: str = "log.txt",
+    ensemble: str,
+    property_filename: str = "log-npt.txt",
     overwrite: bool = False,
 ) -> None:
-    """Write out subsampled values to a Job's 'data' document."""
+    """Write out subsampled values to a Job's 'data' document.
+
+    Using the results from `sample_job` in the job document, iterate through
+    the property file and write out the subsampled data to the job.data
+    store. This provides a dictionary-like interface for stored tabular data
+    using HDF5 files.
+
+    This only writes out the subsampled values, the statistical averaging
+    will take place in the `analysis-project.py` file.
+
+    Parameters
+    ----------
+    job : signac.contrib.project.Job, required
+        The signac job to operate on.
+    property : str, required
+        The property of interest to write out the subsampled data.
+    ensemble : str, required
+        The ensemble that the data was sampled from, this will affect the
+        naming convention in the job.data store.
+    property_filename : str, optional, default="log-npt.txt"
+        The filename to sample the data from.
+    overwrite : bool, optional, default=False
+        Whether or not to re-write the subsampled values to job.data
+
+    Examples
+    --------
+    >>> write_subsampled_values(job, property="potential_energy",
+                                ensemble="npt",
+                                property_filename="log-npt.txt")
+    >>> assert job.data["npt/subsamples/potential_energy"]
+    """
     if not isinstance(job, signac.contrib.project.Job):
         raise TypeError(
             f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
@@ -72,13 +108,13 @@ def write_subsampled_values(
 
     if (
         not overwrite
-        and job.data.get(f"subsamples/{property}", None) is not None
+        and job.data.get(f"{ensemble}/subsamples/{property}", None) is not None
     ):
         raise ValueError(
-            f"Attempting to overwrite already existing data for property: {property}, set overwrite=True to do this."
+            f"Attempting to overwrite already existing data for property: {property}, set `overwrite=True` to do this."
         )
 
-    sampling_dict = job.doc["sampling_results"][f"{property}"]
+    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{property}"]
     start = sampling_dict["start"]
     stop = sampling_dict["stop"]
     step = sampling_dict["step"]
@@ -94,7 +130,7 @@ def write_subsampled_values(
             f"{property_filename}", delim_whitespace=True, header=0
         )
         property_subsamples = df[f"{property}"].to_numpy()[indices]
-        job.data[f"subsamples/{property}"] = property_subsamples
+        job.data[f"{ensemble}/subsamples/{property}"] = property_subsamples
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
