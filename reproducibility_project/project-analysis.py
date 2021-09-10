@@ -32,11 +32,19 @@ def rdf_nvt_analysis(job):
 
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.post(lambda job: job.doc["npt/sampling_results"]["volume"])
-@Project.post(lambda job: job.doc["npt/sampling_results"]["potential_energy"])
-@Project.post(lambda job: job.doc["npt/sampling_results"]["temperature"])
-@Project.post(lambda job: job.doc["npt/sampling_results"]["kinetic_energy"])
-@Project.post(lambda job: job.doc["npt/sampling_results"]["pressure"])
+@Project.post(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("potential_energy")
+)
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
+)
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("kinetic_energy")
+)
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("pressure")
+)
 @flow.with_job
 def sample_npt_properties(job):
     """Write out sampling results for NPT production properties."""
@@ -62,10 +70,16 @@ def sample_npt_properties(job):
 
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["volume"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["potential_energy"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["temperature"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["kinetic_energy"])
+@Project.post(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("potential_energy")
+)
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
+)
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("kinetic_energy")
+)
 @flow.with_job
 def sample_nvt_properties(job):
     """Write out sampling results for NVT production properties."""
@@ -143,14 +157,14 @@ def write_npt_properties(job):
 @Project.pre(lambda job: job.data.get("nvt/subsamples/potential_energy", None))
 @Project.pre(lambda job: job.data.get("nvt/subsamples/temperature", None))
 @Project.pre(lambda job: job.data.get("nvt/subsamples/kinetic_energy", None))
-@Project.post(lambda job: job.doc.sp.get("volume-nvt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("volume-nvt-std", None))
-@Project.post(lambda job: job.doc.sp.get("potential_energy-nvt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("potential_energy-nvt-std", None))
-@Project.post(lambda job: job.doc.sp.get("temperature-nvt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("temperature-nvt-std", None))
-@Project.post(lambda job: job.doc.sp.get("kinetic_energy-nvt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("kinetic_energy-nvt-std", None))
+@Project.post(lambda job: job.doc.get("volume-nvt-avg", None))
+@Project.post(lambda job: job.doc.get("volume-nvt-std", None))
+@Project.post(lambda job: job.doc.get("potential_energy-nvt-avg", None))
+@Project.post(lambda job: job.doc.get("potential_energy-nvt-std", None))
+@Project.post(lambda job: job.doc.get("temperature-nvt-avg", None))
+@Project.post(lambda job: job.doc.get("temperature-nvt-std", None))
+@Project.post(lambda job: job.doc.get("kinetic_energy-nvt-avg", None))
+@Project.post(lambda job: job.doc.get("kinetic_energy-nvt-std", None))
 @flow.with_job
 def average_nvt_sampled_data(job):
     """Write avg and std of the sampled job.data values."""
@@ -173,16 +187,16 @@ def average_nvt_sampled_data(job):
 @Project.pre(lambda job: job.data.get("npt/subsamples/temperature", None))
 @Project.pre(lambda job: job.data.get("npt/subsamples/kinetic_energy", None))
 @Project.pre(lambda job: job.data.get("npt/subsamples/pressure", None))
-@Project.post(lambda job: job.doc.sp.get("volume-npt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("volume-npt-std", None))
-@Project.post(lambda job: job.doc.sp.get("potential_energy-npt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("potential_energy-npt-std", None))
-@Project.post(lambda job: job.doc.sp.get("temperature-npt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("temperature-npt-std", None))
-@Project.post(lambda job: job.doc.sp.get("kinetic_energy-npt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("kinetic_energy-npt-std", None))
-@Project.post(lambda job: job.doc.sp.get("pressure-npt-avg", None))
-@Project.post(lambda job: job.doc.sp.get("pressure-npt-std", None))
+@Project.post(lambda job: job.doc.get("volume-npt-avg", None))
+@Project.post(lambda job: job.doc.get("volume-npt-std", None))
+@Project.post(lambda job: job.doc.get("potential_energy-npt-avg", None))
+@Project.post(lambda job: job.doc.get("potential_energy-npt-std", None))
+@Project.post(lambda job: job.doc.get("temperature-npt-avg", None))
+@Project.post(lambda job: job.doc.get("temperature-npt-std", None))
+@Project.post(lambda job: job.doc.get("kinetic_energy-npt-avg", None))
+@Project.post(lambda job: job.doc.get("kinetic_energy-npt-std", None))
+@Project.post(lambda job: job.doc.get("pressure-npt-avg", None))
+@Project.post(lambda job: job.doc.get("pressure-npt-std", None))
 def average_npt_sampled_data(job):
     """Write avg and std of the sampled job.data values."""
     properties = [
