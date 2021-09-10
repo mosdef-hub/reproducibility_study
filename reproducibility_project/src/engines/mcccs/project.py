@@ -26,6 +26,7 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 
     hostname_pattern = r".*\.metropolis2\.chem\.umn\.edu"
     template = "metropolis2.sh"
+
     @classmethod
     def add_args(cls, parser):
         """Add command line arguments to the submit call."""
@@ -194,7 +195,7 @@ def all_prod_replicates_done(job):
     try:
         a = job.doc.prod_replicates_done
         b = job.doc.num_prod_replicates
-        if a>=b:
+        if a >= b:
             print("simulation complete for {} job".format(job))
         return a >= b
     except (AttributeError, KeyError) as e:
@@ -327,18 +328,18 @@ def system_equilibrated(job):
             )
             return False
 
-#        if len(files) >= 3:  # max of 3 equils
+        #        if len(files) >= 3:  # max of 3 equils
 
-#            print(
-#                "equils done is >= 3 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
-#                    job,
-#                    job.sp.molecule,
-#                    job.sp.ensemble,
-#                    job.sp.temperature,
-#                    job.sp.pressure,
-#                )
-#            )
-            #return True
+        #            print(
+        #                "equils done is >= 3 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+        #                    job,
+        #                    job.sp.molecule,
+        #                    job.sp.ensemble,
+        #                    job.sp.temperature,
+        #                    job.sp.pressure,
+        #                )
+        #            )
+        # return True
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
             # Now run pymbar on box length and box energy
@@ -356,8 +357,10 @@ def system_equilibrated(job):
                 )
                 print("Equil status length1={}".format(equil_status_length))
                 print("Equil status energy1={}".format(equil_status_energy))
-                if len(files)>=3:
-                    print("Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed")
+                if len(files) >= 3:
+                    print(
+                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                    )
                     return True
                 return False
             if (equil_status_length[0] and equil_status_energy[0]) == True:
@@ -416,11 +419,18 @@ def system_equilibrated(job):
                 print("Equil status energy1={}".format(equil_status_energy1))
                 print("Equil status length2={}".format(equil_status_length2))
                 print("Equil status energy2={}".format(equil_status_energy2))
-                print("Equil status total energy={}".format(equil_status_total_energy))
-                if len(files)>=3:
-                    print("Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed")
+                print(
+                    "Equil status total energy={}".format(
+                        equil_status_total_energy
+                    )
+                )
+                if len(files) >= 3:
+                    print(
+                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                    )
                     text_file = open("equil_information.txt", "w")
-                    n = text_file.write("Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                    n = text_file.write(
+                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
                     )
                     text_file.close()
 
@@ -948,15 +958,13 @@ def run_prod(job):
             )
             text_file = open("production_information.txt", "w")
             n = text_file.write(
-                    "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
                     job.sp.molecule,
                     job.sp.ensemble,
                     job.sp.temperature,
                     job.sp.pressure,
                 )
-
-
             )
             text_file.close()
 
