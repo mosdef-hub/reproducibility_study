@@ -1881,7 +1881,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 read_csv_density_box_0_np_array,
                 title="box 0: density (kg/m$^3$) vs. MC cycles * {}"
                 "".format(output_data_every_X_MC_cycles),
-                threshold=0,
                 overwrite=True,
             )
             # needs to be merged before able to use plotting
@@ -1890,7 +1889,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 read_csv_total_energy_box_0_np_array,
                 title="box 0: total potential energy (K) vs. MC cycles * {}"
                 "".format(output_data_every_X_MC_cycles),
-                threshold=0,
                 overwrite=True,
             )
 
@@ -1958,7 +1956,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     read_csv_density_box_1_np_array,
                     title="box 1: density (kg/m$^3$) vs. MC cycles * {}"
                     "".format(output_data_every_X_MC_cycles),
-                    threshold=0,
                     overwrite=True,
                 )
                 plot_data_with_t0_line(
@@ -1966,7 +1963,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     read_csv_total_energy_box_1_np_array,
                     title="box 0: total potential energy (K) vs. MC cycles * {}"
                     "".format(output_data_every_X_MC_cycles),
-                    threshold=0,
                     overwrite=True,
                 )
                 plot_data_with_t0_line(
@@ -1976,7 +1972,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     read_csv_total_energy_box_0_and_1_np_array,
                     title="box 0 and 1: summed total potential energy (K) vs. MC cycles * {}"
                     "".format(output_data_every_X_MC_cycles),
-                    threshold=0,
                     overwrite=True,
                 )
 
