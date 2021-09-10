@@ -44,7 +44,7 @@ class Fry(DefaultSlurmEnvironment):
 @Project.post(lambda j: j.doc.get("nvt_finished"))
 def run_nvt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "nvt", restart=job.isfile("nvt-trajectory.gsd"))
+    run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
@@ -52,7 +52,7 @@ def run_nvt(job):
 @Project.post(lambda j: j.doc.get("npt_finished"))
 def run_npt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "npt", restart=job.isfile("npt-trajectory.gsd"))
+    run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
