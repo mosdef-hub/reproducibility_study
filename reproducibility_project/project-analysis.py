@@ -13,7 +13,7 @@ class Project(flow.FlowProject):
 @Project.operation
 @Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
 def rdf_npt_analysis(job):
-    """Run analysis."""
+    """Run RDF analysis."""
     from reproducibility_project.src.analysis.rdf import gsd_rdf
 
     # RDF
@@ -23,7 +23,7 @@ def rdf_npt_analysis(job):
 @Project.operation
 @Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 def rdf_nvt_analysis(job):
-    """Run analysis."""
+    """Run RDF analysis."""
     from reproducibility_project.src.analysis.rdf import gsd_rdf
 
     # RDF
@@ -36,12 +36,19 @@ def rdf_nvt_analysis(job):
 @Project.post(lambda job: job.doc["npt/sampling_results"]["potential_energy"])
 @Project.post(lambda job: job.doc["npt/sampling_results"]["temperature"])
 @Project.post(lambda job: job.doc["npt/sampling_results"]["kinetic_energy"])
+@Project.post(lambda job: job.doc["npt/sampling_results"]["pressure"])
 @flow.with_job
 def sample_npt_properties(job):
     """Write out sampling results for NPT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = ["volume", "potential_energy", "temperature", "kinetic_energy"]
+    properties = [
+        "volume",
+        "potential_energy",
+        "temperature",
+        "kinetic_energy",
+        "pressure",
+    ]
     for prop in properties:
         sample_job(
             job,
@@ -77,84 +84,6 @@ def sample_nvt_properties(job):
 
 
 @Project.operation
-@Project.pre(lambda job: job.isfile("log-nvt.txt"))
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["volume"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["potential_energy"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["temperature"])
-@Project.post(lambda job: job.doc["nvt/sampling_results"]["kinetic_energy"])
-@flow.with_job
-def sample_nvt_properties(job):
-    """Write out sampling results for NVT production properties."""
-    from reproducibility_project.src.analysis.sampler import sample_job
-
-    properties = ["volume", "potential_energy", "temperature", "kinetic_energy"]
-    for prop in properties:
-        sample_job(
-            job,
-            ensemble="nvt",
-            filename="log-nvt.txt",
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
-
-
-@Project.operation
-@Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.pre(lambda job: job.doc["npt/sampling_results"]["volume"])
-@Project.pre(lambda job: job.doc["npt/sampling_results"]["potential_energy"])
-@Project.pre(lambda job: job.doc["npt/sampling_results"]["temperature"])
-@Project.pre(lambda job: job.doc["npt/sampling_results"]["kinetic_energy"])
-@Project.post(lambda job: job.data.get("npt/subsamples/volume", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/potential_energy", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/temperature", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/kinetic_energy", None))
-@flow.with_job
-def write_npt_subsamples(job):
-    """Write subsampled npt property data points to the job.data store."""
-    import pandas as pd
-
-    from reproducibility_project.src.analysis.sampler import (
-        sample_job,
-        write_subsampled_values,
-    )
-
-    my_df = pd.read_csv(job.fn("log-npt.txt"), delim_whitespace=True, header=0)
-    properties = list()
-    for col in my_df.columns:
-        # skip timestep and tps since it will always be correlated data
-        if col == "timestep" or col == "tps":
-            continue
-        else:
-            properties.append(col)
-    for prop in properties:
-        sample_job(
-            job,
-            filename=job.fn("log-npt.txt"),
-            variable=prop,
-            ensemble="npt",
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
-
-    for prop in properties:
-        write_subsampled_values(
-            job=job,
-            ensemble="npt",
-            overwrite=True,
-            property=prop,
-            property_filename=job.fn("log-npt.txt"),
-        )
-        with job.data:
-            job.doc[f"{prop}-npt-avg"] = np.mean(
-                job.data[f"npt/subsamples/{prop}"]
-            )
-            job.doc[f"{prop}-npt-std"] = np.std(
-                job.data[f"npt/subsamples/{prop}"]
-            )
-
-
-@Project.operation
 @Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
 @Project.post(lambda job: job.data.get("nvt/subsamples/volume", None))
@@ -166,7 +95,7 @@ def write_nvt_properties(job):
     """Write subsampled nvt property data points to the job.data store."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = ["potential_energy", "temperature", "volume"]
+    properties = ["potential_energy", "temperature", "volume", "kinetic_energy"]
     for prop in properties:
         sample_job(
             job,
@@ -175,12 +104,101 @@ def write_nvt_properties(job):
             threshold_fraction=0.75,
             threshold_neff=100,
         )
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
+@Project.post(lambda job: job.data.get("npt/subsamples/volume", None))
+@Project.post(lambda job: job.data.get("npt/subsamples/potential_energy", None))
+@Project.post(lambda job: job.data.get("npt/subsamples/temperature", None))
+@Project.post(lambda job: job.data.get("npt/subsamples/kinetic_energy", None))
+@Project.post(lambda job: job.data.get("npt/subsamples/pressure", None))
+@flow.with_job
+def write_npt_properties(job):
+    """Write subsampled npt property data points to the job.data store."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    properties = [
+        "potential_energy",
+        "temperature",
+        "volume",
+        "kinetic_energy",
+        "pressure",
+    ]
+    for prop in properties:
+        sample_job(
+            job,
+            filename="log-npt.txt",
+            variable=prop,
+            threshold_fraction=0.75,
+            threshold_neff=100,
+        )
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
+@Project.pre(lambda job: job.isfile("log-nvt.txt"))
+@Project.pre(lambda job: job.data.get("nvt/subsamples/volume", None))
+@Project.pre(lambda job: job.data.get("nvt/subsamples/potential_energy", None))
+@Project.pre(lambda job: job.data.get("nvt/subsamples/temperature", None))
+@Project.pre(lambda job: job.data.get("nvt/subsamples/kinetic_energy", None))
+@Project.post(lambda job: job.doc.sp.get("volume-nvt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("volume-nvt-std", None))
+@Project.post(lambda job: job.doc.sp.get("potential_energy-nvt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("potential_energy-nvt-std", None))
+@Project.post(lambda job: job.doc.sp.get("temperature-nvt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("temperature-nvt-std", None))
+@Project.post(lambda job: job.doc.sp.get("kinetic_energy-nvt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("kinetic_energy-nvt-std", None))
+@flow.with_job
+def average_nvt_sampled_data(job):
+    """Write avg and std of the sampled job.data values."""
+    properties = ["potential_energy", "temperature", "volume", "kinetic_energy"]
+    for prop in properties:
         with job.data:
             job.doc[f"{prop}-nvt-avg"] = np.mean(
                 job.data[f"subsamples/{prop}-nvt"]
             )
             job.doc[f"{prop}-nvt-std"] = np.std(
                 job.data[f"subsamples/{prop}-nvt"]
+            )
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
+@Project.pre(lambda job: job.data.get("npt/subsamples/volume", None))
+@Project.pre(lambda job: job.data.get("npt/subsamples/potential_energy", None))
+@Project.pre(lambda job: job.data.get("npt/subsamples/temperature", None))
+@Project.pre(lambda job: job.data.get("npt/subsamples/kinetic_energy", None))
+@Project.pre(lambda job: job.data.get("npt/subsamples/pressure", None))
+@Project.post(lambda job: job.doc.sp.get("volume-npt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("volume-npt-std", None))
+@Project.post(lambda job: job.doc.sp.get("potential_energy-npt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("potential_energy-npt-std", None))
+@Project.post(lambda job: job.doc.sp.get("temperature-npt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("temperature-npt-std", None))
+@Project.post(lambda job: job.doc.sp.get("kinetic_energy-npt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("kinetic_energy-npt-std", None))
+@Project.post(lambda job: job.doc.sp.get("pressure-npt-avg", None))
+@Project.post(lambda job: job.doc.sp.get("pressure-npt-std", None))
+def average_npt_sampled_data(job):
+    """Write avg and std of the sampled job.data values."""
+    properties = [
+        "potential_energy",
+        "temperature",
+        "volume",
+        "kinetic_energy",
+        "pressure",
+    ]
+    for prop in properties:
+        with job.data:
+            job.doc[f"{prop}-npt-avg"] = np.mean(
+                job.data[f"subsamples/{prop}-npt"]
+            )
+            job.doc[f"{prop}-npt-std"] = np.std(
+                job.data[f"subsamples/{prop}-npt"]
             )
 
 
