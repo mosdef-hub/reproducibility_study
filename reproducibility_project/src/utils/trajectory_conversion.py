@@ -18,7 +18,7 @@ def cassandra2gsd(Hpath, xyzpath, gsdpath, species_list):
     nmols_old = np.zeros(nspecies, dtype=int)
 
     with Hpath.open() as Hfile, xyzpath.open() as xyzfile, gsd.hoomd.open(
-        str(gsdpath), "wb"
+        gsdpath, "wb"
     ) as gsdfile:
         while Hfile.readline():
             with io.StringIO() as buff:
