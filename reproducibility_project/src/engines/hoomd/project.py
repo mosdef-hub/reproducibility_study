@@ -210,7 +210,8 @@ def run_hoomd(job, method, restart=False):
         )
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
-    sim.state.thermalize_particle_momenta(filter=_all, kT=kT)
+    if not restart:
+        sim.state.thermalize_particle_momenta(filter=_all, kT=kT)
 
     if method == "npt":
         # only run with high tauS if we are starting from scratch
