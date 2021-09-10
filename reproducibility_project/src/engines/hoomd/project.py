@@ -116,8 +116,7 @@ def run_hoomd(job, method, restart=False):
         print("Starting NPT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
-            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-npt.gsd")
         else:
             write_gsd(
                 structure,
@@ -127,17 +126,16 @@ def run_hoomd(job, method, restart=False):
                 ref_mass=m,
             )
             filled_box.save(job.fn("starting_compound.json"))
+            initgsd = job.fn("init.gsd")
 
     else:
         print("Starting NVT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
-            with gsd.hoomd.open(job.fn("trajectory-nvt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-nvt.gsd")
         else:
             # nvt overwrites snapshot information with snapshot from npt run
-            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-npt.gsd")
 
     if restart:
         writemode = "a"
@@ -153,7 +151,7 @@ def run_hoomd(job, method, restart=False):
         print("HOOMD is running on CPU", flush=True)
 
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
-    sim.create_state_from_snapshot(snapshot)
+    sim.create_state_from_gsd(initgsd)
     gsd_writer = hoomd.write.GSD(
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
