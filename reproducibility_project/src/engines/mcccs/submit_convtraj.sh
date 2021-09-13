@@ -14,4 +14,3 @@ conda activate mosdef-study38
 date
 python conv_traj.py
 date
-

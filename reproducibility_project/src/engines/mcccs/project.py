@@ -186,7 +186,9 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return ((job.doc.get("num_prod_replicates") == 4 ) and isinstance(job.doc.get("prod_replicates_done"), int))
+    return (job.doc.get("num_prod_replicates") == 4) and isinstance(
+        job.doc.get("prod_replicates_done"), int
+    )
 
 
 @Project.label
@@ -898,7 +900,7 @@ def run_equil(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
-        if job.sp.ensemble=="GEMC-NVT":
+        if job.sp.ensemble == "GEMC-NVT":
             shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
             shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
         job.doc.equil_replicates_done += 1
@@ -939,7 +941,7 @@ def run_prod(job):
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
         shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
         shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
-        if job.sp.ensemble=="GEMC-NVT":
+        if job.sp.ensemble == "GEMC-NVT":
             shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
             shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
 
