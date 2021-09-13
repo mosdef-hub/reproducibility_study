@@ -330,18 +330,6 @@ def system_equilibrated(job):
             )
             return False
 
-        #        if len(files) >= 3:  # max of 3 equils
-
-        #            print(
-        #                "equils done is >= 3 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
-        #                    job,
-        #                    job.sp.molecule,
-        #                    job.sp.ensemble,
-        #                    job.sp.temperature,
-        #                    job.sp.pressure,
-        #                )
-        #            )
-        # return True
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
             # Now run pymbar on box length and box energy

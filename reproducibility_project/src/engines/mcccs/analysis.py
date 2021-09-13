@@ -35,11 +35,8 @@ def main():
 
             density_list = []
             for job in group:
-                # print(job)
                 os.chdir(job.ws)
                 prod_run_files = sorted(glob("run*prod*"))
-                # print(prod_run_files)
-                # avg_one_seed_density(prod_run_files)
                 if len(prod_run_files) < 4:
                     print(
                         "warning, only {}  prod cycles complete for {} {} {} {} {}".format(
@@ -52,8 +49,6 @@ def main():
                         )
                     )
                 density_list.append(avg_one_seed_density(prod_run_files))
-                # print(density_list)
-            # md.load(files[0], top='init1.mol2')
             print(len(traj_list))
             filtered_density_list = list(filter(None, density_list))
             output_string = "The average density is {} g/ml with SEM {} from {} samples".format(
