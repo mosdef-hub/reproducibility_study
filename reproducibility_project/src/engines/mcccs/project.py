@@ -36,6 +36,7 @@ def mc3s_exec():
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
 
 
+
 def print_running_string(job, step):
     """Print details about the stage that is starting."""
     print(
@@ -427,6 +428,69 @@ def system_equilibrated(job):
                 text_file.close()
                 return True
 
+        if job.sp.ensemble == "GEMC-NVT":
+            equil_log_box1 = sanitize_gemc_log("equil")[0]
+            equil_log_box2 = sanitize_gemc_log("equil")[1]
+            equil_status_length1 = is_equilibrated(
+                equil_log_box1[:, 0], threshold=0.2, nskip=100
+            )
+            equil_status_energy1 = is_equilibrated(
+                equil_log_box1[:, 3], threshold=0.2, nskip=100
+            )
+            equil_status_length2 = is_equilibrated(
+                equil_log_box2[:, 0], threshold=0.2, nskip=100
+            )
+            equil_status_energy2 = is_equilibrated(
+                equil_log_box2[:, 3], threshold=0.2, nskip=100
+            )
+            equil_status_total_energy = is_equilibrated(
+                equil_log_box1[:, 3] + equil_log_box2[:, 3],
+                threshold=0.2,
+                nskip=100,
+            )
+            if (
+                equil_status_length1[0]
+                and equil_status_energy1[0]
+                and equil_status_length2[0]
+                and equil_status_energy2[0]
+                and equil_status_total_energy
+            ) == False:
+                print(
+                    "System {} is not equilibrated. Completed {} equil loops".format(
+                        job, job.doc.get("equil_replicates_done")
+                    )
+                )
+                return False
+            if (
+                equil_status_length1[0]
+                and equil_status_energy1[0]
+                and equil_status_length2[0]
+                and equil_status_energy2[0]
+                and equil_status_total_energy
+            ) == True:
+                print(
+                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                        job,
+                        max(
+                            equil_status_length1[1],
+                            equil_status_energy1[1],
+                            equil_status_length2[1],
+                            equil_status_energy2[1],
+                            equil_status_toal_energy[1],
+                        ),
+                        job.doc.get("equil_replicates_done"),
+                    )
+                )
+                text_file = open("equil_information.txt", "w")
+                n = text_file.write(
+                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                        job,
+                        equil_status[1],
+                        job.doc.get("equil_replicates_done"),
+                    )
+                )
+                text_file.close()
+                return True
 
 @Project.label
 def prod_finished(job):
