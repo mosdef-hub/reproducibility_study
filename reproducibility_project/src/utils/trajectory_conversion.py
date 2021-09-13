@@ -8,35 +8,35 @@ import numpy as np
 import parmed
 
 
-def cassandra2gsd(Hpath, xyzpath, gsdpath, species_list):
+def cassandra2gsd(h_file, xyz_path, gsd_path, species_list):
     """Convert Cassandra H and xyz files to a gsd trajectory file."""
-    Hpath = Path(Hpath)
-    xyzpath = Path(xyzpath)
-    gsdpath = Path(gsdpath)
+    h_file = Path(h_file)
+    xyz_path = Path(xyz_path)
+    gsd_path = Path(gsd_path)
 
     nspecies = len(species_list)
     nmols_old = np.zeros(nspecies, dtype=int)
 
-    with Hpath.open() as Hfile, xyzpath.open() as xyzfile, gsd.hoomd.open(
-        gsdpath, "wb"
-    ) as gsdfile:
-        while Hfile.readline():
+    with h_file.open() as h_file, xyz_path.open() as xyz_file, gsd.hoomd.open(
+        gsd_path, "wb"
+    ) as gsd_file:
+        while h_file.readline():
             with io.StringIO() as buff:
                 for i in range(3):
-                    buff.write(Hfile.readline())
+                    buff.write(h_file.readline())
                 buff.seek(0)
                 lmat = np.loadtxt(buff) * 0.1
-            Hfile.readline()
-            nspecies_in_box = int(Hfile.readline().strip())
+            h_file.readline()
+            nspecies_in_box = int(h_file.readline().strip())
             nmols = np.zeros(nspecies, dtype=int)
             for i in range(nspecies_in_box):
-                mol_line_split = Hfile.readline().strip().split()
+                mol_line_split = h_file.readline().strip().split()
                 nmols[int(mol_line_split[0]) - 1] = int(mol_line_split[1])
-            natoms = int(xyzfile.readline().strip())
-            step = int(xyzfile.readline().strip()[-1])
+            natoms = int(xyz_file.readline().strip())
+            step = int(xyz_file.readline().strip()[-1])
             with io.StringIO() as buff:
                 for i in range(natoms):
-                    buff.write(xyzfile.readline())
+                    buff.write(xyz_file.readline())
                 buff.seek(0)
                 xyz = np.loadtxt(buff, usecols=(1, 2, 3)) * 0.1
             if any(nmols != nmols_old):
@@ -70,5 +70,5 @@ def cassandra2gsd(Hpath, xyzpath, gsdpath, species_list):
                 box.yz,
             ]
             s.validate()
-            gsdfile.append(s)
+            gsd_file.append(s)
             nmols_old = nmols
