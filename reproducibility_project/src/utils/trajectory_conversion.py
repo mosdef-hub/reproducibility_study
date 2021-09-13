@@ -1,4 +1,4 @@
-"""Convert Cassandra trajectories to gsd."""
+"""Convert trajectory files to gsd format."""
 import io
 from pathlib import Path
 
@@ -8,16 +8,30 @@ import numpy as np
 import parmed
 
 
-def cassandra2gsd(h_file, xyz_path, gsd_path, species_list):
-    """Convert Cassandra H and xyz files to a gsd trajectory file."""
-    h_file = Path(h_file)
+def cassandra2gsd(h_path, xyz_path, gsd_path, species_list):
+    """Convert Cassandra H and xyz files to a gsd trajectory file.
+
+    Inputs:
+        h_path: path-like object (such as string or pathlib.Path) containing
+            the path to the Cassandra .H file containing the box dimensions.
+        xyz_path: path-like object (such as string or pathlib.Path) containing
+            the path to the Cassandra .xyz file containing the trajectory atom coordinates.
+        gsd_path: path-like object (such as string or pathlib.Path) containing
+            the path to the gsd file to be written.
+        species_list: list of parameterized single-molecule parmed Structure objects
+            with one element per species.  This should be the same as the species_list
+            supplied to the MoSDeF Cassandra System and MoveSet objects used to generate
+            the trajectory.
+
+    """
+    h_path = Path(h_path)
     xyz_path = Path(xyz_path)
     gsd_path = Path(gsd_path)
 
     nspecies = len(species_list)
     nmols_old = np.zeros(nspecies, dtype=int)
 
-    with h_file.open() as h_file, xyz_path.open() as xyz_file, gsd.hoomd.open(
+    with h_path.open() as h_file, xyz_path.open() as xyz_file, gsd.hoomd.open(
         gsd_path, "wb"
     ) as gsd_file:
         while h_file.readline():
