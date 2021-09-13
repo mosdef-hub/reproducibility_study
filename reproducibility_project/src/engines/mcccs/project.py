@@ -186,15 +186,15 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return job.doc.get("num_prod_replicates") == 4
+    return ((job.doc.get("num_prod_replicates") == 4 ) and isinstance(job.doc.get("prod_replicates_done"), int))
 
 
 @Project.label
 def all_prod_replicates_done(job):
     """Check if all prod replicate simulations completed."""
     try:
-        a = job.doc.prod_replicates_done
-        b = job.doc.num_prod_replicates
+        a = job.doc.get("prod_replicates_done")
+        b = job.doc.get("num_prod_replicates")
         if a >= b:
             print("simulation complete for {} job".format(job))
         return a >= b
@@ -824,8 +824,8 @@ def run_melt(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
         print_completed_string(job, step)
 
 
@@ -860,8 +860,8 @@ def run_cool(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
     print_completed_string(job, step)
 
 
@@ -896,8 +896,11 @@ def run_equil(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+        if job.sp.ensemble=="GEMC-NVT":
+            shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+            shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
         job.doc.equil_replicates_done += 1
     print_completed_string(job, step)
 
@@ -934,8 +937,12 @@ def run_prod(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+        if job.sp.ensemble=="GEMC-NVT":
+            shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+            shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+
         job.doc.prod_replicates_done += 1
         print_completed_string(job, step)
         if all_prod_replicates_done(job):
