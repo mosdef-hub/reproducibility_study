@@ -3,6 +3,7 @@ import io
 from pathlib import Path
 
 import gsd.hoomd
+import hoomd
 import mbuild as mb
 import numpy as np
 import parmed
