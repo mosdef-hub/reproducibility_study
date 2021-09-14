@@ -249,7 +249,7 @@ def run_hoomd(job, method, restart=False):
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-    sim.run(1e6)
+    sim.run(5e6)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
