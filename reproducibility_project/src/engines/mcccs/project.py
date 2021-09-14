@@ -428,7 +428,6 @@ def system_equilibrated(job):
                 return True
 
 
-
 @Project.label
 def prod_finished(job):
     """Check if prod stage is finished."""
