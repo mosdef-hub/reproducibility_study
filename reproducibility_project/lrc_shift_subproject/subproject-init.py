@@ -7,7 +7,7 @@ import signac
 import unyt as u
 from numpy import ModuleDeprecationWarning
 
-molecules = ["methaneUA"]
+molecules = ["methaneUA", "waterSPCE", "ethanolAA"]
 replicas = range(16)
 simulation_engines = [
     "cassandra",
