@@ -36,7 +36,6 @@ def mc3s_exec():
     return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
 
 
-
 def print_running_string(job, step):
     """Print details about the stage that is starting."""
     print(
