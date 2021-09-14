@@ -3,8 +3,8 @@
 #SBATCH -n 1
 #SBATCH -t 200:00:00
 #SBATCH --mem=8G
-#SBATCH -o convtraj.out
-#SBATCH -e convtraj.err
+#SBATCH -o outconvtraj.out
+#SBATCH -e errconvtraj.err
 #SBATCH --job-name=conv_traj
 
 cd $SLURM_SUBMIT_DIR

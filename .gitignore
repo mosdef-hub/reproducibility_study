@@ -3,6 +3,7 @@
 *.png
 *.pdb
 *.xyz
+*.h5
 
 # Signac
 .signac_sp_cache.json.gz
