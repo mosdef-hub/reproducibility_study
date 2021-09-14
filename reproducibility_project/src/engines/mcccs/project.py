@@ -492,6 +492,7 @@ def system_equilibrated(job):
                 text_file.close()
                 return True
 
+
 @Project.label
 def prod_finished(job):
     """Check if prod stage is finished."""
