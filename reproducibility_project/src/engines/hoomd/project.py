@@ -112,6 +112,12 @@ def run_hoomd(job, method, restart=False):
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=job.sp.r_cut
     )
+    if job.sp.get("cutoff_style") == "shift":
+        for force in forcefield:
+            if isinstance(force, hoomd.md.pair.LJ):
+                force.mode = "shift"
+                print(f"{force} mode set to {force.mode}")
+
     if method == "npt":
         print("Starting NPT", flush=True)
         if restart:
