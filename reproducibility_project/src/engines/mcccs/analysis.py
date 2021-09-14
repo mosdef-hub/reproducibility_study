@@ -97,9 +97,13 @@ def avg_one_seed_density(prod_run_files):
         "grep 'specific density                        ' run.prod* | awk '{print $6'} > temp_density.txt"
     )
     if os.path.exists("temp_density.txt"):
-        density_list_one_seed = np.genfromtxt("temp_density.txt")
-        # now delete the temp file
-        os.remove("temp_density.txt")
+        try:
+            density_list_one_seed = np.genfromtxt("temp_density.txt")
+        except Exception as e:
+            raise e
+        finally:
+            # now delete the temp file
+            os.remove("temp_density.txt")
         return np.mean(density_list_one_seed)
     else:
         return None
