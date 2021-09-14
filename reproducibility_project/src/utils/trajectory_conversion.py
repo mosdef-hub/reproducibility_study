@@ -7,9 +7,17 @@ import hoomd
 import mbuild as mb
 import numpy as np
 import parmed
+import unyt as u
 
 
-def cassandra2gsd(h_path, xyz_path, gsd_path, species_list):
+def cassandra2gsd(
+    h_path,
+    xyz_path,
+    gsd_path,
+    species_list,
+    gsd_length_unit="nm",
+    cassandra_length_unit="angstrom",
+):
     """Convert Cassandra H and xyz files to a gsd trajectory file.
 
     Inputs:
@@ -23,8 +31,24 @@ def cassandra2gsd(h_path, xyz_path, gsd_path, species_list):
             with one element per species.  This should be the same as the species_list
             supplied to the MoSDeF Cassandra System and MoveSet objects used to generate
             the trajectory.
-
+        gsd_length_unit: string or unyt.Unit representing the unit of length to be
+            used in the .gsd file.
+        cassandra_length_unit: string or unyt.Unit representing the unit of length
+            used in the .H and .xyz files.
     """
+    gsd_length_unit = u.Unit(gsd_length_unit)
+    if not (gsd_length_unit.dimensions is u.dimensions.length):
+        raise ValueError(
+            "gsd_length_unit must be a unit of length, not "
+            + str(gsd_length_unit)
+        )
+    cassandra_length_unit = u.Unit(cassandra_length_unit)
+    if not (cassandra_length_unit.dimensions is u.dimensions.length):
+        raise ValueError(
+            "cassandra_length_unit must be a unit of length, not "
+            + str(cassandra_length_unit)
+        )
+    length_factor = (1.0 * cassandra_length_unit).to_value(gsd_length_unit)
     h_path = Path(h_path)
     xyz_path = Path(xyz_path)
     gsd_path = Path(gsd_path)
@@ -40,7 +64,7 @@ def cassandra2gsd(h_path, xyz_path, gsd_path, species_list):
                 for i in range(3):
                     buff.write(h_file.readline())
                 buff.seek(0)
-                lmat = np.loadtxt(buff) * 0.1
+                lmat = np.loadtxt(buff) * length_factor
             h_file.readline()
             nspecies_in_box = int(h_file.readline().strip())
             nmols = np.zeros(nspecies, dtype=int)
@@ -53,7 +77,7 @@ def cassandra2gsd(h_path, xyz_path, gsd_path, species_list):
                 for i in range(natoms):
                     buff.write(xyz_file.readline())
                 buff.seek(0)
-                xyz = np.loadtxt(buff, usecols=(1, 2, 3)) * 0.1
+                xyz = np.loadtxt(buff, usecols=(1, 2, 3)) * length_factor
             if any(nmols != nmols_old):
                 typed_system = parmed.Structure()
                 for i, parspec in enumerate(species_list):
