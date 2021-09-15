@@ -42,7 +42,7 @@ def lammps_copy_files(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_minimized_equilibrated_nvt(job):
     """Check if the lammps minimization step has run for the job."""
-    return job.isfile("minimized.restart_0")
+    return job.isfile("minimized.restart-0")
 
 
 @Project.label
@@ -69,21 +69,28 @@ def lammps_equilibrated_npt(job):
     if latest_eqdata:
         data = np.genfromtxt(latest_eqdata.name, skip_header=1)
         check_equil = [
-                is_equilibrated(data[:, 1], threshold_neff=50)[0],
-                is_equilibrated(data[:, 2], threshold_neff=50)[0],
-                is_equilibrated(data[:, 4], threshold_neff=50)[0],
-                is_equilibrated(data[:, 6], threshold_neff=30)[0],
+                is_equilibrated(data[:, 1])[0],
+                is_equilibrated(data[:, 2])[0],
+                is_equilibrated(data[:, 4])[0],
+                is_equilibrated(data[:, 6])[0],
             ]
     else:
         check_equil = False
-    return job.isfile("equilibrated_npt.restart") and np.all(check_equil)
+    return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_production(job):
+def lammps_production_npt(job):
     """Check if the lammps production step has run for the job."""
-    return job.isfile("production.restart")
+    return job.isfile("production-npt.restart")
+
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+def lammps_production_nvt(job):
+    """Check if the lammps nvt production step has run for the job."""
+    return job.isfile("production-nvt.restart")
 
 #sample job to get decorrelated data
 
@@ -91,38 +98,13 @@ def lammps_production(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_reformatted_data(job):
     """Check if lammps has output density information for the job."""
-    return job.isfile("log.txt")
+    return job.isfile("log-npt.txt") and job.isfile("log-nvt.txt")
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_gsd(job):
     """Check if the mdtraj has converted the production to a gsd trajectory for the job."""
-    return job.isfile("trajectory.gsd")
-
-@Project.label
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_id_uncorr_data(job):
-    """Check statepoint information for the production run to grab uncorrelated data."""
-    try:
-        job.doc.sampling_results.potential_energy
-        return True
-    except AttributeError:
-        return False
-
-#calculate rdf of decorrelated data
-@Project.label
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_created_rdf(job):
-    """Check for an RDF analysis of the trajectory.gsd"""
-    return job.isfile("rdf.png")
-
-#calculate diff coefficient from decorrelated data
-@Project.label
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_calculated_diffusion(job):
-    """Check for an RDF analysis of the trajectory.gsd"""
-    return job.isfile("msd.txt")
-
+    return job.isfile("trajectory-npt.gsd") and job.isfile("trajectory-nvt.gsd")
 
 # _____________________________________________________________________
 """Setting up workflow operation"""
@@ -222,16 +204,16 @@ def lammps_equil_npt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_equilibrated_npt)
-@Project.post(lammps_production)
+@Project.post(lammps_production_npt)
 @flow.with_job
 @flow.cmd
-def lammps_prod(job):
+def lammps_prod_npt(job):
     """Run npt ensemble production."""
     if job.sp.molecule == "ethanolAA":
         tstep = 1.0 
     else:
         tstep = 2.0
-    in_script_name = "in.production"
+    in_script_name = "in.production-npt"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
@@ -240,7 +222,26 @@ def lammps_prod(job):
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_production)
+@Project.pre(lammps_production_npt)
+@Project.post(lammps_production_nvt)
+@flow.with_job
+@flow.cmd
+def lammps_prod_nvt(job):
+    """Run npt ensemble production."""
+    if job.sp.molecule == "ethanolAA":
+        tstep = 1.0 
+    else:
+        tstep = 2.0
+    in_script_name = "in.production-nvt"
+    modify_submit_scripts(in_script_name, job.id)
+    r_cut = job.sp.r_cut * 10
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+
+    return msg
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_production_nvt)
 @Project.post(lammps_reformatted_data)
 @flow.with_job
 def lammps_reformat_data(job):
@@ -250,7 +251,7 @@ def lammps_reformat_data(job):
     """
     import numpy as np
     import pandas as pd
-    df_in = pd.read_csv(job.ws+'/prlog.txt', delimiter=' ', header=0)
+    df_in = pd.read_csv(job.ws+'/prlog-npt.txt', delimiter=' ', header=0)
     attr_list = ['step', 'pe', 'ke', 'press', 'temp', 'density']
     new_titles_list = ['timestep', 'potential_energy', 'kinetic_energy', 'pressure', 'temperature', 'density']
     # convert units
@@ -258,12 +259,27 @@ def lammps_reformat_data(job):
     ATM_TO_MPA = 0.101325 # atm to mpa
     GPCM3_TO_AMUPNM3 = 0.6023 #g/cm^3 to amu/nm^3
     df_in['pe'] = df_in['pe'] * KCAL_TO_KJ
-    df_in['ke'] = df_in['pe'] * KCAL_TO_KJ
+    df_in['ke'] = df_in['ke'] * KCAL_TO_KJ
     df_in['press'] = df_in['press'] * ATM_TO_MPA
     df_in['density'] = df_in['density'] * GPCM3_TO_AMUPNM3
     df_out = df_in[attr_list]
     df_out.columns = new_titles_list
-    df_out.to_csv('log.txt', header=True, index=False, sep=' ')
+    df_out.to_csv('log-npt.txt', header=True, index=False, sep=' ')
+
+    df_in = pd.read_csv(job.ws+'/prlog-nvt.txt', delimiter=' ', header=0)
+    attr_list = ['step', 'pe', 'ke', 'press', 'temp', 'density']
+    new_titles_list = ['timestep', 'potential_energy', 'kinetic_energy', 'pressure', 'temperature', 'density']
+    # convert units
+    KCAL_TO_KJ = 4.184 # kcal to kj
+    ATM_TO_MPA = 0.101325 # atm to mpa
+    GPCM3_TO_AMUPNM3 = 0.6023 #g/cm^3 to amu/nm^3
+    df_in['pe'] = df_in['pe'] * KCAL_TO_KJ
+    df_in['ke'] = df_in['ke'] * KCAL_TO_KJ
+    df_in['press'] = df_in['press'] * ATM_TO_MPA
+    df_in['density'] = df_in['density'] * GPCM3_TO_AMUPNM3
+    df_out = df_in[attr_list]
+    df_out.columns = new_titles_list
+    df_out.to_csv('log-nvt.txt', header=True, index=False, sep=' ')
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -274,52 +290,10 @@ def lammps_create_gsd(job):
     """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mdtraj as md
-    traj = md.load("prod.xtc", top="box.gro")
-    traj.save("trajectory.gsd")
-    return
-
-#sample job to get uncorrelated data
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_created_gsd)
-@Project.post(lammps_id_uncorr_data)
-@flow.with_job
-def lammps_find_uncorr_data(job):
-    """Add uncorrelated data from production to signac statepoint."""
-    from reproducibility_project.src.analysis.sampler import sample_job
-    sample_job(job)
-    return
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_id_uncorr_data)
-@Project.post(lammps_created_rdf)
-@flow.with_job
-def lammps_calc_rdf(job):
-    """Calculate molecule radial distribution function."""
-    from reproducibility_project.src.analysis.rdf import gsd_rdf
-    # TODO: check if sampling_results will hold for gsd conversion
-    gsd_rdf(job = job, 
-            frames = int(np.floor(job.doc.sampling_results.potential_energy[1]/10)), 
-            stride = int(np.ceil((job.doc.sampling_results.potential_energy[0][1] -
-                      job.doc.sampling_results.potential_energy[0][0])/10))
-           ) #divide by 10 because thermo data sampled 10X faster than traj
-    return
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_created_rdf)
-@Project.post(lammps_calculated_diffusion)
-@flow.with_job
-def lammps_calc_diffusion(job):
-    """Calculate molecule self diffusion coefficient"""
-    from reproducibility_project.src.analysis.diffusion import gsd_msd
-    # TODO: check if sampling_results will hold for gsd conversion
-    gsd_msd(job = job, 
-            skip = int(np.ceil((job.doc.sampling_results.potential_energy[0][0])/10)), 
-            stride = int(np.ceil((job.doc.sampling_results.potential_energy[0][1] 
-                                 - job.doc.sampling_results.potential_energy[0][0])/10))
-           ) #divide by 10 because thermo data sampled 10X faster than traj
+    traj = md.load("prod-npt.xtc", top="box.gro")
+    traj.save("trajectory-npt.gsd")
+    traj = md.load("prod-nvt.xtc", top="box.gro")
+    traj.save("trajectory-nvt.gsd")
     return
 
 def modify_submit_scripts(filename, jobid, cores=8):
