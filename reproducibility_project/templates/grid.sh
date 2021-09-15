@@ -14,7 +14,7 @@
 {%- endif %}
 
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=bc118@wayne.edu
+#SBATCH --mail-user=xxxx@wayne.edu
 #SBATCH -o output-%j.dat
 #SBATCH -e error-%j.dat
 

@@ -6,11 +6,12 @@ channels:
 dependencies:
   - constrainmol
   - ele
-  - foyer>=0.9.3
+  - foyer>=0.9.4
   - freud
   - gmso
   - gromacs
   - gsd
+  - h5py
   - jupyter
   - jinja2
   - lammps
@@ -19,11 +20,11 @@ dependencies:
   - mdtraj
   - mosdef_cassandra
   - numpy
-  - openmm=7.5
+  - openmm>=7.6
   - packmol>=18
   - pandas
   - panedr
-  - parmed>=3.4.0
+  - parmed>=3.4.3
   - pymbar
   - pytest
   - python=3.8
