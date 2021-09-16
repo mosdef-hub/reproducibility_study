@@ -3,22 +3,27 @@ import os
 import foyer
 import pytest
 import signac
+from pymbar.testsystems import correlated_timeseries_example
 
 from reproducibility_project.src import xmls
 from reproducibility_project.tests.utils import create_gsd
 
 
 class BaseTest:
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def spceff(self, name="spce.xml"):
         abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
         return foyer.Forcefield(forcefield_files=str(abs_path) + "/" + name)
 
-    @pytest.fixture
+    @pytest.fixture()
     def job_gsdfile(self, tmp_job):
         filename = tmp_job.fn("trajectory.gsd")
         create_gsd(filename)
         return tmp_job
+
+    @pytest.fixture(scope="session")
+    def correlated_data_tau100_n10000(self):
+        return correlated_timeseries_example(N=10000, tau=100, seed=432)
 
     @pytest.fixture
     def tmp_project(self):
@@ -31,11 +36,11 @@ class BaseTest:
         for job in tmp_project:
             return job
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def trappe_ua(self):
         return foyer.forcefields.load_TRAPPE_UA()
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def benzene_ua_ff(self):
         abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
         return foyer.Forcefield(
