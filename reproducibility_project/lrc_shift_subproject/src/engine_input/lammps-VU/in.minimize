@@ -10,7 +10,7 @@ bond_style  harmonic
 angle_style harmonic
 dihedral_style  opls
 read_data box.lammps
-pair_modify shift no
+pair_modify shift ${pass_shift} tail ${pass_lrc}
 
 neighbor        2.5 bin #skin cutoff
 
