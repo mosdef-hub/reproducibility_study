@@ -7,8 +7,6 @@ import flow
 import numpy as np
 from flow import environments
 
-# from reproducibility_project.src.analysis.equilibration import is_equilibrated
-
 
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -157,8 +155,8 @@ def built_lammps(job):
 @flow.cmd
 def lammps_cp_files(job):
     """Copy over run files for lammps and the PBS scheduler."""
-    lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
-    lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
+    lmps_submit_path = "../../src/engine_input/lammps-VU/submit.pbs"
+    lmps_run_path = "../../src/engine_input/lammps-VU/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
@@ -177,8 +175,16 @@ def lammps_em_nvt(job):
         tstep = 2.0
     in_script_name = "in.minimize"
     r_cut = job.sp.r_cut * 10
+    if job.sp.long_range_correction:
+        pass_lrc = 'yes'
+    else:
+        pass_lrc = 'no'
+    if job.sp.cutoff_style == "shift":
+        pass_shift = 'yes'
+    else:
+        pass_shift = 'no'
     modify_submit_scripts(in_script_name, job.id)
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep} lrc={pass_lrc} shift={pass_shift}' submit.pbs"
     return msg
 
 
