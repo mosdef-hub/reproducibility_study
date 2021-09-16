@@ -148,3 +148,6 @@ workspace/
 
 # Slurm
 slurm*
+
+# UGE
+*.o*
