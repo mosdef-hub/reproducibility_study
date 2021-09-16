@@ -276,10 +276,6 @@ def lammps_reformat_data(job):
     df_in = pd.read_csv(job.ws+'/prlog-nvt.txt', delimiter=' ', header=0)
     attr_list = ['step', 'pe', 'ke', 'press', 'temp', 'density']
     new_titles_list = ['timestep', 'potential_energy', 'kinetic_energy', 'pressure', 'temperature', 'density']
-    # convert units
-    KCAL_TO_KJ = 4.184 # kcal to kj
-    ATM_TO_MPA = 0.101325 # atm to mpa
-    GPCM3_TO_AMUPNM3 = 0.6023 #g/cm^3 to amu/nm^3
     df_in['pe'] = df_in['pe'] * KCAL_TO_KJ
     df_in['ke'] = df_in['ke'] * KCAL_TO_KJ
     df_in['press'] = df_in['press'] * ATM_TO_MPA
