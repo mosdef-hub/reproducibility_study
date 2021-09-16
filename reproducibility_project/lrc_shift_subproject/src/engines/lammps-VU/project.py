@@ -49,7 +49,9 @@ def lammps_minimized_equilibrated_nvt(job):
 def lammps_equilibrated_npt(job):
     """Check if the lammps equilibration step has run and passed is_equilibrated for the job."""
     import pathlib
+
     import numpy as np
+
     from reproducibility_project.src.analysis.equilibration import (
         is_equilibrated,
     )
@@ -67,11 +69,11 @@ def lammps_equilibrated_npt(job):
     if latest_eqdata:
         data = np.genfromtxt(latest_eqdata.name, skip_header=1)
         check_equil = [
-                is_equilibrated(data[:, 1])[0],
-                is_equilibrated(data[:, 2])[0],
-                is_equilibrated(data[:, 4])[0],
-                is_equilibrated(data[:, 6])[0],
-            ]
+            is_equilibrated(data[:, 1])[0],
+            is_equilibrated(data[:, 2])[0],
+            is_equilibrated(data[:, 4])[0],
+            is_equilibrated(data[:, 6])[0],
+        ]
     else:
         check_equil = False
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
@@ -90,7 +92,9 @@ def lammps_production_nvt(job):
     """Check if the lammps nvt production step has run for the job."""
     return job.isfile("production-nvt.restart")
 
-#sample job to get decorrelated data
+
+# sample job to get decorrelated data
+
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -98,11 +102,13 @@ def lammps_reformatted_data(job):
     """Check if lammps has output density information for the job."""
     return job.isfile("log-npt.txt") and job.isfile("log-nvt.txt")
 
+
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_gsd(job):
     """Check if the mdtraj has converted the production to a gsd trajectory for the job."""
     return job.isfile("trajectory-npt.gsd") and job.isfile("trajectory-nvt.gsd")
+
 
 # _____________________________________________________________________
 """Setting up workflow operation"""
@@ -170,19 +176,19 @@ def lammps_cp_files(job):
 def lammps_em_nvt(job):
     """Run energy minimization and nvt ensemble."""
     if job.sp.molecule == "ethanolAA":
-        tstep = 1.0 
+        tstep = 1.0
     else:
         tstep = 2.0
     in_script_name = "in.minimize"
     r_cut = job.sp.r_cut * 10
     if job.sp.long_range_correction:
-        pass_lrc = 'yes'
+        pass_lrc = "yes"
     else:
-        pass_lrc = 'no'
+        pass_lrc = "no"
     if job.sp.cutoff_style == "shift":
-        pass_shift = 'yes'
+        pass_shift = "yes"
     else:
-        pass_shift = 'no'
+        pass_shift = "no"
     modify_submit_scripts(in_script_name, job.id)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep} lrc={pass_lrc} shift={pass_shift}' submit.pbs"
     return msg
@@ -197,7 +203,7 @@ def lammps_em_nvt(job):
 def lammps_equil_npt(job):
     """Run npt ensemble equilibration."""
     if job.sp.molecule == "ethanolAA":
-        tstep = 1.0 
+        tstep = 1.0
     else:
         tstep = 2.0
     in_script_name = "in.equilibration"
@@ -216,7 +222,7 @@ def lammps_equil_npt(job):
 def lammps_prod_npt(job):
     """Run npt ensemble production."""
     if job.sp.molecule == "ethanolAA":
-        tstep = 1.0 
+        tstep = 1.0
     else:
         tstep = 2.0
     in_script_name = "in.production-npt"
@@ -235,7 +241,7 @@ def lammps_prod_npt(job):
 def lammps_prod_nvt(job):
     """Run npt ensemble production."""
     if job.sp.molecule == "ethanolAA":
-        tstep = 1.0 
+        tstep = 1.0
     else:
         tstep = 2.0
     in_script_name = "in.production-nvt"
@@ -244,6 +250,7 @@ def lammps_prod_nvt(job):
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -258,31 +265,47 @@ def lammps_reformat_data(job):
     """
     import numpy as np
     import pandas as pd
-    df_in = pd.read_csv(job.ws+'/prlog-npt.txt', delimiter=' ', header=0)
-    attr_list = ['step', 'pe', 'ke', 'press', 'temp', 'density']
-    new_titles_list = ['timestep', 'potential_energy', 'kinetic_energy', 'pressure', 'temperature', 'density']
-    # convert units
-    KCAL_TO_KJ = 4.184 # kcal to kj
-    ATM_TO_MPA = 0.101325 # atm to mpa
-    GPCM3_TO_AMUPNM3 = 0.6023 #g/cm^3 to amu/nm^3
-    df_in['pe'] = df_in['pe'] * KCAL_TO_KJ
-    df_in['ke'] = df_in['ke'] * KCAL_TO_KJ
-    df_in['press'] = df_in['press'] * ATM_TO_MPA
-    df_in['density'] = df_in['density'] * GPCM3_TO_AMUPNM3
-    df_out = df_in[attr_list]
-    df_out.columns = new_titles_list
-    df_out.to_csv('log-npt.txt', header=True, index=False, sep=' ')
 
-    df_in = pd.read_csv(job.ws+'/prlog-nvt.txt', delimiter=' ', header=0)
-    attr_list = ['step', 'pe', 'ke', 'press', 'temp', 'density']
-    new_titles_list = ['timestep', 'potential_energy', 'kinetic_energy', 'pressure', 'temperature', 'density']
-    df_in['pe'] = df_in['pe'] * KCAL_TO_KJ
-    df_in['ke'] = df_in['ke'] * KCAL_TO_KJ
-    df_in['press'] = df_in['press'] * ATM_TO_MPA
-    df_in['density'] = df_in['density'] * GPCM3_TO_AMUPNM3
+    df_in = pd.read_csv(job.ws + "/prlog-npt.txt", delimiter=" ", header=0)
+    attr_list = ["step", "pe", "ke", "press", "temp", "density"]
+    new_titles_list = [
+        "timestep",
+        "potential_energy",
+        "kinetic_energy",
+        "pressure",
+        "temperature",
+        "density",
+    ]
+    # convert units
+    KCAL_TO_KJ = 4.184  # kcal to kj
+    ATM_TO_MPA = 0.101325  # atm to mpa
+    GPCM3_TO_AMUPNM3 = 0.6023  # g/cm^3 to amu/nm^3
+    df_in["pe"] = df_in["pe"] * KCAL_TO_KJ
+    df_in["ke"] = df_in["ke"] * KCAL_TO_KJ
+    df_in["press"] = df_in["press"] * ATM_TO_MPA
+    df_in["density"] = df_in["density"] * GPCM3_TO_AMUPNM3
     df_out = df_in[attr_list]
     df_out.columns = new_titles_list
-    df_out.to_csv('log-nvt.txt', header=True, index=False, sep=' ')
+    df_out.to_csv("log-npt.txt", header=True, index=False, sep=" ")
+
+    df_in = pd.read_csv(job.ws + "/prlog-nvt.txt", delimiter=" ", header=0)
+    attr_list = ["step", "pe", "ke", "press", "temp", "density"]
+    new_titles_list = [
+        "timestep",
+        "potential_energy",
+        "kinetic_energy",
+        "pressure",
+        "temperature",
+        "density",
+    ]
+    df_in["pe"] = df_in["pe"] * KCAL_TO_KJ
+    df_in["ke"] = df_in["ke"] * KCAL_TO_KJ
+    df_in["press"] = df_in["press"] * ATM_TO_MPA
+    df_in["density"] = df_in["density"] * GPCM3_TO_AMUPNM3
+    df_out = df_in[attr_list]
+    df_out.columns = new_titles_list
+    df_out.to_csv("log-nvt.txt", header=True, index=False, sep=" ")
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -293,11 +316,13 @@ def lammps_create_gsd(job):
     """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mdtraj as md
+
     traj = md.load("prod-npt.xtc", top="box.gro")
     traj.save("trajectory-npt.gsd")
     traj = md.load("prod-nvt.xtc", top="box.gro")
     traj.save("trajectory-nvt.gsd")
     return
+
 
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
