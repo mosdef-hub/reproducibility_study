@@ -2,10 +2,9 @@
 # import foyer
 import os
 from pathlib import Path
-
 import flow
 from flow import directives
-
+import pandas as pd
 import reproducibility_project.templates.ndcrc
 
 
@@ -48,7 +47,7 @@ def check_complete(run_name):
 @Project.operation
 @Project.pre(is_cassandra)
 @Project.post(cassandra_complete)
-@directives(omp_num_threads=1)
+@directives(omp_num_threads=4)
 def run_cassandra(job):
     """Run all simulation stages for given statepoint."""
     import foyer
@@ -374,7 +373,62 @@ def run_cassandra(job):
             total_run_length=cycles_done + prod_length,
         )
 
+@Project.operation
+@Project.pre(cassandra_complete)
+@Project.post(lambda job: 'mean_energy_box1' in job.document)
+def statistics(job):
 
+    import ele
+    from unyt import g, mole, angstrom
+    
+    proplist = [
+        "energy_total",
+        "volume",
+        "nmols",
+        "pressure",
+        "density",
+        "mass_density",
+        "energy_angle",
+        "energy_dihedral",
+        "energy_intravdw",
+        "energy_intraq",
+        "energy_inter",
+        "energy_intervdw",
+        "energy_lrc",
+        "energy_interq",
+        "energy_recip",
+        "energy_self",
+        "enthalpy",
+    ]
+    
+    NA = 6.032E23
+    
+    C = ele.element_from_symbol("C")
+    H = ele.element_from_symbol("H")
+    
+    mw = C.mass + H.mass * 4 
+    mw *= g / mole
+    
+    if job.sp.ensemble == "GEMC-NVT":
+    
+        box1 = "prod.out.box1.prp"
+        box2 = "prod.out.box2.prp"
+        
+        data_box1 = pd.read_table(job.fn(box1), skiprows=3, sep="\s+", names=proplist)
+        data_box2 = pd.read_table(job.fn(box2), skiprows=3, sep="\s+", names=proplist)
+        
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_energy_box2 = data_box2["energy_total"].mean()
+    
+    else:
+    
+        box1 = "prod.out.prp"
+    
+        data_box1 = pd.read_table(job.fn(box1), skiprows=3, sep="\s+", names=proplist)
+        
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_density_box1 = data_box1["density"].mean()
+    
 if __name__ == "__main__":
     pr = Project()
     pr.main()
