@@ -16,7 +16,7 @@ import pandas as pd
 import pymbar
 import signac
 import unyt as u
-from flow import FlowProject
+from flow import FlowProject, aggregator
 from flow.environment import DefaultSlurmEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
@@ -633,6 +633,9 @@ def part_4d_job_production_run_completed_properly(job):
     """Check to see if the production run (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, production_control_file_name_str)
 
+@FlowProject.label
+def after_all_jobs_ran(*jobs):
+    return all(gomc_sim_completed_properly(job, production_control_file_name_str) for job in jobs)
 
 # ******************************************************
 # ******************************************************
@@ -2144,11 +2147,173 @@ def run_production_run_gomc_command(job):
     return run_command
 
 
+
+
 # ******************************************************
 # ******************************************************
 # production run - starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
+
+
+#       analysis
+#       analysis
+#       analysis
+#       analysis
+#
+
+
+@aggregator.groupby("molecule", sort_by="ensemble") #use g/cm^3
+@FlowProject.operation
+#@FlowProject.pre(after_all_jobs_ran)
+@FlowProject.post.isfile("log.txt")
+def analysis(*jobs):
+    dataHere = open("log.txt","w")
+    moreDateHere = open("averagesWithinReplicates.txt","w")
+    #evenMoreDataHere = open("replicateAverage.txt","w")
+    dataHere.write(f"{'mean energy':22} {'std energy':22} {'mean pressure':22} {'std pressure':22} {'mean density':22} {'std density':22} {'temperature':22} \n")
+    moreDateHere.write(f"{'mean energy':22} {'mean pressure':22} {'mean density':22} {'temperature':22}  {'job':22} \n")
+    #evenMoreDataHere.write(f"{'potential energy':22} {'kinetic_energy':22} {'pressure':22} {'density':22} {'temperature':22} {'job':22} \n")
+
+
+    allTheJobs = np.double(len(list(pr.groupby())))#{"replica"}))))
+
+    replicaCount = allTheJobs/np.double(len(pr.find_jobs({"replica":1})))
+    uniqueJobs = np.double(len(pr.find_jobs())) / replicaCount
+
+    allTheJobs = int(allTheJobs)
+    replicaCount = int(replicaCount)
+    uniqueJobs = int(uniqueJobs)
+
+    rows = replicaCount
+    print("replicaCount", replicaCount)
+
+    replicateAvedensity_average = pd.DataFrame()
+    replicateAvepotential_energy_average = pd.DataFrame()
+    replicateAvepressure_average = pd.DataFrame()
+    replicateAveT_average = pd.DataFrame()
+    replicateAveMol_average = pd.DataFrame()
+
+    for i in range(replicaCount):
+        replicateAvedensity_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+        replicateAvepotential_energy_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+        replicateAvepressure_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+        replicateAveT_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+        replicateAveMol_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+
+    loopCount = 0
+
+    for job in jobs:
+        with(job):
+            
+            if ((job.sp.ensemble == "GEMC-NVT") or (job.sp.ensemble == "GEMC-NVT")):
+                dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_1.dat")
+            else:
+                dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_0.dat")
+        
+            MCstep = np.loadtxt(dataFileName_1)[:, 0]
+            MCstepCount = len(MCstep)
+
+            potential_energy = np.loadtxt(dataFileName_1)[:, 1]
+            pressure = np.loadtxt(dataFileName_1)[:, 11]
+            density = np.loadtxt(dataFileName_1)[:, 12]
+
+            averageIdeeName = [str(str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.molecule) + str(job.sp.temperature) + str(job.sp.pressure)), "rep{}".format(int(job.sp.replica))]
+            
+
+            if (averageIdeeName[0] in replicateAvedensity_average.index):
+                replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(density)/np.double(len(density)))
+                replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(potential_energy)/np.double(len(potential_energy)))
+                replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(pressure)/np.double(len(pressure)))
+                replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]] = job.sp.temperature
+                
+                moreDateHere.write(f"{replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]]:22} {replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]]*100:22} {replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]]/1000:22} {replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]]:22} {str(str(averageIdeeName[0]) + str(averageIdeeName[1])):22} \n")
+
+            else:
+                replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(density)/np.double(len(density)))
+                replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(potential_energy)/np.double(len(potential_energy)))
+                replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(pressure)/np.double(len(pressure)))
+                replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]] = job.sp.temperature
+                
+                moreDateHere.write(f"{replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]]:22} {replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]]*100:22} {replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]]/1000:22} {replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]]:22} {str(str(averageIdeeName[0]) + str(averageIdeeName[1])):22} \n")
+
+
+            
+            #replicateAvedensity_average.columns
+            #replicateAvedensity_average.apend(density)
+            energyTracker = 0.0
+            pressureTracker = 0.0
+            densityTracker = 0.0
+            
+
+    simulationAvepotential_energy_average = [0.0]*len(replicateAvedensity_average.index)
+    simulationAvepressure_average = [0.0]*len(replicateAvedensity_average.index)
+    simulationAvedensity_average = [0.0]*len(replicateAvedensity_average.index)
+    simulationAveT = [0.0]*len(replicateAvedensity_average.index)    
+
+    simulationStdpotential_energy_average = [0.0]*len(replicateAvedensity_average.index)
+    simulationStdpressure_average = [0.0]*len(replicateAvedensity_average.index)
+    simulationStddensity = [0.0]*len(replicateAvedensity_average.index)
+
+
+    for j in replicateAvedensity_average.columns:
+        k = 0
+        for i in replicateAvedensity_average.index:
+            #print("index: {}, column: {}".format(i, j))
+            simulationAvedensity_average[k] = simulationAvedensity_average[k] + replicateAvedensity_average.loc[i,j]
+            simulationAvepotential_energy_average[k] = simulationAvepotential_energy_average[k] + replicateAvepotential_energy_average.loc[i,j]
+            simulationAvepressure_average[k] = simulationAvepressure_average[k] + replicateAvepressure_average.loc[i,j]
+            simulationAveT[k] = replicateAveT_average.loc[i,j]
+        
+            k += 1
+    k = 0
+
+    for i in replicateAvedensity_average.index:
+            simulationAvedensity_average[k] /= replicaCount
+            simulationAvepotential_energy_average[k] /= replicaCount
+            simulationAvepressure_average[k] /= replicaCount
+            k += 1
+
+
+    for j in replicateAvedensity_average.columns:
+        k = 0
+        for i in replicateAvedensity_average.index:
+            simulationStddensity[k] += (replicateAvedensity_average.loc[i,j] - simulationAvedensity_average[k])**2
+            simulationStdpotential_energy_average[k] += (replicateAvepotential_energy_average.loc[i,j] - simulationAvepotential_energy_average[k])**2
+            simulationStdpressure_average[k] += (replicateAvepressure_average.loc[i,j] - simulationAvepressure_average[k])**2
+            
+            k += 1
+
+    k = 0
+    for i in replicateAvedensity_average.index:
+        simulationStddensity[k]/= replicaCount
+        simulationStddensity[k] = simulationStddensity[k] ** 0.5
+        
+        simulationStdpotential_energy_average[k] /= replicaCount
+        simulationStdpotential_energy_average[k] = simulationStdpotential_energy_average[k] ** 0.5
+        
+        simulationStdpressure_average[k] /= replicaCount
+        simulationStdpressure_average[k] = simulationStdpressure_average[k] ** 0.5
+        
+
+    k = 0
+    
+    for i in replicateAvedensity_average.index:
+        
+        simulationAvepressure_average[k] *= 100
+        simulationStdpressure_average[k] *= 100
+        
+        
+        simulationAvedensity_average[k] = simulationAvedensity_average[k] / 1000
+        simulationStddensity[k] = simulationStddensity[k] / 1000
+        
+        dataHere.write(f"{simulationAvepotential_energy_average[k]:22} {simulationStdpotential_energy_average[k]:22} {simulationAvepressure_average[k]:22} {simulationStdpressure_average[k]:22} {simulationAvedensity_average[k]:22} { simulationStddensity[k]:22} {simulationAveT[k]:22} {'GOMC'}\n")
+        k += 1
+
+    dataHere.close()
+    moreDateHere.close()
+    #evenMoreDataHere.close()
+
 
 # ******************************************************
 # ******************************************************
