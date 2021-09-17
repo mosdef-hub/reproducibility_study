@@ -58,19 +58,16 @@ def sample_job(
     }
 
 
-def write_subsampled_values(
+def get_subsampled_values(
     job: signac.contrib.project.Job,
     property: str,
     ensemble: str,
     property_filename: str = "log-npt.txt",
-    overwrite: bool = False,
 ) -> None:
-    """Write out subsampled values to a Job's 'data' document.
+    """Return subsampled values based on the sampling results of sample_job.
 
     Using the results from `sample_job` in the job document, iterate through
-    the property file and write out the subsampled data to the job.data
-    store. This provides a dictionary-like interface for stored tabular data
-    using HDF5 files.
+    the property file and return a numpy array of the subsampled data.
 
     This only writes out the subsampled values, the statistical averaging
     will take place in the `analysis-project.py` file.
@@ -82,19 +79,16 @@ def write_subsampled_values(
     property : str, required
         The property of interest to write out the subsampled data.
     ensemble : str, required
-        The ensemble that the data was sampled from, this will affect the
-        naming convention in the job.data store.
+        The ensemble that the data was sampled from.
     property_filename : str, optional, default="log-npt.txt"
         The filename to sample the data from.
-    overwrite : bool, optional, default=False
-        Whether or not to re-write the subsampled values to job.data
 
     Examples
     --------
-    >>> write_subsampled_values(job, property="potential_energy",
+    >>> arr = write_subsampled_values(job, property="potential_energy",
                                 ensemble="npt",
                                 property_filename="log-npt.txt")
-    >>> assert job.data["npt/subsamples/potential_energy"]
+    >>> assert isinstance(arr, np.ndarray)
     """
     if not isinstance(job, signac.contrib.project.Job):
         raise TypeError(
@@ -104,14 +98,6 @@ def write_subsampled_values(
     if property is None or property == "":
         raise ValueError(
             f"Expected 'property' to be a name of a property, was provided {property}."
-        )
-
-    if (
-        not overwrite
-        and job.data.get(f"{ensemble}/subsamples/{property}", None) is not None
-    ):
-        raise ValueError(
-            f"Attempting to overwrite already existing data for property: {property}, set `overwrite=True` to do this."
         )
 
     sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{property}"]
@@ -129,8 +115,7 @@ def write_subsampled_values(
         df = pd.read_csv(
             f"{property_filename}", delim_whitespace=True, header=0
         )
-        property_subsamples = df[f"{property}"].to_numpy()[indices]
-        job.data[f"{ensemble}/subsamples/{property}"] = property_subsamples
+        return df[f"{property}"].to_numpy()[indices]
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
