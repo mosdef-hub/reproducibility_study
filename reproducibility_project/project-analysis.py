@@ -1,6 +1,7 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 import flow
 import numpy as np
+import signac
 
 
 class Project(flow.FlowProject):
@@ -8,6 +9,22 @@ class Project(flow.FlowProject):
 
     def __init__(self):
         super().__init__()
+
+
+def _determine_sampling_information(
+    job: signac.contrib.project.Job, ensemble: str, prop: str
+) -> None:
+    """Write out sampling results for production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    sample_job(
+        job,
+        ensemble=ensemble,
+        filename=f"log-{ensemble}.txt",
+        variable=prop,
+        threshold_fraction=0.75,
+        threshold_neff=100,
+    )
 
 
 @Project.operation
@@ -32,122 +49,123 @@ def rdf_nvt_analysis(job):
 
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.post(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
-@Project.post(
-    lambda job: job.doc.get("npt/sampling_results", {}).get("potential_energy")
-)
-@Project.post(
-    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
-)
-@Project.post(
-    lambda job: job.doc.get("npt/sampling_results", {}).get("kinetic_energy")
-)
 @Project.post(
     lambda job: job.doc.get("npt/sampling_results", {}).get("pressure")
 )
 @flow.with_job
-def sample_npt_properties(job):
+def determine_npt_pressure_sampling(job):
     """Write out sampling results for NPT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = [
-        "volume",
-        "potential_energy",
-        "temperature",
-        "kinetic_energy",
-        "pressure",
-    ]
-    for prop in properties:
-        sample_job(
-            job,
-            ensemble="npt",
-            filename="log-npt.txt",
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
+    _determine_sampling_information(job=job, ensemble="npt", prop="pressure")
 
 
 @Project.operation
-@Project.pre(lambda job: job.isfile("log-nvt.txt"))
-@Project.post(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
 @Project.post(
     lambda job: job.doc.get("npt/sampling_results", {}).get("potential_energy")
 )
-@Project.post(
-    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
-)
+@flow.with_job
+def determine_npt_potential_energy_sampling(job):
+    """Write out sampling results for NPT production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    _determine_sampling_information(
+        job=job, ensemble="npt", prop="potential_energy"
+    )
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
 @Project.post(
     lambda job: job.doc.get("npt/sampling_results", {}).get("kinetic_energy")
 )
 @flow.with_job
-def sample_nvt_properties(job):
+def determine_npt_kinetic_energy_sampling(job):
+    """Write out sampling results for NPT production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    _determine_sampling_information(
+        job=job, ensemble="npt", prop="kinetic_energy"
+    )
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
+@Project.post(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
+@flow.with_job
+def determine_npt_volume_sampling(job):
+    """Write out sampling results for NPT production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    _determine_sampling_information(job=job, ensemble="npt", prop="volume")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("log-npt.txt"))
+@Project.post(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
+)
+@flow.with_job
+def determine_npt_temperature_sampling(job):
+    """Write out sampling results for NPT production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    _determine_sampling_information(job=job, ensemble="npt", prop="temperature")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("log-nvt.txt"))
+@Project.post(
+    lambda job: job.doc.get("nvt/sampling_results", {}).get("potential_energy")
+)
+@flow.with_job
+def determine_nvt_potential_energy_sampling(job):
     """Write out sampling results for NVT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = ["volume", "potential_energy", "temperature", "kinetic_energy"]
-    for prop in properties:
-        sample_job(
-            job,
-            ensemble="nvt",
-            filename="log-nvt.txt",
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
+    _determine_sampling_information(
+        job=job, ensemble="nvt", prop="potential_energy"
+    )
 
 
 @Project.operation
-@Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
-@Project.post(lambda job: job.data.get("nvt/subsamples/volume", None))
-@Project.post(lambda job: job.data.get("nvt/subsamples/potential_energy", None))
-@Project.post(lambda job: job.data.get("nvt/subsamples/temperature", None))
-@Project.post(lambda job: job.data.get("nvt/subsamples/kinetic_energy", None))
+@Project.post(
+    lambda job: job.doc.get("nvt/sampling_results", {}).get("kinetic_energy")
+)
 @flow.with_job
-def write_nvt_properties(job):
-    """Write subsampled nvt property data points to the job.data store."""
+def determine_nvt_kinetic_energy_sampling(job):
+    """Write out sampling results for NVT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = ["potential_energy", "temperature", "volume", "kinetic_energy"]
-    for prop in properties:
-        sample_job(
-            job,
-            filename="log-nvt.txt",
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
+    _determine_sampling_information(
+        job=job, ensemble="nvt", prop="kinetic_energy"
+    )
 
 
 @Project.operation
-@Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
-@Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.post(lambda job: job.data.get("npt/subsamples/volume", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/potential_energy", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/temperature", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/kinetic_energy", None))
-@Project.post(lambda job: job.data.get("npt/subsamples/pressure", None))
+@Project.pre(lambda job: job.isfile("log-nvt.txt"))
+@Project.post(lambda job: job.doc.get("nvt/sampling_results", {}).get("volume"))
 @flow.with_job
-def write_npt_properties(job):
-    """Write subsampled npt property data points to the job.data store."""
+def determine_nvt_volume_sampling(job):
+    """Write out sampling results for NVT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    properties = [
-        "potential_energy",
-        "temperature",
-        "volume",
-        "kinetic_energy",
-        "pressure",
-    ]
-    for prop in properties:
-        sample_job(
-            job,
-            filename="log-npt.txt",
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-        )
+    _determine_sampling_information(job=job, ensemble="nvt", prop="volume")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("log-nvt.txt"))
+@Project.post(
+    lambda job: job.doc.get("nvt/sampling_results", {}).get("temperature")
+)
+@flow.with_job
+def determine_nvt_temperature_sampling(job):
+    """Write out sampling results for NVT production properties."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    _determine_sampling_information(job=job, ensemble="nvt", prop="temperature")
 
 
 @Project.operation
