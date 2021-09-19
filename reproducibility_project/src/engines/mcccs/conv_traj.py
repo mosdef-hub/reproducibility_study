@@ -55,7 +55,7 @@ def main():
             for job in group:
                 # print(job)
                 os.chdir(job.ws)
-                traj_files = sorted(glob("box1movie1a*prod*pdb*"))
+                traj_files = sorted(glob("box1movie1a*prod*xyz*"))
                 if len(traj_files) < 4:
                     # print("warning, only {}  prod cycles complete for {} {} {} {} {}".format(len(traj_files),job, molecule, ensemble, temperature, pressure))
                     print(
