@@ -80,8 +80,6 @@ def main():
             text_file.write(output_string)
             text_file.close()
 
-            # comb_traj = md.load_hdf5("comb_traj.h5")
-            # print(comb_traj)
         elif ensemble == "GEMC-NVT" and molecule == "methaneUA":
             for job in group:
                 print(job)
@@ -94,7 +92,7 @@ def avg_one_seed_density(prod_run_files):
     if len(prod_run_files) == 0:
         return None
     os.system(
-        "grep 'specific density                        ' run.prod* | awk '{print $6}' > temp_density.txt"
+        "grep 'specific density                        ' run.prod* | awk '{print $5}' > temp_density.txt"
     )
     if os.path.exists("temp_density.txt"):
         try:
