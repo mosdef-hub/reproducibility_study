@@ -52,10 +52,8 @@ gomc_binary_path = "/Users/brad/Programs/GOMC/GOMC_dev_8_25_21/bin"
 # number of MC cycles
 MC_cycles_melt_equilb_NVT = 100  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_NVT = 100  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_design_ensemble = (
-    100
-)  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 100 # set value for paper = 120 * 10 ** 3
+MC_cycles_equilb_design_ensemble = 100  # set value for paper = 40 * 10 ** 3
+MC_cycles_production = 100  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10
 
