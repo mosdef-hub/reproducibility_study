@@ -49,7 +49,9 @@ class Rahman(DefaultPBSEnvironment):
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
-    from reproducibility_project.lrc_shift_subproject.src.engine_input.gromacs import mdp
+    from reproducibility_project.lrc_shift_subproject.src.engine_input.gromacs import (
+        mdp,
+    )
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -65,10 +67,8 @@ def init_job(job):
     )
 
     # Modify mdp files according to job statepoint parameters
-    cutoff_styles = {"hard": "None",
-                     "shift": "Potential-shift"}
-    lrcs = {None: "no",
-            "energy_pressure": "EnerPres"}
+    cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
+    lrcs = {None: "no", "energy_pressure": "EnerPres"}
 
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
@@ -126,7 +126,7 @@ def init_job(job):
 def gmx_em(job):
     """Run GROMACS grompp for the energy minimization step."""
     em_mdp_path = "em.mdp"
-    grompp = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
+    grompp = f"gmx_mpi grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("em")
     return f"{grompp} && {mdrun}"
 
@@ -140,7 +140,7 @@ def gmx_em(job):
 def gmx_nvt(job):
     """Run GROMACS grompp for the nvt step."""
     nvt_mdp_path = "nvt.mdp"
-    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx_mpi grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt")
     return f"{grompp} && {mdrun}"
 
@@ -154,7 +154,7 @@ def gmx_nvt(job):
 def gmx_npt(job):
     """Run GROMACS grompp for the npt step."""
     npt_mdp_path = "npt.mdp"
-    grompp = f"gmx grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("npt")
     return f"{grompp} && {mdrun}"
 
@@ -169,14 +169,14 @@ def gmx_npt(job):
 def extend_gmx_npt(job):
     """Run GROMACS grompp for the npt step."""
     # Extend the npt run by 1000 ps (1 ns)
-    extend = "gmx convert-tpr -s npt.tpr -extend 1000 -o npt.tpr"
+    extend = "gmx_mpi convert-tpr -s npt.tpr -extend 1000 -o npt.tpr"
     mdrun = _mdrun_str("npt")
     return f"{extend} && {mdrun}"
 
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -nt 16"
+    msg = f"gmx_mpi mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt"
     return msg
 
 
