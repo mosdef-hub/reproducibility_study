@@ -50,12 +50,12 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/Users/brad/Programs/GOMC/GOMC_dev_8_25_21/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 100  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 100  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10 ** 3
+    100
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 100 # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10
 
@@ -776,7 +776,21 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
+
     if job.sp.cutoff_style == "hard":
+        Potential = "VDW"
+        try:
+            if job.sp.long_range_correction is None:
+                LRC = False
+            elif job.sp.long_range_correction == "energy_pressure":
+                LRC = True
+            else:
+                raise ValueError("ERROR: Not a valid cutoff_style")
+        except:
+            LRC = False
+
+    elif job.sp.cutoff_style == "shift":
+        Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
@@ -956,6 +970,7 @@ def build_psf_pdb_ff_gomc_conf(job):
             "HistogramFreq": output_true_list_input,
             "CoordinatesFreq": output_false_list_input,
             "DCDFreq": output_false_list_input,
+            "Potential": Potential,
             "LRC": LRC,
             "RcutLow": 1,
             "CBMC_First": 12,
@@ -1006,7 +1021,21 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
+
     if job.sp.cutoff_style == "hard":
+        Potential = "VDW"
+        try:
+            if job.sp.long_range_correction is None:
+                LRC = False
+            elif job.sp.long_range_correction == "energy_pressure":
+                LRC = True
+            else:
+                raise ValueError("ERROR: Not a valid cutoff_style")
+        except:
+            LRC = False
+
+    elif job.sp.cutoff_style == "shift":
+        Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1186,6 +1215,7 @@ def build_psf_pdb_ff_gomc_conf(job):
             "HistogramFreq": output_true_list_input,
             "CoordinatesFreq": output_false_list_input,
             "DCDFreq": output_false_list_input,
+            "Potential": Potential,
             "LRC": LRC,
             "RcutLow": 1,
             "CBMC_First": 12,
@@ -1261,7 +1291,21 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
+
         if job.sp.cutoff_style == "hard":
+            Potential = "VDW"
+            try:
+                if job.sp.long_range_correction is None:
+                    LRC = False
+                elif job.sp.long_range_correction == "energy_pressure":
+                    LRC = True
+                else:
+                    raise ValueError("ERROR: Not a valid cutoff_style")
+            except:
+                LRC = False
+
+        elif job.sp.cutoff_style == "shift":
+            Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1441,6 +1485,7 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "HistogramFreq": output_false_list_input,
                 "CoordinatesFreq": output_false_list_input,
                 "DCDFreq": output_false_list_input,
+                "Potential": Potential,
                 "LRC": LRC,
                 "RcutLow": 1,
                 "CBMC_First": 12,
@@ -1509,7 +1554,21 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
+
         if job.sp.cutoff_style == "hard":
+            Potential = "VDW"
+            try:
+                if job.sp.long_range_correction is None:
+                    LRC = False
+                elif job.sp.long_range_correction == "energy_pressure":
+                    LRC = True
+                else:
+                    raise ValueError("ERROR: Not a valid cutoff_style")
+            except:
+                LRC = False
+
+        elif job.sp.cutoff_style == "shift":
+            Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1689,6 +1748,7 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "HistogramFreq": output_true_list_input,
                 "CoordinatesFreq": output_false_list_input,
                 "DCDFreq": output_true_list_input,
+                "Potential": Potential,
                 "LRC": LRC,
                 "RcutLow": 1,
                 "CBMC_First": 12,
@@ -1825,7 +1885,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
 
-    if use_pymbar is True:
+    if use_pymbar is True and job.doc.stable_equilb_design_ensemble is False:
         if gomc_sim_completed_properly(
             job,
             job.doc.equilb_design_ensemble_dict[
