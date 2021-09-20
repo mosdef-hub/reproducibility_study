@@ -191,6 +191,7 @@ def lammps_em_nvt(job):
         pass_shift = "no"
     modify_submit_scripts(in_script_name, job.id)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
+
     return msg
 
 
@@ -218,6 +219,7 @@ def lammps_equil_npt(job):
     else:
         pass_shift = "no"
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
+
     return msg
 
 
@@ -245,9 +247,11 @@ def lammps_prod_npt(job):
     else:
         pass_shift = "no"
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
+
     return msg
 
-
+"""
+Remove nvt production operation from this subproject
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_production_npt)
@@ -255,7 +259,7 @@ def lammps_prod_npt(job):
 @flow.with_job
 @flow.cmd
 def lammps_prod_nvt(job):
-    """Run npt ensemble production."""
+    Run npt ensemble production.
     if job.sp.molecule == "ethanolAA":
         tstep = 1.0
     else:
@@ -274,7 +278,7 @@ def lammps_prod_nvt(job):
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
 
     return msg
-
+"""
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
