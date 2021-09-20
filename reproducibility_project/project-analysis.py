@@ -169,6 +169,88 @@ def determine_nvt_temperature_sampling(job):
 
 
 @Project.operation
+@Project.pre(lambda job: not job.isfile("pressure.h5"))
+@Project.pre(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("pressure")
+)
+@Project.post(lambda job: job.isfile("pressure.h5"))
+def write_npt_pressure_subsamples(job):
+    """Write pressure subsamples based on the results of sample_job."""
+    from reproducibility_project.src.analysis.sampler import (
+        get_subsampled_values,
+    )
+
+    with job.stores.npt_pressure as press:
+        press["pressure"] = get_subsampled_values(
+            job,
+            property="pressure",
+            property_filename="log-npt.txt",
+            ensemble="npt",
+        )
+
+
+@Project.operation
+@Project.pre(lambda job: not job.isfile("volume.h5"))
+@Project.pre(lambda job: job.doc.get("npt/sampling_results", {}).get("volume"))
+@Project.post(lambda job: job.isfile("volume.h5"))
+def write_npt_volume_subsamples(job):
+    """Write volume subsamples based on the results of sample_job."""
+    from reproducibility_project.src.analysis.sampler import (
+        get_subsampled_values,
+    )
+
+    with job.stores.npt_volume as press:
+        press["volume"] = get_subsampled_values(
+            job,
+            property="volume",
+            property_filename="log-npt.txt",
+            ensemble="npt",
+        )
+
+
+@Project.operation
+@Project.pre(lambda job: not job.isfile("temperature.h5"))
+@Project.pre(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("temperature")
+)
+@Project.post(lambda job: job.isfile("temperature.h5"))
+def write_npt_temperature_subsamples(job):
+    """Write temperature subsamples based on the results of sample_job."""
+    from reproducibility_project.src.analysis.sampler import (
+        get_subsampled_values,
+    )
+
+    with job.stores.npt_temperature as press:
+        press["temperature"] = get_subsampled_values(
+            job,
+            property="temperature",
+            property_filename="log-npt.txt",
+            ensemble="npt",
+        )
+
+
+@Project.operation
+@Project.pre(lambda job: not job.isfile("kinetic_energy.h5"))
+@Project.pre(
+    lambda job: job.doc.get("npt/sampling_results", {}).get("kinetic_energy")
+)
+@Project.post(lambda job: job.isfile("kinetic_energy.h5"))
+def write_npt_kinetic_energy_subsamples(job):
+    """Write kinetic_energy subsamples based on the results of sample_job."""
+    from reproducibility_project.src.analysis.sampler import (
+        get_subsampled_values,
+    )
+
+    with job.stores.npt_kinetic_energy as press:
+        press["kinetic_energy"] = get_subsampled_values(
+            job,
+            property="kinetic_energy",
+            property_filename="log-npt.txt",
+            ensemble="npt",
+        )
+
+
+@Project.operation
 @Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
 @flow.with_job
