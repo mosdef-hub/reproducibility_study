@@ -205,6 +205,13 @@ for i, sp in enumerate(total_statepoints):
     if sp["ensemble"] == "GEMC-NVT" and sp["engine"] in md_engines:
         indices_to_remove.add(i)
 
+    # does not make sense to use a shifted potential with LRC
+    if (
+        sp["long_range_correction"] == "energy_pressure"
+        and sp["cutoff_style"] == "shift"
+    ):
+        indices_to_remove.add(i)
+
     # hoomd-blue does not have long range correction
     if sp["engine"] == "hoomd":
         if sp["long_range_correction"] is not None:
