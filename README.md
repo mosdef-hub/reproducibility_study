@@ -28,3 +28,9 @@ MCCCS can be installed according to its documentation [here](https://ccs-psi.org
 
 ## Use
 This project uses the [Signac framework](https://signac.io/) to manage its parameter space. Instructions for initializing and submitting/running the simulation and analysis workflows can be found in [the project guide](reproducibility_project/README.md).
+
+## Sharing data
+rclone
+how to install
+how to set up rclone from cli
+how to use
