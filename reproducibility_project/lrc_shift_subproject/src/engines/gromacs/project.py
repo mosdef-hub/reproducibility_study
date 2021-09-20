@@ -49,7 +49,9 @@ class Rahman(DefaultPBSEnvironment):
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
-    from reproducibility_project.lrc_shift_subproject.src.engine_input.gromacs import mdp
+    from reproducibility_project.lrc_shift_subproject.src.engine_input.gromacs import (
+        mdp,
+    )
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -65,10 +67,8 @@ def init_job(job):
     )
 
     # Modify mdp files according to job statepoint parameters
-    cutoff_styles = {"hard": "None",
-                     "shift": "Potential-shift"}
-    lrcs = {None: "no",
-            "energy_pressure": "EnerPres"}
+    cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
+    lrcs = {None: "no", "energy_pressure": "EnerPres"}
 
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
