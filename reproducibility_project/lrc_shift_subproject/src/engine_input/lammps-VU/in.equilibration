@@ -11,7 +11,7 @@ angle_style harmonic
 dihedral_style  opls
 read_restart minimized.restart-*
 
-pair_modify shift no
+pair_modify shift ${tshift} tail ${tlrc}
 
 neighbor        2.5 bin #skin cutoff
 

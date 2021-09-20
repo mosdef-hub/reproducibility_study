@@ -190,7 +190,7 @@ def lammps_em_nvt(job):
     else:
         pass_shift = "no"
     modify_submit_scripts(in_script_name, job.id)
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep} lrc={pass_lrc} shift={pass_shift}' submit.pbs"
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
     return msg
 
 
@@ -209,7 +209,15 @@ def lammps_equil_npt(job):
     in_script_name = "in.equilibration"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    if job.sp.long_range_correction:
+        pass_lrc = "yes"
+    else:
+        pass_lrc = "no"
+    if job.sp.cutoff_style == "shift":
+        pass_shift = "yes"
+    else:
+        pass_shift = "no"
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
     return msg
 
 
@@ -228,7 +236,15 @@ def lammps_prod_npt(job):
     in_script_name = "in.production-npt"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    if job.sp.long_range_correction:
+        pass_lrc = "yes"
+    else:
+        pass_lrc = "no"
+    if job.sp.cutoff_style == "shift":
+        pass_shift = "yes"
+    else:
+        pass_shift = "no"
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
     return msg
 
 
@@ -247,14 +263,22 @@ def lammps_prod_nvt(job):
     in_script_name = "in.production-nvt"
     modify_submit_scripts(in_script_name, job.id)
     r_cut = job.sp.r_cut * 10
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    if job.sp.long_range_correction:
+        pass_lrc = "yes"
+    else:
+        pass_lrc = "no"
+    if job.sp.cutoff_style == "shift":
+        pass_shift = "yes"
+    else:
+        pass_shift = "no"
+    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}, tlrc={pass_lrc}, tshift={pass_shift}' submit.pbs"
 
     return msg
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_production_nvt)
+@Project.pre(lammps_production_npt)
 @Project.post(lammps_reformatted_data)
 @flow.with_job
 def lammps_reformat_data(job):
