@@ -32,7 +32,7 @@ This project uses the [Signac framework](https://signac.io/) to manage its param
 ## Sharing data
 In order to share data between contributors, we use [rclone](https://rclone.org/) to sync to a shared [dropbox](https://www.dropbox.com) folder.
 
-rclone can be installed without sudo permissions (as might be necessary, e.g., on a computing cluster) using conda.
+rclone can be installed without sudo permissions (as might be necessary, e.g., on a computing cluster) using conda:
 ```
 conda install -c conda-forge rclone
 ```
