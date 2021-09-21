@@ -404,7 +404,7 @@ def statistics(job):
         "enthalpy",
     ]
 
-    NA = 6.032e23
+    NA = 6.022e23
 
     C = ele.element_from_symbol("C")
     H = ele.element_from_symbol("H")
@@ -436,9 +436,8 @@ def statistics(job):
         )
 
         job.document.mean_energy_box1 = data_box1["energy_total"].mean()
-        job.document.mean_density_box1 = (
-            data_box1["density"].mean() / NA * mole / (angstrom ** 3)
-        ).to("mole/cm**3") * mw
+        job.document.mean_density_box1 = 
+            data_box1["mass_density"].mean() * 0.001
 
 
 if __name__ == "__main__":
