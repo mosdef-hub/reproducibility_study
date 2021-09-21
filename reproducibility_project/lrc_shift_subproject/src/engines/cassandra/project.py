@@ -49,7 +49,7 @@ def check_complete(run_name):
 @Project.operation
 @Project.pre(is_cassandra)
 @Project.post(cassandra_complete)
-@directives(omp_num_threads=1)
+@directives(omp_num_threads=8)
 def run_cassandra(job):
     """Run all simulation stages for given statepoint."""
     import foyer
@@ -99,7 +99,8 @@ def run_cassandra(job):
     prod_length = 120000
     Tmelt = 1000.0 * u.K
     cbmc_n_ins = 12
-    cbmc_n_dihed = 50
+    # cbmc_n_dihed = 50
+    cbmc_n_dihed = 12
     prop_freq = 10
     coord_freq = 10
     proplist = [
@@ -227,6 +228,7 @@ def run_cassandra(job):
         nvtmoves.prob_rotate = p_rotate
         nvtmoves.prob_translate = p_translate
         nvtmoves.prob_regrow = p_regrow
+        nvtmoves.cbmc_n_dihed = cbmc_n_dihed
 
         if not check_complete("nvt_melt"):
             mc.run(
