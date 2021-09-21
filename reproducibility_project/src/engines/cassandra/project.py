@@ -404,7 +404,7 @@ def statistics(job):
         "enthalpy",
     ]
 
-    NA = 6.032e23
+    NA = 6.022e23
 
     C = ele.element_from_symbol("C")
     H = ele.element_from_symbol("H")
