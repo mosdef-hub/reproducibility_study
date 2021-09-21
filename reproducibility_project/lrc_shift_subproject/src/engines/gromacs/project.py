@@ -154,7 +154,7 @@ def gmx_nvt(job):
 def gmx_npt(job):
     """Run GROMACS grompp for the npt step."""
     npt_mdp_path = "npt.mdp"
-    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt.tpr -c nvt.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("npt")
     return f"{grompp} && {mdrun}"
 
