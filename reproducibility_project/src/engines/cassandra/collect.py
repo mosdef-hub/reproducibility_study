@@ -2,23 +2,13 @@
 
 import os
 
-import ele
 import numpy as np
 import signac
-from unyt import angstrom, g, mole
 
 root = os.path.join(os.getcwd(), "../../../src")
 project = signac.get_project(root)
 
 results = {}
-
-NA = 6.032e23
-
-C = ele.element_from_symbol("C")
-H = ele.element_from_symbol("H")
-
-mw = C.mass + H.mass * 4
-mw *= g / mole
 
 density = np.array([])
 
