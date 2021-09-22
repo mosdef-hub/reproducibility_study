@@ -97,7 +97,7 @@ def init_job(job):
             },
         },
         "npt_prod": {
-            "fname": "npt.mdp",
+            "fname": "npt_prod.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
             "data": {
                 "nsteps": 5000000,
