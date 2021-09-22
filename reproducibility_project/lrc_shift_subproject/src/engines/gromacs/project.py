@@ -44,8 +44,8 @@ class Rahman(DefaultPBSEnvironment):
 @Project.post(lambda j: j.isfile("init.top"))
 @Project.post(lambda j: j.isfile("em.mdp"))
 @Project.post(lambda j: j.isfile("nvt.mdp"))
-@Project.post(lambda j: j.isfile("npt-prod.mdp"))
-@Project.post(lambda j: j.isfile("nvt-prod.mdp"))
+@Project.post(lambda j: j.isfile("npt_prod.mdp"))
+@Project.post(lambda j: j.isfile("nvt_prod.mdp"))
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
