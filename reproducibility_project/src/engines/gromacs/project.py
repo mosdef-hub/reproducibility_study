@@ -168,6 +168,29 @@ def extend_gmx_npt(job):
     return f"{extend} && {mdrun}"
 
 
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("npt.gro"))
+@Project.pre(lambda j: equil_status(j, "npt", "Potential"))
+@Project.pre(lambda j: equil_status(j, "npt", "Pressure"))
+@flow.with_job
+def sample_properties(job):
+    """Sample properties of interest from npt edr."""
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    p = pathlib.Path(job.workspace())
+    data = panedr.edr_to_df(f"{str(p.absolute())}/npt.edr")
+    abbr = {
+        "Pressure": "pressure",
+        "Density": "density",
+        "Total Energy": "total_energy",
+    }
+    for att in abbr:
+        fname = f"{abbr[att]}.txt"
+        data[att].to_csv(fname)
+        sample_job(job, filename=fname, variable=att)
+
+
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
     msg = f"gmx_mpi mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt"

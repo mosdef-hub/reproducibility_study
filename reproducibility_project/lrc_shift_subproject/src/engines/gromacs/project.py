@@ -185,7 +185,7 @@ def sample_properties(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute())}/{op}.edr")
+    data = panedr.edr_to_df(f"{str(p.absolute())}/npt.edr")
     abbr = {
         "Pressure": "pressure",
         "Density": "density",
