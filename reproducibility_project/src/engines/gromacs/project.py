@@ -214,10 +214,10 @@ def _setup_mdp(fname, template, data, overwrite=False):
 def equil_status(job, op, att):
     """Check equilibration status of specific attributes of specific operation."""
     p = pathlib.Path(job.workspace())
-    if not job.isfile(f"{str(p.absolute)}/{op}.edr"):
+    if not job.isfile(f"{op}.edr"):
         return False
     else:
-        data = panedr.edr_to_df(f"{str(p.absolute)}/{op}.edr")
+        data = panedr.edr_to_df(f"{str(p.absolute())}/{op}.edr")
         return is_equilibrated(data[att])[0]
 
 
