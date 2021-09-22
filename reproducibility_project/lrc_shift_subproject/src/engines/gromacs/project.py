@@ -193,7 +193,7 @@ def sample_properties(job):
     }
     for att in abbr:
         fname = f"{abbr[att]}.txt"
-        data[att].to_csv(fname, sep="   ")
+        data[att].to_csv(fname, sep=" ")
         sample_job(job, filename=fname, variable=att)
 
 
