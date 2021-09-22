@@ -82,7 +82,7 @@ def main():
                     traj = md.Trajectory(
                         traj.xyz,
                         traj.top,
-                        unitcell_lengths=fort12[9::10, 0:3]/10,
+                        unitcell_lengths=fort12[9::10, 0:3] / 10,
                         unitcell_angles=np.tile(
                             [90.0, 90.0, 90.0], (traj.n_frames, 1)
                         ),
@@ -111,4 +111,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

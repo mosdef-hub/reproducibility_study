@@ -14,9 +14,9 @@ from scipy import stats
 def main():
     """Read run files from all the independent seeds and get the final density and RDFs."""
     data_path = "analysis_data"
-    #if os.path.exists(data_path):
+    # if os.path.exists(data_path):
     #    shutil.rmtree(data_path)
-    #os.makedirs(data_path)
+    # os.makedirs(data_path)
     # delete the folder manually
 
     os.chdir(data_path)
@@ -109,4 +109,3 @@ def avg_one_seed_density(prod_run_files):
 
 if __name__ == "__main__":
     main()
-
