@@ -9,7 +9,6 @@ import unyt as u
 from flow.environment import DefaultPBSEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
-from reproducibility_project.src.engine_input.gromacs import mdp
 from reproducibility_project.src.utils.forcefields import load_ff
 
 
@@ -45,7 +44,8 @@ class Rahman(DefaultPBSEnvironment):
 @Project.post(lambda j: j.isfile("init.top"))
 @Project.post(lambda j: j.isfile("em.mdp"))
 @Project.post(lambda j: j.isfile("nvt.mdp"))
-@Project.post(lambda j: j.isfile("npt.mdp"))
+@Project.post(lambda j: j.isfile("npt-prod.mdp"))
+@Project.post(lambda j: j.isfile("nvt-prod.mdp"))
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
@@ -88,21 +88,36 @@ def init_job(job):
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
             "data": {
+                "nsteps": 2500000,
+                "dt": 0.002,
                 "temp": job.sp.temperature,
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
                 "lrc": lrcs[job.sp.long_range_correction],
             },
         },
-        "npt": {
+        "npt_prod": {
             "fname": "npt.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
             "data": {
+                "nsteps": 5000000,
+                "dt": 0.001,
                 "temp": job.sp.temperature,
                 "refp": pressure.to_value("bar"),
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
                 "lrc": lrcs[job.sp.long_range_correction],
+            },
+        },
+        "nvt_prod": {
+            "fname": "nvt_prod.mdp",
+            "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
+            "data": {
+                "nsteps": 5000000,
+                "dt": 0.001,
+                "temp": job.sp.temperature,
+                "r_cut": job.sp.r_cut,
+                "cutoff_style": cutoff_styles[job.sp.cutoff_style],
             },
         },
     }
@@ -148,53 +163,133 @@ def gmx_nvt(job):
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("nvt.gro"))
-@Project.post(lambda j: j.isfile("npt.gro"))
+@Project.post(lambda j: j.isfile("npt_prod.gro"))
 @flow.with_job
 @flow.cmd
-def gmx_npt(job):
+def gmx_npt_prod(job):
     """Run GROMACS grompp for the npt step."""
-    npt_mdp_path = "npt.mdp"
-    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt.tpr -c nvt.gro -p init.top --maxwarn 1"
-    mdrun = _mdrun_str("npt")
+    npt_mdp_path = "npt_prod.mdp"
+    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt_prod.tpr -c nvt.gro -p init.top --maxwarn 1"
+    mdrun = _mdrun_str("npt_prod")
     return f"{grompp} && {mdrun}"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("npt.gro"))
-@Project.pre(lambda j: not equil_status(j, "npt", "Potential"))
-@Project.post(lambda j: equil_status(j, "npt", "Potential"))
+@Project.pre(lambda j: j.isfile("npt_prod.gro"))
+@Project.pre(lambda j: not equil_status(j, "npt_prod", "Potential"))
+@Project.pre(lambda j: not equil_status(j, "npt_prod", "Volume"))
+@Project.post(lambda j: equil_status(j, "npt_prod", "Potential"))
+@Project.post(lambda j: equil_status(j, "npt_prod", "Volume"))
 @flow.with_job
 @flow.cmd
-def extend_gmx_npt(job):
+def extend_gmx_npt_prod(job):
     """Run GROMACS grompp for the npt step."""
     # Extend the npt run by 1000 ps (1 ns)
-    extend = "gmx_mpi convert-tpr -s npt.tpr -extend 1000 -o npt.tpr"
-    mdrun = _mdrun_str("npt")
+    extend = "gmx_mpi convert-tpr -s npt_prod.tpr -extend 1000 -o npt_prod.tpr"
+    mdrun = _mdrun_str("npt_prod")
     return f"{extend} && {mdrun}"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("npt.gro"))
-@Project.pre(lambda j: equil_status(j, "npt", "Potential"))
-@Project.pre(lambda j: equil_status(j, "npt", "Pressure"))
+@Project.pre(lambda j: j.isfile("npt_prod.gro"))
+@Project.post(lambda j: j.isfile("nvt_prod.gro"))
 @flow.with_job
-def sample_properties(job):
+@flow.cmd
+def gmx_nvt_prod(job):
+    """Run GROMACS grompp for the nvt step."""
+    nvt_mdp_path = "nvt_prod.mdp"
+    grompp = f"gmx_mpi grompp -f {nvt_mdp_path} -o nvt_prod.tpr -c npt_prod.gro -p init.top --maxwarn 1"
+    mdrun = _mdrun_str("nvt_prod")
+    return f"{grompp} && {mdrun}"
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("nvt_prod.gro"))
+@Project.pre(lambda j: not equil_status(j, "nvt_prod", "Potential"))
+@Project.pre(lambda j: not equil_status(j, "nvt_prod", "Pressure"))
+@Project.post(lambda j: equil_status(j, "nvt_prod", "Potential"))
+@Project.post(lambda j: equil_status(j, "nvt_prod", "Pressure"))
+@flow.with_job
+@flow.cmd
+def extend_gmx_nvt_prod(job):
+    """Run GROMACS grompp for the nvt step."""
+    # Extend the npt run by 1000 ps (1 ns)
+    extend = "gmx_mpi convert-tpr -s nvt_prod.tpr -extend 1000 -o nvt_prod.tpr"
+    mdrun = _mdrun_str("nvt_prod")
+    return f"{extend} && {mdrun}"
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("npt_prod.gro"))
+@Project.pre(lambda j: equil_status(j, "npt_prod", "Potential"))
+@Project.pre(lambda j: equil_status(j, "npt_prod", "Volume"))
+@flow.with_job
+def sample_npt_properties(job):
     """Sample properties of interest from npt edr."""
+    import pandas as pd
+
     from reproducibility_project.src.analysis.sampler import sample_job
 
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute())}/npt.edr")
-    abbr = {
+    data = panedr.edr_to_df(f"{str(p.absolute())}/npt_prod.edr")
+    # Properties of interest
+    poi = {
+        "Time": "time",
+        "Potential": "potential_energy",
+        "Kinetic En.": "kinetic_energy",
         "Pressure": "pressure",
+        "Temperature": "temperature",
         "Density": "density",
-        "Total Energy": "total_energy",
+        "Volume": "volume",
     }
-    for att in abbr:
-        fname = f"{abbr[att]}.txt"
-        data[att].to_csv(fname, sep=" ")
-        sample_job(job, filename=fname, variable=att)
+
+    tmp_df = pd.DataFrame()
+    for idx, row in data.iterrows():
+        tmp_df = tmp_df.append(row[list(poi.keys())])
+    tmp_df.rename(poi, axis=1, inplace=True)
+    tmp_df.insert(
+        column="time_steps",
+        value=[10000 * i for i in range(len(tmp_df))],
+        loc=1,
+    )
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("nvt_prod.gro"))
+@Project.pre(lambda j: equil_status(j, "nvt_prod", "Potential"))
+@Project.pre(lambda j: equil_status(j, "nvt_prod", "Pressure"))
+@flow.with_job
+def sample_nvt_properties(job):
+    """Sample properties of interest from nvt edr."""
+    import pandas as pd
+
+    from reproducibility_project.src.analysis.sampler import sample_job
+
+    p = pathlib.Path(job.workspace())
+    data = panedr.edr_to_df(f"{str(p.absolute())}/nvt_prod.edr")
+    # Properties of interest
+    poi = {
+        "Time": "time",
+        "Potential": "potential_energy",
+        "Kinetic En.": "kinetic_energy",
+        "Pressure": "pressure",
+        "Temperature": "temperature",
+    }
+
+    tmp_df = pd.DataFrame()
+    for idx, row in data.iterrows():
+        tmp_df = tmp_df.append(row[list(poi.keys())])
+    tmp_df.rename(poi, axis=1, inplace=True)
+    tmp_df.insert(
+        column="time_steps",
+        value=[10000 * i for i in range(len(tmp_df))],
+        loc=1,
+    )
 
 
 def _mdrun_str(op):

@@ -1,6 +1,6 @@
 integrator               = md
-nsteps                   = 2500000
-dt                       = 0.002
+nsteps                   = {{  nsteps  }}
+dt                       = {{  dt  }}
 
 comm-mode                = Linear
 
@@ -14,13 +14,13 @@ ns-type                  = grid
 nstlist                  = 10
 pbc                      = xyz
 
-coulombtype         = Cut-off
-coulomb-modifier    = {{  cutoff_style  }}
-rcoulomb            = {{  r_cut  }}
+coulombtype              = Cut-off
+coulomb-modifier         = {{  cutoff_style  }}
+rcoulomb                 = {{  r_cut  }}
 
-vdwtype             = Cut-off
-vdw-modifier        = {{  cutoff_style  }}
-rvdw                = {{  r_cut }}
+vdwtype                  = Cut-off
+vdw-modifier             = {{  cutoff_style  }}
+rvdw                     = {{  r_cut }}
 
 tcoupl                   = nose-hoover
 tc-grps                  = System
