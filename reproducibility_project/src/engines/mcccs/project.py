@@ -919,16 +919,16 @@ def run_prod(job):
                     job.sp.pressure,
                 )
             )
-            text_file = open("production_information.txt", "w")
-            prod_file = text_file.write(
-                "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
-                    job,
-                    job.sp.molecule,
-                    job.sp.ensemble,
-                    job.sp.temperature,
-                    job.sp.pressure,
+            with open("production_information.txt", "w") as text_file:
+                prod_file = text_file.write(
+                    "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                        job,
+                        job.sp.molecule,
+                        job.sp.ensemble,
+                        job.sp.temperature,
+                        job.sp.pressure,
+                    )
                 )
-            )
             text_file.close()
 
 
