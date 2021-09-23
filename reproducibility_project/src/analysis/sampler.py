@@ -1,5 +1,7 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
+from typing import List
+
 import numpy as np
 import pandas as pd
 import signac
@@ -153,3 +155,31 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
             "to be lowered. See project.src.analysis.equilibration.is_equilibrated"
             " for more information."
         )
+
+
+def get_decorr_samples_using_max_t0(
+    job: signac.contrib.Project.Job,
+    ensemble: str,
+    property_filename: str,
+    property: str,
+    threshold_fraction: float = 0.75,
+    threshold_neff: int = 100,
+) -> List[float]:
+    """Return the subsamples of data according to maximum t0."""
+    t0 = job.doc.get(f"{ensemble}/max_t0")
+
+    if t0 is None:
+        raise ValueError(
+            "Max t0 has not be calculated yet, refer to project-analysis.py"
+        )
+
+    with job:
+        df = pd.read_csv(
+            f"{property_filename}", delim_whitespace=True, header=0
+        )
+        a_t = df[f"{property}"].to_numpy()[t0:]
+        uncorr_indices = timeseries.subsampleCorrelatedData(
+            A_t=a_t,
+            conservative=True,
+        )
+    return a_t[uncorr_indices]
