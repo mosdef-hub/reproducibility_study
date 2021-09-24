@@ -1,6 +1,7 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
 from typing import List
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -52,12 +53,15 @@ def sample_job(
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
     )
-    job.doc[doc_name][variable] = {
-        "start": start,
-        "stop": stop,
-        "step": step,
-        "Neff": Neff,
-    }
+    if start is not None:
+        job.doc[doc_name][variable] = {
+            "start": start,
+            "stop": stop,
+            "step": step,
+            "Neff": Neff,
+        }
+    else:
+        warn(f"Property {variable} is not equilibrated.")
 
 
 def get_subsampled_values(
@@ -149,12 +153,13 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
             Neff,
         )
     else:
-        raise ValueError(
+        warn(
             "Property does not have requisite threshold of production data "
             "expected. More production data is needed, or the threshold needs "
             "to be lowered. See project.src.analysis.equilibration.is_equilibrated"
             " for more information."
         )
+        return (None, None, None, None)
 
 
 def get_decorr_samples_using_max_t0(

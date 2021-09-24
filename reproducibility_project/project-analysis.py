@@ -49,6 +49,36 @@ def _get_largest_t0(
     return max(index_list)
 
 
+def _calc_statistics(
+    job: signac.contrib.Project.Job, ensemble: str, prop: str
+) -> None:
+    """Calculate avg and std of subsampled data."""
+    with job:
+        with job.stores[f"{ensemble}_{prop}"] as data:
+            job.doc[f"{ensemble}_{prop}_avg"] = np.mean(data["property"])
+            job.doc[f"{ensemble}_{prop}_std"] = np.std(data["property"])
+
+
+def all_npt_props_averaged(job: signac.contrib.Project.Job):
+    """Check if all npt properties are averaged."""
+    props = [
+        "potential_energy",
+        "kinetic_energy",
+        "temperature",
+        "pressure",
+        "density",
+    ]
+    truthy = list()
+    for prop in props:
+        prop_string = f"npt_{prop}"
+        is_value = [
+            job.doc.get(prop_string + "_avg", False),
+            job.doc.get(prop_string + "_std", False),
+        ]
+        truthy.append(all(is_value))
+    return all(truthy)
+
+
 @Project.label
 def npt_ke_subsampled(job):
     """Check if kinetic energy has been subsampled."""
@@ -283,7 +313,6 @@ def determine_nvt_temperature_sampling(job):
 
 
 @Project.operation
-# @Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
 @Project.pre(
     lambda job: all(
@@ -299,6 +328,7 @@ def determine_nvt_temperature_sampling(job):
         ]
     )
 )
+@Project.post(lambda job: job.doc.get("npt/max_t0"))
 def npt_write_largest_t0(job):
     """Write out maximium t0 for all subsampled values in npt production."""
     npt_props = [
@@ -314,7 +344,6 @@ def npt_write_largest_t0(job):
 
 
 @Project.operation
-# @Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
 @Project.pre(
     lambda job: all(
@@ -339,7 +368,6 @@ def nvt_write_largest_t0(job):
 
 
 @Project.operation
-# @Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
 @Project.pre(lambda job: job.doc.get("npt/max_t0"))
 @Project.pre(
@@ -433,7 +461,7 @@ def nvt_write_subsampled_max_t0(job):
     )
 
     ensemble = "nvt"
-    props = ["potential_energy", "kinetic_energy", "temperature", "volume"]
+    props = ["potential_energy", "kinetic_energy", "temperature", "density"]
     for prop in props:
         with job.stores[f"{ensemble}_{prop}"] as data:
             data["property"] = get_decorr_samples_using_max_t0(
@@ -445,7 +473,96 @@ def nvt_write_subsampled_max_t0(job):
 
 
 @Project.operation
-# @Project.pre(lambda job: job.isfile("trajectory-npt.gsd"))
+@Project.pre(lambda job: job.isfile("npt_potential_energy.h5"))
+@Project.post(lambda job: job.doc.get("npt_potential_energy_avg"))
+@Project.post(lambda job: job.doc.get("npt_potential_energy_std"))
+@flow.with_job
+def npt_calc_potential_energy_statistics(job):
+    """Calc statistics on subsampled npt property."""
+    _calc_statistics(job, ensemble="npt", prop="potential_energy")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("npt_kinetic_energy.h5"))
+@Project.post(lambda job: job.doc.get("npt_kinetic_energy_avg"))
+@Project.post(lambda job: job.doc.get("npt_kinetic_energy_std"))
+@flow.with_job
+def npt_calc_kinetic_energy_statistics(job):
+    """Calc statistics on subsampled npt property."""
+    _calc_statistics(job, ensemble="npt", prop="kinetic_energy")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("npt_temperature.h5"))
+@Project.post(lambda job: job.doc.get("npt_temperature_avg"))
+@Project.post(lambda job: job.doc.get("npt_temperature_std"))
+@flow.with_job
+def npt_calc_temperature_statistics(job):
+    """Calc statistics on subsampled npt property."""
+    _calc_statistics(job, ensemble="npt", prop="temperature")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("npt_pressure.h5"))
+@Project.post(lambda job: job.doc.get("npt_pressure_avg"))
+@Project.post(lambda job: job.doc.get("npt_pressure_std"))
+@flow.with_job
+def npt_calc_pressure_statistics(job):
+    """Calc statistics on subsampled npt property."""
+    _calc_statistics(job, ensemble="npt", prop="pressure")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("npt_density.h5"))
+@Project.post(lambda job: job.doc.get("npt_density_avg"))
+@Project.post(lambda job: job.doc.get("npt_density_std"))
+@flow.with_job
+def npt_calc_density_statistics(job):
+    """Calc statistics on subsampled npt property."""
+    _calc_statistics(job, ensemble="npt", prop="density")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("nvt_potential_energy.h5"))
+@Project.post(lambda job: job.doc.get("nvt_potential_energy_avg"))
+@Project.post(lambda job: job.doc.get("nvt_potential_energy_std"))
+@flow.with_job
+def nvt_calc_potential_energy_statistics(job):
+    """Calc statistics on subsampled nvt property."""
+    _calc_statistics(job, ensemble="nvt", prop="potential_energy")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("nvt_kinetic_energy.h5"))
+@Project.post(lambda job: job.doc.get("nvt_kinetic_energy_avg"))
+@Project.post(lambda job: job.doc.get("nvt_kinetic_energy_std"))
+@flow.with_job
+def nvt_calc_kinetic_energy_statistics(job):
+    """Calc statistics on subsampled nvt property."""
+    _calc_statistics(job, ensemble="nvt", prop="kinetic_energy")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("nvt_temperature.h5"))
+@Project.post(lambda job: job.doc.get("nvt_temperature_avg"))
+@Project.post(lambda job: job.doc.get("nvt_temperature_std"))
+@flow.with_job
+def nvt_calc_temperature_statistics(job):
+    """Calc statistics on subsampled nvt property."""
+    _calc_statistics(job, ensemble="nvt", prop="temperature")
+
+
+@Project.operation
+@Project.pre(lambda job: job.isfile("nvt_density.h5"))
+@Project.post(lambda job: job.doc.get("nvt_density_avg"))
+@Project.post(lambda job: job.doc.get("nvt_density_std"))
+@flow.with_job
+def nvt_calc_density_statistics(job):
+    """Calc statistics on subsampled nvt property."""
+    _calc_statistics(job, ensemble="nvt", prop="density")
+
+
+@Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
 @flow.with_job
 def plot_npt_prod_data_with_t0(job):
