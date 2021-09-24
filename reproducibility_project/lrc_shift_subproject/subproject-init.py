@@ -63,24 +63,24 @@ temperatures = {
     "methaneUA": [140.0] * u.K,
     "pentaneUA": [372.0] * u.K,
     "benzeneUA": [450.0] * u.K,
-    "waterSPCE": [280.0, 300.0, 320.0] * u.K,
-    "ethanolAA": [280.0, 300.0, 320.0] * u.K,
+    "waterSPCE": [300.0] * u.K,
+    "ethanolAA": [300.0] * u.K,
 }
 
 pressures = {
     "methaneUA": [1318.0] * u.kPa,
     "pentaneUA": [1402.0] * u.kPa,
     "benzeneUA": [2260.0] * u.kPa,
-    "waterSPCE": [101.325, 101.325, 101.325] * u.kPa,
-    "ethanolAA": [101.325, 101.325, 101.325] * u.kPa,
+    "waterSPCE": [101.325] * u.kPa,
+    "ethanolAA": [101.325] * u.kPa,
 }
 
 N_liq_molecules = {
     "methaneUA": [900],
     "pentaneUA": [300],
     "benzeneUA": [400],
-    "waterSPCE": [2000, 2000, 2000],
-    "ethanolAA": [700, 700, 700],
+    "waterSPCE": [2000],
+    "ethanolAA": [700],
 }
 
 N_vap_molecules = {
@@ -203,6 +203,13 @@ indices_to_remove = set()
 for i, sp in enumerate(total_statepoints):
     # filter gemc ensembles from md engines
     if sp["ensemble"] == "GEMC-NVT" and sp["engine"] in md_engines:
+        indices_to_remove.add(i)
+
+    # does not make sense to use a shifted potential with LRC
+    if (
+        sp["long_range_correction"] == "energy_pressure"
+        and sp["cutoff_style"] == "shift"
+    ):
         indices_to_remove.add(i)
 
     # hoomd-blue does not have long range correction
