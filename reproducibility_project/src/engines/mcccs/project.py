@@ -373,10 +373,10 @@ def system_equilibrated(job):
                     print(
                         "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
                     )
-                    text_file = open("equil_information.txt", "w")
-                    n = text_file.write(
-                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
-                    )
+                    with open("equil_information.txt", "w") as text_file:
+                        n = text_file.write(
+                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        )
                     text_file.close()
 
                     job.doc.is_equilibrated = True
@@ -390,14 +390,16 @@ def system_equilibrated(job):
                         job.doc.get("equil_replicates_done"),
                     )
                 )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        max(equil_status_density[1], equil_status_energy[1]),
-                        job.doc.get("equil_replicates_done"),
+                with open("equil_information.txt", "w") as text_file:
+                    n = text_file.write(
+                        "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                            job,
+                            max(
+                                equil_status_density[1], equil_status_energy[1]
+                            ),
+                            job.doc.get("equil_replicates_done"),
+                        )
                     )
-                )
                 text_file.close()
                 job.doc.is_equilibrated = True
                 return True
@@ -448,10 +450,10 @@ def system_equilibrated(job):
                     print(
                         "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
                     )
-                    text_file = open("equil_information.txt", "w")
-                    n = text_file.write(
-                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
-                    )
+                    with open("equil_information.txt", "w") as text_file:
+                        n = text_file.write(
+                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        )
                     text_file.close()
                     job.doc.is_equilibrated = True
                     return True
@@ -477,21 +479,22 @@ def system_equilibrated(job):
                         job.doc.get("equil_replicates_done"),
                     )
                 )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        max(
-                            equil_status_density1[1],
-                            equil_status_energy1[1],
-                            equil_status_density2[1],
-                            equil_status_energy2[1],
-                            equil_status_total_energy[1],
-                        ),
-                        job.doc.get("equil_replicates_done"),
+                with open("equil_information.txt", "w") as text_file:
+                    n = text_file.write(
+                        "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                            job,
+                            max(
+                                equil_status_density1[1],
+                                equil_status_energy1[1],
+                                equil_status_density2[1],
+                                equil_status_energy2[1],
+                                equil_status_total_energy[1],
+                            ),
+                            job.doc.get("equil_replicates_done"),
+                        )
                     )
-                )
                 text_file.close()
+                job.doc.is_equilibrated = True
                 return True
 
 
