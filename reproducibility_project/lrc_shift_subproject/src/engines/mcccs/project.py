@@ -519,6 +519,7 @@ def system_equilibrated(job):
                         )
                     )
                 text_file.close()
+                job.doc.is_equilibrated = True
                 return True
 
 
