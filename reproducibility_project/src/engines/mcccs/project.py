@@ -195,8 +195,8 @@ def replicate_set(job):
 def all_prod_replicates_done(job):
     """Check if all prod replicate simulations completed."""
     try:
-        a = job.doc.get("prod_replicates_done")
-        b = job.doc.get("num_prod_replicates")
+        a = job.doc.get("prod_replicates_done, 0")
+        b = job.doc.get("num_prod_replicates, 4")
         if a >= b:
             print("simulation complete for {} job".format(job))
         return a >= b
