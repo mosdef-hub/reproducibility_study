@@ -76,8 +76,8 @@ def main():
             )
             print(output_string)
             os.chdir(base_dir)
-            text_file = open("density_results.txt", "w")
-            text_file.write(output_string)
+            with open("density_results.txt", "w") as text_file:
+                text_file.write(output_string)
             text_file.close()
 
         elif ensemble == "GEMC-NVT" and molecule == "methaneUA":

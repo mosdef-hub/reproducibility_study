@@ -46,6 +46,8 @@ def main():
             ensemble,
             temperature,
             pressure,
+            cutoff_style,
+            long_range_correction,
         )
         if not os.path.isdir(
             "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
@@ -80,7 +82,7 @@ def main():
         )
 
         base_dir = os.getcwd()
-        if ensemble == "NPT" and molecule == "methaneUA":
+        if ensemble == "NPT":
 
             density_list = []
             for job in group:
@@ -89,13 +91,15 @@ def main():
                 prod_run_files = sorted(glob("run*prod*"))
                 if len(prod_run_files) < 4:
                     print(
-                        "warning, only {}  prod cycles complete for {} {} {} {} {}".format(
+                        "warning, only {}  prod cycles complete for {} {} {} {} {} {} {}".format(
                             len(prod_run_files),
                             job,
                             molecule,
                             ensemble,
                             temperature,
                             pressure,
+                            cutoff_style,
+                            long_range_correction,
                         )
                     )
                 density_list.append(avg_one_seed_density(prod_run_files))
@@ -110,8 +114,8 @@ def main():
             )
             print(output_string)
             os.chdir(base_dir)
-            text_file = open("density_results.txt", "w")
-            text_file.write(output_string)
+            with open("density_results.txt", "w") as text_file:
+                text_file.write(output_string)
             text_file.close()
 
         #        elif ensemble == "GEMC-NVT" and molecule == "methaneUA":
@@ -126,7 +130,7 @@ def avg_one_seed_density(prod_run_files):
     if len(prod_run_files) == 0:
         return None
     os.system(
-        "grep 'specific density                        ' run.prod* | awk '{print $5}' > temp_density.txt"
+        "grep 'specific density                        ' run.prod* | awk '{print $6}' > temp_density.txt"
     )
     if os.path.exists("temp_density.txt"):
         try:
