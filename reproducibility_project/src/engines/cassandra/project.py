@@ -382,7 +382,6 @@ def run_cassandra(job):
 def statistics(job):
     """Compute statistical quantities for each job."""
     import ele
-    from unyt import angstrom, g, mole
 
     proplist = [
         "energy_total",
