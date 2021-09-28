@@ -404,14 +404,6 @@ def statistics(job):
         "enthalpy",
     ]
 
-    NA = 6.022e23
-
-    C = ele.element_from_symbol("C")
-    H = ele.element_from_symbol("H")
-
-    mw = C.mass + H.mass * 4
-    mw *= g / mole
-
     if job.sp.ensemble == "GEMC-NVT":
 
         box1 = "prod.out.box1.prp"
