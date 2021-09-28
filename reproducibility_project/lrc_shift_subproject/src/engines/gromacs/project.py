@@ -326,7 +326,7 @@ def _setup_mdp(fname, template, data, overwrite=False):
             )
 
     rendered = template.render(data)
-    with open(fname, "w") as f:
+    with open(fname, "w"):
         f.write(rendered)
 
     return None
