@@ -46,7 +46,9 @@ class Rahman(DefaultPBSEnvironment):
 @flow.with_job
 def init_job(job):
     """Initialize individual job workspace, including mdp and molecular init files."""
-    from reproducibility_project.src.engine_input.gromacs import mdp
+    from reproducibility_project.lrc_shift_subproject.src.engine_input.gromacs import (
+        mdp,
+    )
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -63,6 +65,7 @@ def init_job(job):
 
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
+    lrcs = {None: "no", "energy_pressure": "EnerPres"}
 
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
@@ -75,6 +78,7 @@ def init_job(job):
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
                 "temp": job.sp.temperature,
                 "replica": job.sp.replica,
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "nvt": {
@@ -86,6 +90,7 @@ def init_job(job):
                 "temp": job.sp.temperature,
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "npt_prod": {
@@ -98,6 +103,7 @@ def init_job(job):
                 "refp": pressure.to_value("bar"),
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "nvt_prod": {
@@ -190,8 +196,8 @@ def extend_gmx_npt_prod(job):
 @flow.cmd
 def gmx_nvt_prod(job):
     """Run GROMACS grompp for the nvt step."""
-    npt_mdp_path = "npt_prod.mdp"
-    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o nvt_prod.tpr -c npt_prod.gro -p init.top --maxwarn 1"
+    nvt_mdp_path = "nvt_prod.mdp"
+    grompp = f"gmx_mpi grompp -f {nvt_mdp_path} -o nvt_prod.tpr -c npt_prod.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt_prod")
     return f"{grompp} && {mdrun}"
 
@@ -205,7 +211,7 @@ def gmx_nvt_prod(job):
 @Project.post(lambda j: equil_status(j, "nvt_prod", "Pressure"))
 @flow.with_job
 @flow.cmd
-def extend_gmx_nvt_prod_prod(job):
+def extend_gmx_nvt_prod(job):
     """Run GROMACS grompp for the nvt step."""
     # Extend the npt run by 1000 ps (1 ns)
     extend = "gmx_mpi convert-tpr -s nvt_prod.tpr -extend 1000 -o nvt_prod.tpr"
@@ -226,7 +232,7 @@ def sample_npt_properties(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute())}/npt.edr")
+    data = panedr.edr_to_df(f"{str(p.absolute())}/npt_prod.edr")
     # Properties of interest
     poi = {
         "Time": "time",
