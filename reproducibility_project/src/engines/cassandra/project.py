@@ -382,7 +382,6 @@ def run_cassandra(job):
 def statistics(job):
     """Compute statistical quantities for each job."""
     import ele
-    from unyt import angstrom, g, mole
 
     proplist = [
         "energy_total",
@@ -403,14 +402,6 @@ def statistics(job):
         "energy_self",
         "enthalpy",
     ]
-
-    NA = 6.022e23
-
-    C = ele.element_from_symbol("C")
-    H = ele.element_from_symbol("H")
-
-    mw = C.mass + H.mass * 4
-    mw *= g / mole
 
     if job.sp.ensemble == "GEMC-NVT":
 
@@ -436,8 +427,10 @@ def statistics(job):
         )
 
         job.document.mean_energy_box1 = data_box1["energy_total"].mean()
-        job.document.mean_density_box1 = 
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_density_box1 = (
             data_box1["mass_density"].mean() * 0.001
+        )
 
 
 if __name__ == "__main__":
