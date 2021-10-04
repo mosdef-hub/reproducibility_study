@@ -47,7 +47,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = "/Users/brad/Programs/GOMC/GOMC_dev_8_25_21/bin"
+gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_9_25_21/bin"
 
 # number of MC cycles
 MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
@@ -57,7 +57,7 @@ MC_cycles_equilb_design_ensemble = (
 )  # set value for paper = 40 * 10 ** 3
 MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
 
-output_data_every_X_MC_cycles = 10
+output_data_every_X_MC_cycles = 10 # set value for paper = 10
 
 # max number of equilibrium selected runs
 equilb_design_ensemble_max_number = 3
@@ -507,22 +507,27 @@ def part_3b_output_equilb_NVT_started(job):
 @flow.with_job
 def part_3c_output_equilb_design_ensemble_started(job):
     """Check to see if the equilb_design_ensemble (set temperature) gomc simulation is started."""
-    if job.isfile(
-        "out_{}.dat".format(
-            job.doc.equilb_design_ensemble_dict[
-                str(job.doc.equilb_design_ensemble_number)
-            ]["output_name_control_file_name"]
-        )
-    ):
-        if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-            return gomc_simulation_started(
-                job,
+    try:
+        if job.isfile(
+            "out_{}.dat".format(
                 job.doc.equilb_design_ensemble_dict[
                     str(job.doc.equilb_design_ensemble_number)
-                ]["output_name_control_file_name"],
+                ]["output_name_control_file_name"]
             )
+        ):
+            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+                    return gomc_simulation_started(
+                        job,
+                        job.doc.equilb_design_ensemble_dict[
+                            str(job.doc.equilb_design_ensemble_number)
+                        ]["output_name_control_file_name"],
+                    )
+            else:
+                return False
 
-    else:
+        else:
+            return False
+    except:
         return False
 
 
@@ -532,21 +537,27 @@ def part_3c_output_equilb_design_ensemble_started(job):
 @flow.with_job
 def part_3d_output_production_run_started(job):
     """Check to see if the production run (set temperature) gomc simulation is started."""
-    if job.isfile(
-        "out_{}.dat".format(
-            job.doc.production_run_ensemble_dict[
-                str(job.doc.equilb_design_ensemble_number)
-            ]["output_name_control_file_name"]
-        )
-    ):
-        if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-            return gomc_simulation_started(
-                job,
+    try:
+        if job.isfile(
+            "out_{}.dat".format(
                 job.doc.production_run_ensemble_dict[
                     str(job.doc.equilb_design_ensemble_number)
-                ]["output_name_control_file_name"],
+                ]["output_name_control_file_name"]
             )
-    else:
+        ):
+            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+                return gomc_simulation_started(
+                    job,
+                    job.doc.production_run_ensemble_dict[
+                        str(job.doc.equilb_design_ensemble_number)
+                    ]["output_name_control_file_name"],
+                )
+            else:
+                return False
+
+        else:
+            return False
+    except:
         return False
 
 
@@ -776,7 +787,21 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
+
     if job.sp.cutoff_style == "hard":
+        Potential = "VDW"
+        try:
+            if job.sp.long_range_correction is None:
+                LRC = False
+            elif job.sp.long_range_correction == "energy_pressure":
+                LRC = True
+            else:
+                raise ValueError("ERROR: Not a valid cutoff_style")
+        except:
+            LRC = False
+
+    elif job.sp.cutoff_style == "shift":
+        Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
@@ -956,6 +981,7 @@ def build_psf_pdb_ff_gomc_conf(job):
             "HistogramFreq": output_true_list_input,
             "CoordinatesFreq": output_false_list_input,
             "DCDFreq": output_false_list_input,
+            "Potential": Potential,
             "LRC": LRC,
             "RcutLow": 1,
             "CBMC_First": 12,
@@ -1006,7 +1032,21 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
+
     if job.sp.cutoff_style == "hard":
+        Potential = "VDW"
+        try:
+            if job.sp.long_range_correction is None:
+                LRC = False
+            elif job.sp.long_range_correction == "energy_pressure":
+                LRC = True
+            else:
+                raise ValueError("ERROR: Not a valid cutoff_style")
+        except:
+            LRC = False
+
+    elif job.sp.cutoff_style == "shift":
+        Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1186,6 +1226,7 @@ def build_psf_pdb_ff_gomc_conf(job):
             "HistogramFreq": output_true_list_input,
             "CoordinatesFreq": output_false_list_input,
             "DCDFreq": output_false_list_input,
+            "Potential": Potential,
             "LRC": LRC,
             "RcutLow": 1,
             "CBMC_First": 12,
@@ -1261,7 +1302,21 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
+
         if job.sp.cutoff_style == "hard":
+            Potential = "VDW"
+            try:
+                if job.sp.long_range_correction is None:
+                    LRC = False
+                elif job.sp.long_range_correction == "energy_pressure":
+                    LRC = True
+                else:
+                    raise ValueError("ERROR: Not a valid cutoff_style")
+            except:
+                LRC = False
+
+        elif job.sp.cutoff_style == "shift":
+            Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1441,6 +1496,7 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "HistogramFreq": output_false_list_input,
                 "CoordinatesFreq": output_false_list_input,
                 "DCDFreq": output_false_list_input,
+                "Potential": Potential,
                 "LRC": LRC,
                 "RcutLow": 1,
                 "CBMC_First": 12,
@@ -1509,7 +1565,21 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
+
         if job.sp.cutoff_style == "hard":
+            Potential = "VDW"
+            try:
+                if job.sp.long_range_correction is None:
+                    LRC = False
+                elif job.sp.long_range_correction == "energy_pressure":
+                    LRC = True
+                else:
+                    raise ValueError("ERROR: Not a valid cutoff_style")
+            except:
+                LRC = False
+
+        elif job.sp.cutoff_style == "shift":
+            Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
@@ -1689,6 +1759,7 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "HistogramFreq": output_true_list_input,
                 "CoordinatesFreq": output_false_list_input,
                 "DCDFreq": output_true_list_input,
+                "Potential": Potential,
                 "LRC": LRC,
                 "RcutLow": 1,
                 "CBMC_First": 12,
@@ -1825,7 +1896,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
 
-    if use_pymbar is True:
+    if use_pymbar is True and job.doc.stable_equilb_design_ensemble is False:
         if gomc_sim_completed_properly(
             job,
             job.doc.equilb_design_ensemble_dict[
