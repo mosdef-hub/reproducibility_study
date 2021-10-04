@@ -1,9 +1,10 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 # import foyer
 import os
-import pathlib
+from pathlib import Path
 
 import flow
+import pandas as pd
 from flow import directives
 
 import reproducibility_project.templates.ndcrc
@@ -14,7 +15,7 @@ class Project(flow.FlowProject):
 
     def __init__(self):
         super().__init__()
-        current_path = pathlib.Path(os.getcwd()).absolute()
+        current_path = Path(os.getcwd()).absolute()
         self.data_dir = current_path.parents[1] / "data"
         self.ff_fn = self.data_dir / "forcefield.xml"
 
@@ -109,26 +110,25 @@ def run_cassandra(job):
     cutoff = job.sp.r_cut * u.nm
 
     seedslist = [
-        [7860904, 98601355],
-        [955793508, 417823039],
-        [254420642, 2130720464],
-        [58120272, 1465850411],
-        [757616664, 1940492980],
-        [966844679, 1326087693],
-        [1992175335, 1840317929],
-        [650725500, 646331893],
-        [1204247127, 1521385831],
-        [2000946981, 1969870819],
-        [1488434295, 648017520],
-        [1128424221, 1140005446],
-        [58870203, 2133009902],
-        [2024564019, 2014788324],
-        [133927152, 2052536489],
-        [23375750, 1951798462],
+        [7860904, 8601355],
+        [5793508, 4173039],
+        [4420642, 8720464],
+        [8120272, 5850411],
+        [7616664, 1492980],
+        [6844679, 6087693],
+        [2175335, 1317929],
+        [9725500, 6331893],
+        [4247127, 1385831],
+        [2946981, 9870819],
+        [8434295, 8017520],
+        [8424221, 4595446],
+        [8870203, 3009902],
+        [4564019, 4788324],
+        [3927152, 2536489],
+        [3375750, 1798462],
     ]
 
     seeds = seedslist[job.sp.replica]
-
     cbmc_n_ins = 12
     cbmc_n_dihed = 50
 
@@ -362,7 +362,7 @@ def run_cassandra(job):
                     )
                     t = max(t, tvap)
 
-                for rmtgt in list(pathlib.Path(".").glob("equil_*.[xH]*")):
+                for rmtgt in list(Path(".").glob("equil_*.[xH]*")):
                     os.remove(rmtgt)
 
             else:
@@ -373,6 +373,63 @@ def run_cassandra(job):
             run_name="prod",
             run_type="production",
             total_run_length=cycles_done + prod_length,
+        )
+
+
+@Project.operation
+@Project.pre(cassandra_complete)
+@Project.post(lambda job: "mean_energy_box1" in job.document)
+def statistics(job):
+    """Compute statistical quantities for each job."""
+    import ele
+
+    proplist = [
+        "energy_total",
+        "volume",
+        "nmols",
+        "pressure",
+        "density",
+        "mass_density",
+        "energy_angle",
+        "energy_dihedral",
+        "energy_intravdw",
+        "energy_intraq",
+        "energy_inter",
+        "energy_intervdw",
+        "energy_lrc",
+        "energy_interq",
+        "energy_recip",
+        "energy_self",
+        "enthalpy",
+    ]
+
+    if job.sp.ensemble == "GEMC-NVT":
+
+        box1 = "prod.out.box1.prp"
+        box2 = "prod.out.box2.prp"
+
+        data_box1 = pd.read_table(
+            job.fn(box1), skiprows=3, sep="\s+", names=proplist
+        )
+        data_box2 = pd.read_table(
+            job.fn(box2), skiprows=3, sep="\s+", names=proplist
+        )
+
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_energy_box2 = data_box2["energy_total"].mean()
+
+    else:
+
+        box1 = "prod.out.prp"
+
+        data_box1 = pd.read_table(
+            job.fn(box1), skiprows=3, sep="\s+", names=proplist
+        )
+
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_density_box1 = (
+            data_box1["mass_density"].mean() * 0.001
         )
 
 
