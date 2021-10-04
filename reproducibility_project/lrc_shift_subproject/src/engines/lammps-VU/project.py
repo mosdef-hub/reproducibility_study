@@ -259,7 +259,7 @@ def lammps_reformat_data(job):
     """Take data from thermo.txt and reformat to log.txt with correct units.
 
     Lammps units real: energy=kcal/mol, temp=K, press=atm, density=g/cm^3, step=2fs
-    Project units: energy=kJ/mol, temp=K, press=MPa, density=amu/nm^3, step=1ps
+    Project units: energy=kJ/mol, temp=K, press=MPa, density=g/cm^3, step=1ps
     """
     import numpy as np
     import pandas as pd
