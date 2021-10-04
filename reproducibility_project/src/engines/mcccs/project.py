@@ -27,13 +27,23 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     hostname_pattern = r".*\.metropolis2\.chem\.umn\.edu"
     template = "metropolis2.sh"
 
+    @classmethod
+    def add_args(cls, parser):
+        """Add command line arguments to the submit call."""
+        parser.add_argument(
+            "--walltime",
+            type=float,
+            default=96,
+            help="Walltime for this submission",
+        )
+
 
 ex = Project.make_group(name="ex")
 
 
 def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
-    return "/home/rs/group-code/MCCCS-MN-7-20/exe-8-20/src/topmon"
+    return "/home/rs/group-code/MCCCS-MN-9-21/exe-ifort-9-21/src/topmon"
 
 
 def print_running_string(job, step):
@@ -176,15 +186,19 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return job.doc.get("num_prod_replicates") == 4
+    return (job.doc.get("num_prod_replicates") == 4) and isinstance(
+        job.doc.get("prod_replicates_done"), int
+    )
 
 
 @Project.label
 def all_prod_replicates_done(job):
     """Check if all prod replicate simulations completed."""
     try:
-        a = job.doc.prod_replicates_done
-        b = job.doc.num_prod_replicates
+        a = job.doc.get("prod_replicates_done, 0")
+        b = job.doc.get("num_prod_replicates, 4")
+        if a >= b:
+            print("simulation complete for {} job".format(job))
         return a >= b
     except (AttributeError, KeyError) as e:
         return False
@@ -246,10 +260,14 @@ def sanitize_npt_log(step):
     arrays[:, 2] = arrays[:, 2] / 10  # Ang to nm
     arrays[:, 3] = arrays[:, 3] * 0.008314410016255453  # K to kJ/mol
     arrays[:, 4] = arrays[:, 4]  # Pressure kPa to kPa
+    density_array = arrays[:, 5] / (arrays[:, 0]) ** 3  # density(molecules/nm3)
+    density_array = density_array.reshape(density_array.shape[0], 1)
+    arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
+
     np.savetxt(
         "{}_log.txt".format(step),
         arrays,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm3)",
     )
     return arrays
 
@@ -275,21 +293,33 @@ def sanitize_gemc_log(step):
     arrays_box1[:, 2] = arrays_box1[:, 2] / 10  # Ang to nm
     arrays_box1[:, 3] = arrays_box1[:, 3] * 0.008314410016255453  # K to kJ/mol
     arrays_box1[:, 4] = arrays_box1[:, 4]  # Pressure kPa to kPa
+    density_array = arrays_box1[:, 5] / (arrays_box1[:, 0]) ** 3
+    density_array = density_array.reshape(density_array.shape[0], 1)
+    arrays_box1 = np.append(
+        arrays_box1, density_array, axis=1
+    )  # density molcules/nm3
+    # arrays_box1[:, 6] = arrays_box1[:, 5]/ (arrays_box1[:, 0]) **3 # density molcules/nm3
     arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
     arrays_box2[:, 1] = arrays_box2[:, 1] / 10  # Ang to nm
     arrays_box2[:, 2] = arrays_box2[:, 2] / 10  # Ang to nm
     arrays_box2[:, 3] = arrays_box2[:, 3] * 0.008314410016255453  # K to kJ/mol
     arrays_box2[:, 4] = arrays_box2[:, 4]  # Pressure kPa to kPa
+    # arrays_box2[:, 6] = arrays_box2[:, 5]/ (arrays_box2[:, 0]) **3 # density molcules/nm3
+    density_array = arrays_box2[:, 5] / (arrays_box2[:, 0]) ** 3
+    density_array = density_array.reshape(density_array.shape[0], 1)
+    arrays_box2 = np.append(
+        arrays_box2, density_array, axis=1
+    )  # density molcules/nm3
 
     np.savetxt(
         "{}_log_box1.txt".format(step),
         arrays_box1,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm^3)",
     )
     np.savetxt(
         "{}_log_box2.txt".format(step),
         arrays_box2,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules",
+        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm^3)",
     )
     return arrays_box1, arrays_box2
 
@@ -299,6 +329,12 @@ def system_equilibrated(job):
     from reproducibility_project.src.analysis.equilibration import (
         is_equilibrated,
     )
+
+    # If a system is already equilibrated, we don't want to check equilibration again, so read information from the file and return True if equilibrated.
+    if job.doc.get("is_equilibrated") == True:
+        with open(job.ws + "/equil_information.txt", "r") as f:
+            print(f.read())
+        return True
 
     with job:
         files = glob("fort*12*{}*".format("equil"))
@@ -316,179 +352,149 @@ def system_equilibrated(job):
             )
             return False
 
-        if len(files) >= 3:  # max of 3 equils
-
-            print(
-                "equils done is >= 4 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
-                    job,
-                    job.sp.molecule,
-                    job.sp.ensemble,
-                    job.sp.temperature,
-                    job.sp.pressure,
-                )
-            )
-            return True
         if job.sp.ensemble == "NPT":
             equil_log = sanitize_npt_log("equil")
             # Now run pymbar on box length and box energy
-            equil_status_length = is_equilibrated(
-                equil_log[:, 0], threshold=0.2, nskip=100
+            equil_status_density = is_equilibrated(
+                equil_log[:, 6], threshold_fraction=0.2, nskip=100
             )
             equil_status_energy = is_equilibrated(
-                equil_log[:, 3], threshold=0.2, nskip=100
+                equil_log[:, 3], threshold_fraction=0.2, nskip=100
             )
-            if (equil_status_length[0] and equil_status_energy[0]) == False:
+            if (equil_status_density[0] and equil_status_energy[0]) == False:
                 print(
                     "System {} is not equilibrated. Completed {} equil loops".format(
                         job, job.doc.get("equil_replicates_done")
                     )
                 )
+                print("Equil status density1={}".format(equil_status_density))
+                print("Equil status energy1={}".format(equil_status_energy))
+                if len(files) >= 3:
+                    print(
+                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                    )
+                    with open("equil_information.txt", "w") as text_file:
+                        n = text_file.write(
+                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        )
+                    text_file.close()
+
+                    job.doc.is_equilibrated = True
+                    return True
                 return False
-            if (equil_status_length[0] and equil_status_energy[0]) == True:
+            if (equil_status_density[0] and equil_status_energy[0]) == True:
                 print(
                     "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
                         job,
-                        max(equil_status_length[1], equil_status_energy[1]),
+                        max(equil_status_density[1], equil_status_energy[1]),
                         job.doc.get("equil_replicates_done"),
                     )
                 )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        equil_status[1],
-                        job.doc.get("equil_replicates_done"),
+                with open("equil_information.txt", "w") as text_file:
+                    n = text_file.write(
+                        "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                            job,
+                            max(
+                                equil_status_density[1], equil_status_energy[1]
+                            ),
+                            job.doc.get("equil_replicates_done"),
+                        )
                     )
-                )
                 text_file.close()
+                job.doc.is_equilibrated = True
                 return True
 
         if job.sp.ensemble == "GEMC-NVT":
+            print("Checking eqlb for GEMC-NVT")
             equil_log_box1 = sanitize_gemc_log("equil")[0]
             equil_log_box2 = sanitize_gemc_log("equil")[1]
-            equil_status_length1 = is_equilibrated(
-                equil_log_box1[:, 0], threshold=0.2, nskip=100
+            equil_status_density1 = is_equilibrated(
+                equil_log_box1[:, 6], threshold_fraction=0.2, nskip=100
             )
             equil_status_energy1 = is_equilibrated(
-                equil_log_box1[:, 3], threshold=0.2, nskip=100
+                equil_log_box1[:, 3], threshold_fraction=0.2, nskip=100
             )
-            equil_status_length2 = is_equilibrated(
-                equil_log_box2[:, 0], threshold=0.2, nskip=100
+            equil_status_density2 = is_equilibrated(
+                equil_log_box2[:, 6], threshold_fraction=0.2, nskip=100
             )
             equil_status_energy2 = is_equilibrated(
-                equil_log_box2[:, 3], threshold=0.2, nskip=100
+                equil_log_box2[:, 3], threshold_fraction=0.2, nskip=100
             )
             equil_status_total_energy = is_equilibrated(
                 equil_log_box1[:, 3] + equil_log_box2[:, 3],
-                threshold=0.2,
+                threshold_fraction=0.2,
                 nskip=100,
             )
             if (
-                equil_status_length1[0]
+                equil_status_density1[0]
                 and equil_status_energy1[0]
-                and equil_status_length2[0]
+                and equil_status_density2[0]
                 and equil_status_energy2[0]
-                and equil_status_total_energy
+                and equil_status_total_energy[0]
             ) == False:
                 print(
                     "System {} is not equilibrated. Completed {} equil loops".format(
                         job, job.doc.get("equil_replicates_done")
                     )
                 )
-                return False
-            if (
-                equil_status_length1[0]
-                and equil_status_energy1[0]
-                and equil_status_length2[0]
-                and equil_status_energy2[0]
-                and equil_status_total_energy
-            ) == True:
+                print("Equil status density1={}".format(equil_status_density1))
+                print("Equil status energy1={}".format(equil_status_energy1))
+                print("Equil status density2={}".format(equil_status_density2))
+                print("Equil status energy2={}".format(equil_status_energy2))
                 print(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        max(
-                            equil_status_length1[1],
-                            equil_status_energy1[1],
-                            equil_status_length2[1],
-                            equil_status_energy2[1],
-                            equil_status_toal_energy[1],
-                        ),
-                        job.doc.get("equil_replicates_done"),
+                    "Equil status total energy={}".format(
+                        equil_status_total_energy
                     )
                 )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        equil_status[1],
-                        job.doc.get("equil_replicates_done"),
+                if len(files) >= 3:
+                    print(
+                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
                     )
-                )
-                text_file.close()
-                return True
+                    with open("equil_information.txt", "w") as text_file:
+                        n = text_file.write(
+                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        )
+                    text_file.close()
+                    job.doc.is_equilibrated = True
+                    return True
 
-        if job.sp.ensemble == "GEMC-NVT":
-            equil_log_box1 = sanitize_gemc_log("equil")[0]
-            equil_log_box2 = sanitize_gemc_log("equil")[1]
-            equil_status_length1 = is_equilibrated(
-                equil_log_box1[:, 0], threshold=0.2, nskip=100
-            )
-            equil_status_energy1 = is_equilibrated(
-                equil_log_box1[:, 3], threshold=0.2, nskip=100
-            )
-            equil_status_length2 = is_equilibrated(
-                equil_log_box2[:, 0], threshold=0.2, nskip=100
-            )
-            equil_status_energy2 = is_equilibrated(
-                equil_log_box2[:, 3], threshold=0.2, nskip=100
-            )
-            equil_status_total_energy = is_equilibrated(
-                equil_log_box1[:, 3] + equil_log_box2[:, 3],
-                threshold=0.2,
-                nskip=100,
-            )
-            if (
-                equil_status_length1[0]
-                and equil_status_energy1[0]
-                and equil_status_length2[0]
-                and equil_status_energy2[0]
-                and equil_status_total_energy
-            ) == False:
-                print(
-                    "System {} is not equilibrated. Completed {} equil loops".format(
-                        job, job.doc.get("equil_replicates_done")
-                    )
-                )
                 return False
             if (
-                equil_status_length1[0]
+                equil_status_density1[0]
                 and equil_status_energy1[0]
-                and equil_status_length2[0]
+                and equil_status_density2[0]
                 and equil_status_energy2[0]
-                and equil_status_total_energy
+                and equil_status_total_energy[0]
             ) == True:
                 print(
                     "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
                         job,
                         max(
-                            equil_status_length1[1],
+                            equil_status_density1[1],
                             equil_status_energy1[1],
-                            equil_status_length2[1],
+                            equil_status_density2[1],
                             equil_status_energy2[1],
-                            equil_status_toal_energy[1],
+                            equil_status_total_energy[1],
                         ),
                         job.doc.get("equil_replicates_done"),
                     )
                 )
-                text_file = open("equil_information.txt", "w")
-                n = text_file.write(
-                    "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
-                        job,
-                        equil_status[1],
-                        job.doc.get("equil_replicates_done"),
+                with open("equil_information.txt", "w") as text_file:
+                    n = text_file.write(
+                        "System {} is equilibrated at cycle {}. Completed {} equil loops".format(
+                            job,
+                            max(
+                                equil_status_density1[1],
+                                equil_status_energy1[1],
+                                equil_status_density2[1],
+                                equil_status_energy2[1],
+                                equil_status_total_energy[1],
+                            ),
+                            job.doc.get("equil_replicates_done"),
+                        )
                     )
-                )
                 text_file.close()
+                job.doc.is_equilibrated = True
                 return True
 
 
@@ -785,8 +791,8 @@ def run_melt(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
         print_completed_string(job, step)
 
 
@@ -821,12 +827,12 @@ def run_cool(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
     print_completed_string(job, step)
 
 
-@Project.operation
+@Project.operation.with_directives({"walltime": 200})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(cool_finished)
@@ -857,13 +863,16 @@ def run_equil(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+        if job.sp.ensemble == "GEMC-NVT":
+            shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+            shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
         job.doc.equil_replicates_done += 1
     print_completed_string(job, step)
 
 
-@Project.operation
+@Project.operation.with_directives({"walltime": 200})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.pre(has_restart_file)
 @Project.pre(system_equilibrated)
@@ -895,8 +904,12 @@ def run_prod(job):
         shutil.move("run1a.dat", "run.{}".format(step))
         shutil.copy("config1a.dat", "fort.77")
         shutil.move("config1a.dat", "config1a.dat.{}".format(step))
-        shutil.move("box1movie1a.pdb", "box1movie1a.pdb.{}".format(step))
-        shutil.move("box1movie1a.xyz", "box1movie1a.xyz.{}".format(step))
+        shutil.move("box1movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+        shutil.move("box1movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+        if job.sp.ensemble == "GEMC-NVT":
+            shutil.move("box2movie1a.pdb", "box1movie1a.{}.pdb".format(step))
+            shutil.move("box2movie1a.xyz", "box1movie1a.{}.xyz".format(step))
+
         job.doc.prod_replicates_done += 1
         print_completed_string(job, step)
         if all_prod_replicates_done(job):
@@ -909,6 +922,17 @@ def run_prod(job):
                     job.sp.pressure,
                 )
             )
+            with open("production_information.txt", "w") as text_file:
+                prod_file = text_file.write(
+                    "All prod replicates done. Simulation finished for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
+                        job,
+                        job.sp.molecule,
+                        job.sp.ensemble,
+                        job.sp.temperature,
+                        job.sp.pressure,
+                    )
+                )
+            text_file.close()
 
 
 if __name__ == "__main__":
