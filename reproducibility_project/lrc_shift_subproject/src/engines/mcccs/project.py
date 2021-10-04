@@ -157,6 +157,31 @@ def files_ready(job):
 
 
 @Project.label
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+def topmon_ready(job):
+    """Check if the keywords in the topmon have been replaced correctly."""
+    job.doc.topmon_ready = False
+    file_name = job.ws + "/topmon.inp"
+    if not job.isfile("topmon.inp"):
+        return False
+    if job.sp.cutoff_style == "shift":
+        a = False
+        with open(file_name) as myfile:
+            if "lshift= T" in myfile.read():
+                a = True
+    else:
+        a = True
+    if job.sp.long_range_correction == "energy_pressure":
+        b = False
+        with open(file_name) as myfile:
+            if "ltailc= T" in myfile.read():
+                b = True
+    else:
+        b = True
+    return a and b
+
+
+@Project.label
 def has_restart_file(job):
     """Check if the job has a restart file."""
     return job.isfile("fort.77")
@@ -195,8 +220,8 @@ def replicate_set(job):
 def all_prod_replicates_done(job):
     """Check if all prod replicate simulations completed."""
     try:
-        a = job.doc.get("prod_replicates_done, 0")
-        b = job.doc.get("num_prod_replicates, 4")
+        a = job.doc.get("prod_replicates_done")
+        b = job.doc.get("num_prod_replicates")
         if a >= b:
             print("simulation complete for {} job".format(job))
         return a >= b
@@ -712,6 +737,61 @@ def replace_keyword_fort_files_gemc(job):
 @ex
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(has_topmon)
+@Project.post(topmon_ready)
+def replace_lrc_shift_topmon(job):
+    """Replace ltailc and lshift in topmon."""
+    file_name = job.ws + "/topmon.inp"
+    if not job.isfile(file_name):
+        return
+    # default ltailc and lshift are F
+    if job.sp.cutoff_style == "shift":
+        make_lshift_T(file_name)
+    if job.sp.long_range_correction == "energy_pressure":
+        make_ltailc_T(file_name)
+
+
+def make_ltailc_T(filename):
+    """Flip the value of ltailc in topmon from F to T."""
+    file = open(filename, "r")
+    replacement = ""
+    # using the for loop
+    for line in file:
+        if "ltailc" in line:
+            changes = line.replace("F", "T")
+            replacement = replacement + changes
+        else:
+            replacement = replacement + line
+
+    file.close()
+    # opening the file in write mode
+    fout = open(filename, "w")
+    fout.write(replacement)
+    fout.close()
+
+
+def make_lshift_T(filename):
+    """Flip the value of lshift in topmon from F to T."""
+    file = open(filename, "r")
+    replacement = ""
+    # using the for loop
+    for line in file:
+        if "lshift" in line:
+            changes = line.replace("F", "T")
+            replacement = replacement + changes
+        else:
+            replacement = replacement + line
+
+    file.close()
+    # opening the file in write mode
+    fout = open(filename, "w")
+    fout.write(replacement)
+    fout.close()
+
+
+@ex
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a restart file for the job using fort77maker."""
@@ -765,6 +845,7 @@ def make_restart_file(job):
 @Project.pre(has_fort_files)
 @Project.pre(has_topmon)
 @Project.pre(files_ready)
+@Project.pre(topmon_ready)
 @Project.post(melt_finished)
 def run_melt(job):
     """Run melting stage."""
@@ -937,4 +1018,9 @@ def run_prod(job):
 
 if __name__ == "__main__":
     pr = Project()
+    for job in pr.find_jobs():
+        if job.sp.long_range_correction == None:
+            pr.update_statepoint(
+                job, {"long_range_correction": "None"}, overwrite=True
+            )
     pr.main()
