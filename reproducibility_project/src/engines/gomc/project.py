@@ -57,7 +57,7 @@ MC_cycles_equilb_design_ensemble = (
 )  # set value for paper = 40 * 10 ** 3
 MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
 
-output_data_every_X_MC_cycles = 10 # set value for paper = 10
+output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
 # max number of equilibrium selected runs
 equilb_design_ensemble_max_number = 3
@@ -516,12 +516,12 @@ def part_3c_output_equilb_design_ensemble_started(job):
             )
         ):
             if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-                    return gomc_simulation_started(
-                        job,
-                        job.doc.equilb_design_ensemble_dict[
-                            str(job.doc.equilb_design_ensemble_number)
-                        ]["output_name_control_file_name"],
-                    )
+                return gomc_simulation_started(
+                    job,
+                    job.doc.equilb_design_ensemble_dict[
+                        str(job.doc.equilb_design_ensemble_number)
+                    ]["output_name_control_file_name"],
+                )
             else:
                 return False
 
