@@ -147,30 +147,77 @@ def run_cassandra(job):
 
     # Set probabilities
 
-    p_volume = 0.01
-    p_translate = 0.0
-    p_rotate = 0.0
-    p_regrow = 0.0
-    p_swap = 0.0
-
     if molecule == "methaneUA":
         if ensemble == "NPT":
             p_translate = 0.99
-        else:
+            p_volume = 0.01
+        elif ensemble == "GEMC-NVT":
+            p_volume = 0.01
             p_translate = 0.7
             p_swap = 0.29
-    elif molecule == "pentaneUA" and ensemble == "GEMC-NVT":
-        p_swap = 0.2
-        p_translate = 0.27
-        p_rotate = 0.26
-        p_regrow = 0.26
-    elif molecule == "waterSPCE":
-        p_translate = 0.49
-        p_rotate = 0.5
-    else:
-        p_translate = 0.33
-        p_rotate = 0.33
-        p_regrow = 0.33
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "waterSPCE":
+        if ensemble == "NPT":
+            p_translate = 0.499
+            p_rotate = 0.5
+            p_volume = 0.001
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "ethanolAA":
+        if ensemble == "NPT":
+            p_translate = 0.337
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.003
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "benzeneUA":
+        if ensemble == "NPT":
+            p_translate = 0.33
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.01
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "pentaneUA":
+        if ensemble == "NPT":
+            p_translate = 0.33
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.01
+        elif ensemble == "GEMC-NVT":
+            p_swap = 0.2
+            p_translate = 0.27
+            p_rotate = 0.26
+            p_regrow = 0.26
+            p_volume = 0.01
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
 
     # Set number of molecules
 
