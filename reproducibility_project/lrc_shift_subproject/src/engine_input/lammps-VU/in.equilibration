@@ -21,7 +21,6 @@ thermo_style custom step temp press pe epair emol ke etotal density
 
 variable tsample equal ${T} #kelvin modify from job.sp.temperature
 variable psample equal ${P}/101.325 #kPa to atm from job.sp.pressure
-velocity all create ${T} ${seed} #kelvin modify from job.sp.replicate
 # ________________________________________________________________________________________
 
 # Equilibrate npt box
@@ -37,7 +36,7 @@ variable filename string eqlog${startstep0}.txt
 fix output_data all print 1000 "${startstep} ${t} ${pressure} $e $p $k $d" file ${filename} title "step temp press etotal pe ke density"
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
 fix zeromom all momentum 100 linear 1 1 1 rescale
-run 1000000
+run 5000000
 unfix integrator
 write_restart minimized.restart-*
 write_restart equilibrated-npt.restart
