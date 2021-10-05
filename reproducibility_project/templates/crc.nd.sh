@@ -5,7 +5,7 @@
 #$ -pe smp {{ np_global }}
 #$ -r n
 #$ -q long
-#$ -m abe
+#$ -m a
 #$ -M rsmith56@nd.edu
 
 conda activate mosdef-study38
