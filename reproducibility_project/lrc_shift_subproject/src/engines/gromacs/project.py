@@ -229,7 +229,10 @@ def sample_npt_properties(job):
     """Sample properties of interest from npt edr."""
     import pandas as pd
 
-    from reproducibility_project.src.analysis.sampler import sample_job
+    from reproducibility_project.src.analysis.sampler import (
+        sample_job,
+        write_subsampled_values,
+    )
 
     p = pathlib.Path(job.workspace())
     data = panedr.edr_to_df(f"{str(p.absolute())}/npt_prod.edr")
@@ -253,6 +256,12 @@ def sample_npt_properties(job):
         value=[10000 * i for i in range(len(tmp_df))],
         loc=1,
     )
+    tmp_df.to_csv("log-npt.txt", index=False, sep=" ")
+    for prop in poi:
+        sample_job(job, filename="log-npt.txt", variable=poi[prop])
+        write_subsampled_values(
+            job, property=poi[prop], property_filename="log-npt.txt"
+        )
 
 
 @Project.operation
@@ -265,7 +274,10 @@ def sample_nvt_properties(job):
     """Sample properties of interest from nvt edr."""
     import pandas as pd
 
-    from reproducibility_project.src.analysis.sampler import sample_job
+    from reproducibility_project.src.analysis.sampler import (
+        sample_job,
+        write_subsampled_values,
+    )
 
     p = pathlib.Path(job.workspace())
     data = panedr.edr_to_df(f"{str(p.absolute())}/nvt_prod.edr")
@@ -287,6 +299,12 @@ def sample_nvt_properties(job):
         value=[10000 * i for i in range(len(tmp_df))],
         loc=1,
     )
+    tmp_df.to_csv("log-nvt.txt", index=False, sep=" ")
+    for prop in poi:
+        sample_job(job, filename="log-nvt.txt", variable=poi[prop])
+        write_subsampled_values(
+            job, property=poi[prop], property_filename="log-nvt.txt"
+        )
 
 
 def _mdrun_str(op):
