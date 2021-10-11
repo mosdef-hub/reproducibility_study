@@ -479,8 +479,6 @@ def run_cassandra(job):
 @Project.post(lambda job: "mean_energy_box1" in job.document)
 def statistics(job):
     """Compute statistical quantities for each job."""
-    import ele
-
     proplist = [
         "energy_total",
         "volume",
@@ -524,7 +522,6 @@ def statistics(job):
             job.fn(box1), skiprows=3, sep="\s+", names=proplist
         )
 
-        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
         job.document.mean_energy_box1 = data_box1["energy_total"].mean()
         job.document.mean_density_box1 = (
             data_box1["mass_density"].mean() * 0.001
