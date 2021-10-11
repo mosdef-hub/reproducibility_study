@@ -396,11 +396,15 @@ def system_equilibrated(job):
                 print("Equil status energy1={}".format(equil_status_energy))
                 if len(files) >= 3:
                     print(
-                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        "Even though the {} system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed".format(
+                            job
+                        )
                     )
                     with open("equil_information.txt", "w") as text_file:
                         n = text_file.write(
-                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                            "Even though the {} system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed".format(
+                                job
+                            )
                         )
                     text_file.close()
 
@@ -473,11 +477,15 @@ def system_equilibrated(job):
                 )
                 if len(files) >= 3:
                     print(
-                        "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                        "Even though the {} system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed".format(
+                            job
+                        )
                     )
                     with open("equil_information.txt", "w") as text_file:
                         n = text_file.write(
-                            "Even though the system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed"
+                            "Even though the {} system is not equilibrated according to pymbar, we are considering this system equilibrated as 3 equil loops are completed".format(
+                                job
+                            )
                         )
                     text_file.close()
                     job.doc.is_equilibrated = True
