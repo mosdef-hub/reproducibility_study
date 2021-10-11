@@ -77,7 +77,6 @@ def run_cassandra(job):
         ("hard", None): "cut",
         ("hard", "energy_pressure"): "cut_tail",
         ("shift", None): "cut_shift",
-        ("shift", "energy_pressure"): None,
     }
 
     # Job settings
