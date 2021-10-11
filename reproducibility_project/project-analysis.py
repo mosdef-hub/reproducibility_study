@@ -4,6 +4,7 @@ from typing import List
 import flow
 import numpy as np
 import signac
+from flow import aggregator
 
 
 class Project(flow.FlowProject):
@@ -14,15 +15,20 @@ class Project(flow.FlowProject):
 
 
 def _determine_sampling_information(
-    job: signac.contrib.project.Job, ensemble: str, prop: str
+    job: signac.contrib.project.Job,
+    ensemble: str,
+    prop: str,
+    filename: str = None,
 ) -> None:
     """Write out sampling results for production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
+    if filename is None:
+        filename = f"log-{ensemble}.txt"
     sample_job(
         job,
         ensemble=ensemble,
-        filename=f"log-{ensemble}.txt",
+        filename=filename,
         variable=prop,
         threshold_fraction=0.75,
         threshold_neff=100,
@@ -199,7 +205,9 @@ def determine_npt_pressure_sampling(job):
     """Write out sampling results for NPT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    _determine_sampling_information(job=job, ensemble="npt", prop="pressure")
+    _determine_sampling_information(
+        job=job, ensemble="npt", prop="pressure", filename=None
+    )
 
 
 @Project.operation
@@ -212,7 +220,9 @@ def determine_npt_density_sampling(job):
     """Write out sampling results for NPT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    _determine_sampling_information(job=job, ensemble="npt", prop="density")
+    _determine_sampling_information(
+        job=job, ensemble="npt", prop="density", filename=None
+    )
 
 
 @Project.operation
@@ -226,7 +236,7 @@ def determine_npt_potential_energy_sampling(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     _determine_sampling_information(
-        job=job, ensemble="npt", prop="potential_energy"
+        job=job, ensemble="npt", prop="potential_energy", filename=None
     )
 
 
@@ -241,7 +251,7 @@ def determine_npt_kinetic_energy_sampling(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     _determine_sampling_information(
-        job=job, ensemble="npt", prop="kinetic_energy"
+        job=job, ensemble="npt", prop="kinetic_energy", filename=None
     )
 
 
@@ -255,7 +265,9 @@ def determine_npt_temperature_sampling(job):
     """Write out sampling results for NPT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    _determine_sampling_information(job=job, ensemble="npt", prop="temperature")
+    _determine_sampling_information(
+        job=job, ensemble="npt", prop="temperature", filename=None
+    )
 
 
 @Project.operation
@@ -269,7 +281,7 @@ def determine_nvt_potential_energy_sampling(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     _determine_sampling_information(
-        job=job, ensemble="nvt", prop="potential_energy"
+        job=job, ensemble="nvt", prop="potential_energy", filename=None
     )
 
 
@@ -284,7 +296,7 @@ def determine_nvt_kinetic_energy_sampling(job):
     from reproducibility_project.src.analysis.sampler import sample_job
 
     _determine_sampling_information(
-        job=job, ensemble="nvt", prop="kinetic_energy"
+        job=job, ensemble="nvt", prop="kinetic_energy", filename=None
     )
 
 
@@ -296,7 +308,9 @@ def determine_nvt_volume_sampling(job):
     """Write out sampling results for NVT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    _determine_sampling_information(job=job, ensemble="nvt", prop="volume")
+    _determine_sampling_information(
+        job=job, ensemble="nvt", prop="volume", filename=None
+    )
 
 
 @Project.operation
@@ -309,7 +323,9 @@ def determine_nvt_temperature_sampling(job):
     """Write out sampling results for NVT production properties."""
     from reproducibility_project.src.analysis.sampler import sample_job
 
-    _determine_sampling_information(job=job, ensemble="nvt", prop="temperature")
+    _determine_sampling_information(
+        job=job, ensemble="nvt", prop="temperature", filename=None
+    )
 
 
 @Project.operation
@@ -560,6 +576,46 @@ def nvt_calc_temperature_statistics(job):
 def nvt_calc_density_statistics(job):
     """Calc statistics on subsampled nvt property."""
     _calc_statistics(job, ensemble="nvt", prop="density")
+
+
+"""
+@aggregator.groupby(
+    key=[
+        "ensemble",
+        "engine",
+        "molecule",
+        "temperature",
+        "pressure",
+        "cutoff_style",
+        "long_range_correction",
+    ],
+    sort_by="engine",
+)
+@Project.operation
+@Project.pre(
+    lambda *jobs: all([job.doc.get("nvt_density_avg") for job in jobs])
+)
+@Project.pre(
+    lambda *jobs: all([job.doc.get("nvt_density_std") for job in jobs])
+)
+def nvt_calc_aggregate_density_statistics(*jobs):
+    # should be grouped enough such that only the 16 replicates are the groupings
+    assert (
+        len(jobs) == 16
+    ), "Not all 16 replicates have their property averaged."
+    num_replicas = len(jobs)
+    avg_vals = [job.doc.get("nvt_density_avg") for job in jobs]
+    avg = np.mean(avg_vals)
+    std = np.std(avg_vals)
+    sem = std / np.sqrt(num_replicas)
+    a_job = jobs[0]
+    avg_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-avg"
+    std_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-std"
+    sem_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-sem"
+    Project.doc[avg_str] = avg
+    Project.doc[std_str] = std
+    Project.doc[sem_str] = sem
+"""
 
 
 @Project.operation

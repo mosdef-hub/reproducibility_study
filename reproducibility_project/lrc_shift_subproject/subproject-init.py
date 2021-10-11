@@ -23,7 +23,7 @@ mc_engines = ["cassandra", "mcccs", "gomc"]
 forcefields = {}
 r_cuts = {}
 cutoff_styles = ["hard", "shift"]
-long_range_correction = [None, "energy_pressure"]
+long_range_correction = ["", "energy_pressure"]
 for key in molecules:
     if "UA" in key:
         if "benz" not in key:
@@ -214,7 +214,7 @@ for i, sp in enumerate(total_statepoints):
 
     # hoomd-blue does not have long range correction
     if sp["engine"] == "hoomd":
-        if sp["long_range_correction"] is not None:
+        if sp["long_range_correction"] != "":
             indices_to_remove.add(i)
 
     if sp["ensemble"] == "NPT":
