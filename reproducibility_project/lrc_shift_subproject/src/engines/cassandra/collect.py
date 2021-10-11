@@ -13,11 +13,16 @@ results = {}
 density = np.array([])
 
 for job in project.find_jobs(
-    {"molecule": "methaneUA", "engine": "cassandra", "ensemble": "NPT"}
+    {
+        "molecule": "methaneUA",
+        "engine": "cassandra",
+        "ensemble": "NPT",
+        "cutoff_style": "shift",
+        "long_range_correction": None,
+    }
 ):
     results[job.statepoint()["replica"]] = {}
     density = np.append(density, job.document["mean_density_box1"])
-
 
 mean = density.mean()
 stdev = density.std()
