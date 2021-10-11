@@ -791,7 +791,7 @@ def build_psf_pdb_ff_gomc_conf(job):
     if job.sp.cutoff_style == "hard":
         Potential = "VDW"
         try:
-            if job.sp.long_range_correction is None:
+            if job.sp.long_range_correction is "None":
                 LRC = False
             elif job.sp.long_range_correction == "energy_pressure":
                 LRC = True
@@ -1036,7 +1036,7 @@ def build_psf_pdb_ff_gomc_conf(job):
     if job.sp.cutoff_style == "hard":
         Potential = "VDW"
         try:
-            if job.sp.long_range_correction is None:
+            if job.sp.long_range_correction is "None":
                 LRC = False
             elif job.sp.long_range_correction == "energy_pressure":
                 LRC = True
@@ -1306,7 +1306,7 @@ def build_psf_pdb_ff_gomc_conf(job):
         if job.sp.cutoff_style == "hard":
             Potential = "VDW"
             try:
-                if job.sp.long_range_correction is None:
+                if job.sp.long_range_correction is "None":
                     LRC = False
                 elif job.sp.long_range_correction == "energy_pressure":
                     LRC = True
@@ -1569,7 +1569,7 @@ def build_psf_pdb_ff_gomc_conf(job):
         if job.sp.cutoff_style == "hard":
             Potential = "VDW"
             try:
-                if job.sp.long_range_correction is None:
+                if job.sp.long_range_correction is "None":
                     LRC = False
                 elif job.sp.long_range_correction == "energy_pressure":
                     LRC = True
