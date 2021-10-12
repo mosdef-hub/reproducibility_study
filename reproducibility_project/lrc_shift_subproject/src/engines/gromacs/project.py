@@ -65,7 +65,7 @@ def init_job(job):
 
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
-    lrcs = {None: "no", "energy_pressure": "EnerPres"}
+    lrcs = {"None": "no", "energy_pressure": "EnerPres"}
 
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
