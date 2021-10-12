@@ -140,9 +140,9 @@ def run_cassandra(job):
     }
 
     cass_cutoffs = {
-        ("hard", None): "cut",
+        ("hard", "None"): "cut",
         ("hard", "energy_pressure"): "cut_tail",
-        ("shift", None): "cut_shift",
+        ("shift", "None"): "cut_shift",
     }
 
     # Job settings
