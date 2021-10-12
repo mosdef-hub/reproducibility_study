@@ -13,10 +13,12 @@ cutoff-scheme       = Verlet
 ns_type             = grid
 nstlist             = 10
 
-coulombtype         = {{  cutoff_style  }}
+coulombtype         = Cut-off
+coulomb-modifier    = {{  cutoff_style  }}
 rcoulomb            = {{  r_cut  }}
 
-vdwtype             = {{  cutoff_style  }}
+vdwtype             = Cut-off
+vdw-modifier        = {{  cutoff_style  }}
 rvdw                = {{  r_cut }}
 
 gen_vel             = yes

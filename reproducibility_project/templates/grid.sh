@@ -21,7 +21,7 @@
 echo  "Running on host" hostname
 echo  "Time is" date
 
-conda activate mosdef_signac
+conda activate mosdef-study38
 
 module load python/3.8
 module swap gnu7 intel/2019

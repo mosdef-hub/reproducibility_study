@@ -6,7 +6,7 @@
 #$ -r n
 #$ -q long
 #$ -m abe
-#$ -M rsmith56@nd.edu
+#$ -M emarinri@nd.edu
 
 conda activate mosdef-study38
 
