@@ -1,9 +1,11 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 # import foyer
 import os
-import pathlib
+from pathlib import Path
 
 import flow
+import numpy as np
+import pandas as pd
 from flow import directives
 
 import reproducibility_project.templates.ndcrc
@@ -14,7 +16,7 @@ class Project(flow.FlowProject):
 
     def __init__(self):
         super().__init__()
-        current_path = pathlib.Path(os.getcwd()).absolute()
+        current_path = Path(os.getcwd()).absolute()
         self.data_dir = current_path.parents[1] / "data"
         self.ff_fn = self.data_dir / "forcefield.xml"
 
@@ -32,17 +34,83 @@ def cassandra_complete(job):
 
 
 def check_complete(run_name):
-    """Check whether MoSDeF Cassandra simulation with run_name has completed."""
+    """Check whether MoSDeF Cassandra simulation with run_name or its last restart has completed."""
     complete = False
     fname = run_name + ".out.log"
-    if not os.path.exists(fname):
+    loglist = list_with_restarts(fname)
+    if not loglist:
         return complete
-    with open(fname) as f:
+    with loglist[-1].open() as f:
         for line in f:
             if "Cassandra simulation complete" in line:
                 complete = True
                 break
     return complete
+
+
+def list_with_restarts(fpath):
+    """List fpath and its restart versions in order as pathlib Path objects."""
+    fpath = Path(fpath)
+    if not fpath.exists():
+        return []
+    parent = fpath.parent
+    fname = fpath.name
+    fnamesplit = fname.split(".out.")
+    run_name = fnamesplit[0]
+    suffix = fnamesplit[1]
+    restarts = [
+        Path(parent, f)
+        for f in sorted(list(parent.glob(run_name + ".rst.*.out." + suffix)))
+    ]
+    restarts.insert(0, fpath)  # prepend fpath to list of restarts
+    return restarts
+
+
+def get_last_checkpoint(run_name):
+    """Get name of last restart based on run_name."""
+    fname = run_name + ".out.chk"
+    return list_with_restarts(fname)[-1].name.split(".out.")[0]
+
+
+def has_checkpoint(run_name):
+    """Check whether there is a checkpoint for run_name."""
+    fname = run_name + ".out.chk"
+    return os.path.exists(fname)
+
+
+def merge_restart_prp(fname):
+    """Merge restart prp files."""
+    pathlist = list_with_restarts(fname)
+    if len(pathlist) < 2:
+        return
+    lastcycles = [np.loadtxt(f, usecols=0, dtype=int)[-1] for f in pathlist]
+    with pathlist[0].open("a") as mainfile:
+        for i in range(1, len(pathlist)):
+            with pathlist[i].open() as rfile:
+                for j in range(3):
+                    next(rfile)
+                line = rfile.readline()
+                n = int(line.split()[0])
+                while n <= lastcycles[i - 1]:
+                    line = rfile.readline()
+                    n = int(line.split()[0])
+                mainfile.write(line)
+                for line in rfile:
+                    mainfile.write(line)
+            os.remove(pathlist[i])
+
+
+def merge_restart_traj(fname):
+    """Merge restart .H or .xyz files."""
+    pathlist = list_with_restarts(fname)
+    if len(pathlist) < 2:
+        return
+    with pathlist[0].open("a") as mainfile:
+        for i in range(1, len(pathlist)):
+            with pathlist[i].open() as rfile:
+                for line in rfile:
+                    mainfile.write(line)
+            os.remove(pathlist[i])
 
 
 @Project.operation
@@ -54,7 +122,6 @@ def run_cassandra(job):
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
-    import numpy as np
     import unyt as u
     from mbuild.formats.xyz import read_xyz
     from pymbar.timeseries import detectEquilibration
@@ -109,26 +176,25 @@ def run_cassandra(job):
     cutoff = job.sp.r_cut * u.nm
 
     seedslist = [
-        [7860904, 98601355],
-        [955793508, 417823039],
-        [254420642, 2130720464],
-        [58120272, 1465850411],
-        [757616664, 1940492980],
-        [966844679, 1326087693],
-        [1992175335, 1840317929],
-        [650725500, 646331893],
-        [1204247127, 1521385831],
-        [2000946981, 1969870819],
-        [1488434295, 648017520],
-        [1128424221, 1140005446],
-        [58870203, 2133009902],
-        [2024564019, 2014788324],
-        [133927152, 2052536489],
-        [23375750, 1951798462],
+        [7860904, 8601355],
+        [5793508, 4173039],
+        [4420642, 8720464],
+        [8120272, 5850411],
+        [7616664, 1492980],
+        [6844679, 6087693],
+        [2175335, 1317929],
+        [9725500, 6331893],
+        [4247127, 1385831],
+        [2946981, 9870819],
+        [8434295, 8017520],
+        [8424221, 4595446],
+        [8870203, 3009902],
+        [4564019, 4788324],
+        [3927152, 2536489],
+        [3375750, 1798462],
     ]
 
     seeds = seedslist[job.sp.replica]
-
     cbmc_n_ins = 12
     cbmc_n_dihed = 50
 
@@ -302,7 +368,8 @@ def run_cassandra(job):
         l_equil = False
         cycles_done = 0
 
-        if not check_complete("equil_0"):
+        this_run = "equil_" + str(cycles_done)
+        if not has_checkpoint(this_run):
             mc.run(
                 system=system,
                 moveset=moveset,
@@ -314,65 +381,150 @@ def run_cassandra(job):
                 cutoff_style="cut",
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
-                run_name="equil_0",
+                run_name=this_run,
                 prop_freq=prop_freq,
                 coord_freq=coord_freq,
                 units="sweeps",
                 steps_per_sweep=N,
                 seeds=seeds,
             )
+        elif not check_complete(this_run):
+            mc.restart(
+                restart_from=get_last_checkpoint(this_run),
+            )
 
-        prior_run = "equil_" + str(cycles_done)
         cycles_done += equil_length
 
         if ensemble == "GEMC-NVT":
             prpsuffix_liq = ".out.box1.prp"
             prpsuffix_vap = ".out.box2.prp"
+            xyzsuffix_liq = ".out.box1.xyz"
+            xyzsuffix_vap = ".out.box2.xyz"
+            Hsuffix_liq = ".out.box1.H"
+            Hsuffix_vap = ".out.box2.H"
+            merge_restart_prp(this_run + prpsuffix_vap)
         else:
             prpsuffix_liq = ".out.prp"
+            xyzsuffix_liq = ".out.xyz"
+            Hsuffix_liq = ".out.H"
+        merge_restart_prp(this_run + prpsuffix_liq)
 
         t, g, Neff_max = detectEquilibration(
-            np.loadtxt(prior_run + prpsuffix_liq, usecols=5)
+            np.loadtxt(this_run + prpsuffix_liq, usecols=5)
         )
 
         if ensemble == "GEMC-NVT":
             tvap, gvap, Neff_max_vap = detectEquilibration(
-                np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
+                np.loadtxt(this_run + prpsuffix_vap, usecols=5)
             )
             t = max(t, tvap)
+        prior_run = this_run
 
         for i in range(2):
             if t >= equil_length * 3 / (prop_freq * 4):
-                if not check_complete("equil_" + str(cycles_done)):
+                this_run = "equil_" + str(cycles_done)
+                if not has_checkpoint(this_run):
                     mc.restart(
                         restart_from=prior_run,
-                        run_name="equil_" + str(cycles_done),
+                        run_name=this_run,
                         run_type="equilibration",
                         total_run_length=cycles_done + equil_length,
                     )
-                prior_run = "equil_" + str(cycles_done)
+                elif not check_complete(this_run):
+                    mc.restart(
+                        restart_from=get_last_checkpoint(this_run),
+                    )
                 cycles_done += equil_length
+                merge_restart_prp(this_run + prpsuffix_liq)
                 t, g, Neff_max = detectEquilibration(
-                    np.loadtxt(prior_run + prpsuffix_liq, usecols=5)
+                    np.loadtxt(this_run + prpsuffix_liq, usecols=5)
                 )
 
                 if ensemble == "GEMC-NVT":
+                    merge_restart_prp(this_run + prpsuffix_vap)
                     tvap, gvap, Neff_max_vap = detectEquilibration(
-                        np.loadtxt(prior_run + prpsuffix_vap, usecols=5)
+                        np.loadtxt(this_run + prpsuffix_vap, usecols=5)
                     )
                     t = max(t, tvap)
 
-                for rmtgt in list(pathlib.Path(".").glob("equil_*.[xH]*")):
+                for rmtgt in list(Path(".").glob("equil_*.[xH]*")):
                     os.remove(rmtgt)
+                prior_run = this_run
 
             else:
                 break
 
-        mc.restart(
-            restart_from=prior_run,
-            run_name="prod",
-            run_type="production",
-            total_run_length=cycles_done + prod_length,
+        if has_checkpoint("prod"):
+            mc.restart(
+                restart_from=get_last_checkpoint("prod"),
+            )
+        else:
+            mc.restart(
+                restart_from=prior_run,
+                run_name="prod",
+                run_type="production",
+                total_run_length=cycles_done + prod_length,
+            )
+        merge_restart_prp("prod" + prpsuffix_liq)
+        merge_restart_traj("prod" + xyzsuffix_liq)
+        merge_restart_traj("prod" + Hsuffix_liq)
+        if ensemble == "GEMC-NVT":
+            merge_restart_prp("prod" + prpsuffix_vap)
+            merge_restart_traj("prod" + xyzsuffix_vap)
+            merge_restart_traj("prod" + Hsuffix_vap)
+
+
+@Project.operation
+@Project.pre(cassandra_complete)
+@Project.post(lambda job: "mean_energy_box1" in job.document)
+def statistics(job):
+    """Compute statistical quantities for each job."""
+    proplist = [
+        "energy_total",
+        "volume",
+        "nmols",
+        "pressure",
+        "density",
+        "mass_density",
+        "energy_angle",
+        "energy_dihedral",
+        "energy_intravdw",
+        "energy_intraq",
+        "energy_inter",
+        "energy_intervdw",
+        "energy_lrc",
+        "energy_interq",
+        "energy_recip",
+        "energy_self",
+        "enthalpy",
+    ]
+
+    if job.sp.ensemble == "GEMC-NVT":
+
+        box1 = "prod.out.box1.prp"
+        box2 = "prod.out.box2.prp"
+
+        data_box1 = pd.read_table(
+            job.fn(box1), skiprows=3, sep="\s+", names=proplist
+        )
+        data_box2 = pd.read_table(
+            job.fn(box2), skiprows=3, sep="\s+", names=proplist
+        )
+
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_energy_box2 = data_box2["energy_total"].mean()
+
+    else:
+
+        box1 = "prod.out.prp"
+
+        data_box1 = pd.read_table(
+            job.fn(box1), skiprows=3, sep="\s+", names=proplist
+        )
+
+        job.document.mean_energy_box1 = data_box1["energy_total"].mean()
+        job.document.mean_density_box1 = (
+            data_box1["mass_density"].mean() * 0.001
         )
 
 
