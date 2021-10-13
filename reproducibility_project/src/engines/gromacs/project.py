@@ -132,7 +132,7 @@ def init_job(job):
 def gmx_em(job):
     """Run GROMACS grompp for the energy minimization step."""
     em_mdp_path = "em.mdp"
-    grompp = f"gmx_mpi grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("em")
     return f"{grompp} && {mdrun}"
 
@@ -146,7 +146,7 @@ def gmx_em(job):
 def gmx_nvt(job):
     """Run GROMACS grompp for the nvt step."""
     nvt_mdp_path = "nvt.mdp"
-    grompp = f"gmx_mpi grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt")
     return f"{grompp} && {mdrun}"
 
