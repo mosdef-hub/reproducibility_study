@@ -117,6 +117,11 @@ def run_hoomd(job, method, restart=False):
             if isinstance(force, hoomd.md.pair.LJ):
                 force.mode = "shift"
                 print(f"{force} mode set to {force.mode}")
+    if job.sp.get("long_range_correction") == "energy_pressure":
+        for force in forcefield:
+            if isinstance(force, hoomd.md.pair.LJ):
+                force.tail_correction = True
+                print(f"{force} tail_correction set to {force.tail_correction}")
 
     if method == "npt":
         print("Starting NPT", flush=True)
