@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - gromacs>=2021.1
+  - gromacs=2020.6
   - lammps
   - hoomd=*=*gpu*
   - cassandra=1.2.5
