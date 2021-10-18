@@ -7,7 +7,7 @@ import signac
 import unyt as u
 from numpy import ModuleDeprecationWarning
 
-molecules = ["methaneUA", "waterSPCE", "ethanolAA"]
+molecules = ["methaneUA", "waterSPCE"]
 replicas = range(16)
 simulation_engines = [
     "cassandra",
@@ -41,52 +41,43 @@ g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
 masses = {
     "methaneUA": [16.04] * u.amu,
     "waterSPCE": [18.0153] * u.amu,
-    "ethanolAA": [46.0684] * u.amu,
 }
 init_density_liq = {
     "methaneUA": [0.3752] * g_per_cm3,
     "waterSPCE": [0.998] * g_per_cm3,
-    "ethanolAA": [0.7893] * g_per_cm3,
 }
 init_density_vap = {
     "methaneUA": [0.0117] * g_per_cm3,
     "waterSPCE": [None],
-    "ethanolAA": [None],
 }
 temperatures = {
     "methaneUA": [140.0] * u.K,
     "waterSPCE": [300.0] * u.K,
-    "ethanolAA": [300.0] * u.K,
 }
 
 pressures = {
     "methaneUA": [1318.0] * u.kPa,
     "waterSPCE": [101.325] * u.kPa,
-    "ethanolAA": [101.325] * u.kPa,
 }
 
 N_liq_molecules = {
     "methaneUA": [900],
     "waterSPCE": [1100],
-    "ethanolAA": [500],
 }
 
 N_vap_molecules = {
     "methaneUA": [100],
     "waterSPCE": [None],
-    "ethanolAA": [None],
 }
 
 liq_box_lengths = {
     "methaneUA": [39.98] * u.angstrom,
     "waterSPCE": [32.07] * u.angstrom,
-    "ethanolAA": [36.46] * u.angstrom,
 }
 
 vap_box_lengths = {
     "methaneUA": [61.06] * u.angstrom,
     "waterSPCE": [None],
-    "ethanolAA": [None],
 }
 
 ensembles = {
