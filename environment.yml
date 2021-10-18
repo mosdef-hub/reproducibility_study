@@ -9,7 +9,7 @@ dependencies:
   - foyer>=0.9.4
   - freud
   - gmso
-  - gromacs
+  - gromacs=2020.6
   - gsd
   - h5py
   - jupyter

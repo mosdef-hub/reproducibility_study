@@ -3,7 +3,7 @@
   <Type name="CH_sp2" class="CH_E" element="_CH" mass="13.01900" def="[_CH;X2]([_CH,C])[_CH,C]" desc="Aromatic CH group (eg. benzene), united atom. These are the same parameters that are on the http://trappe.oit.umn.edu website, but on the website they have all fixed bonds, angles and no dihedrals." doi="10.1016/j.fluid.2018.07.001"/>
  </AtomTypes>
  <HarmonicBondForce>
-  <Bond class1="CH_E" class2="CH_E" length="0.14" k="392721.84"/>
+  <Bond class1="CH_E" class2="CH_E" length="0.14" k="392459.2"/>
  </HarmonicBondForce>
  <HarmonicAngleForce>
   <Angle class1="CH_E" class2="CH_E" class3="CH_E" angle="2.0943951023932" k="527.178502304004"/>

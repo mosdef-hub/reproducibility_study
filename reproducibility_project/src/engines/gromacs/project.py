@@ -132,7 +132,7 @@ def init_job(job):
 def gmx_em(job):
     """Run GROMACS grompp for the energy minimization step."""
     em_mdp_path = "em.mdp"
-    grompp = f"gmx_mpi grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {em_mdp_path} -o em.tpr -c init.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("em")
     return f"{grompp} && {mdrun}"
 
@@ -146,7 +146,7 @@ def gmx_em(job):
 def gmx_nvt(job):
     """Run GROMACS grompp for the nvt step."""
     nvt_mdp_path = "nvt.mdp"
-    grompp = f"gmx_mpi grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt")
     return f"{grompp} && {mdrun}"
 
@@ -160,7 +160,7 @@ def gmx_nvt(job):
 def gmx_npt_prod(job):
     """Run GROMACS grompp for the npt step."""
     npt_mdp_path = "npt_prod.mdp"
-    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o npt_prod.tpr -c nvt.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {npt_mdp_path} -o npt_prod.tpr -c nvt.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("npt_prod")
     return f"{grompp} && {mdrun}"
 
@@ -177,7 +177,7 @@ def gmx_npt_prod(job):
 def extend_gmx_npt_prod(job):
     """Run GROMACS grompp for the npt step."""
     # Extend the npt run by 1000 ps (1 ns)
-    extend = "gmx_mpi convert-tpr -s npt_prod.tpr -extend 1000 -o npt_prod.tpr"
+    extend = "gmx convert-tpr -s npt_prod.tpr -extend 1000 -o npt_prod.tpr"
     mdrun = _mdrun_str("npt_prod")
     return f"{extend} && {mdrun}"
 
@@ -191,7 +191,7 @@ def extend_gmx_npt_prod(job):
 def gmx_nvt_prod(job):
     """Run GROMACS grompp for the nvt step."""
     npt_mdp_path = "npt_prod.mdp"
-    grompp = f"gmx_mpi grompp -f {npt_mdp_path} -o nvt_prod.tpr -c npt_prod.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {npt_mdp_path} -o nvt_prod.tpr -c npt_prod.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt_prod")
     return f"{grompp} && {mdrun}"
 
@@ -208,7 +208,7 @@ def gmx_nvt_prod(job):
 def extend_gmx_nvt_prod_prod(job):
     """Run GROMACS grompp for the nvt step."""
     # Extend the npt run by 1000 ps (1 ns)
-    extend = "gmx_mpi convert-tpr -s nvt_prod.tpr -extend 1000 -o nvt_prod.tpr"
+    extend = "gmx convert-tpr -s nvt_prod.tpr -extend 1000 -o nvt_prod.tpr"
     mdrun = _mdrun_str("nvt_prod")
     return f"{extend} && {mdrun}"
 
@@ -223,13 +223,15 @@ def sample_npt_properties(job):
     """Sample properties of interest from npt edr."""
     import pandas as pd
 
-    from reproducibility_project.src.analysis.sampler import sample_job
+    from reproducibility_project.src.analysis.sampler import (
+        sample_job,
+        write_subsampled_values,
+    )
 
     p = pathlib.Path(job.workspace())
     data = panedr.edr_to_df(f"{str(p.absolute())}/npt.edr")
     # Properties of interest
     poi = {
-        "Time": "time",
         "Potential": "potential_energy",
         "Kinetic En.": "kinetic_energy",
         "Pressure": "pressure",
@@ -247,6 +249,12 @@ def sample_npt_properties(job):
         value=[10000 * i for i in range(len(tmp_df))],
         loc=1,
     )
+    tmp_df.to_csv("log-npt.txt", index=False, sep=" ")
+    for prop in poi:
+        sample_job(job, filename="log-npt.txt", variable=poi[prop])
+        write_subsampled_values(
+            job, property=poi[prop], property_filename="log-npt.txt"
+        )
 
 
 @Project.operation
@@ -259,7 +267,10 @@ def sample_nvt_properties(job):
     """Sample properties of interest from nvt edr."""
     import pandas as pd
 
-    from reproducibility_project.src.analysis.sampler import sample_job
+    from reproducibility_project.src.analysis.sampler import (
+        sample_job,
+        write_subsampled_values,
+    )
 
     p = pathlib.Path(job.workspace())
     data = panedr.edr_to_df(f"{str(p.absolute())}/nvt_prod.edr")
@@ -281,11 +292,17 @@ def sample_nvt_properties(job):
         value=[10000 * i for i in range(len(tmp_df))],
         loc=1,
     )
+    tmp_df.to_csv("log-nvt.txt", index=False, sep=" ")
+    for prop in poi:
+        sample_job(job, filename="log-nvt.txt", variable=poi[prop])
+        write_subsampled_values(
+            job, property=poi[prop], property_filename="log-nvt.txt"
+        )
 
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx_mpi mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt"
+    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt"
     return msg
 
 

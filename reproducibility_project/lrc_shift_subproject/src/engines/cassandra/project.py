@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 import flow
-import numpy as np
 import pandas as pd
 from flow import directives
 
@@ -116,12 +115,13 @@ def merge_restart_traj(fname):
 @Project.operation
 @Project.pre(is_cassandra)
 @Project.post(cassandra_complete)
-@directives(omp_num_threads=4)
+@directives(omp_num_threads=8)
 def run_cassandra(job):
     """Run all simulation stages for given statepoint."""
     import foyer
     import mbuild as mb
     import mosdef_cassandra as mc
+    import numpy as np
     import unyt as u
     from mbuild.formats.xyz import read_xyz
     from pymbar.timeseries import detectEquilibration
@@ -132,79 +132,42 @@ def run_cassandra(job):
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
-    molecule = job.sp.molecule
-
-    compound = get_molecule(job.sp)
-
-    ensemble = job.sp.ensemble
+    # MoSDeF project - Cassandra keyword mappings
 
     cass_ensembles = {
         "NPT": "npt",
         "GEMC-NVT": "gemc",
     }
 
-    Nliq = job.sp.N_liquid
-    if ensemble == "GEMC-NVT":
-        Nvap = job.sp.N_vap
-    else:
-        Nvap = 0
+    cass_cutoffs = {
+        ("hard", "None"): "cut",
+        ("hard", "energy_pressure"): "cut_tail",
+        ("shift", "None"): "cut_shift",
+    }
 
-    N = Nliq + Nvap
+    # Job settings
 
-    Nlist = [[Nliq]]
+    molecule = job.sp.molecule
+    ensemble = job.sp.ensemble
+    T = job.sp.temperature * u.K
+    P = job.sp.pressure * u.kPa
+    ffname = job.sp.forcefield_name
+    cutoff = job.sp.r_cut * u.nm
+    replica = job.sp.replica
+    compound = get_molecule(job.sp)
+    long_range_correction = job.sp.long_range_correction
+    cutoff_style = job.sp.cutoff_style
+
+    # Simulation settings
 
     equil_length = 40000
     prod_length = 120000
-
-    filled_boxes = construct_system(job.sp)
-
-    liqbox_filled = filled_boxes[0]
-    if ensemble == "GEMC-NVT":
-        vapbox_filled = filled_boxes[1]
-        Nlist.append([Nvap])
-
-    ffname = job.sp.forcefield_name
-    ff = load_ff(ffname)
-    structure = ff.apply(compound)
-
     Tmelt = 1000.0 * u.K
-
-    T = job.sp.temperature * u.K
-    P = job.sp.pressure * u.kPa
-
-    species_list = [structure]
-    cutoff = job.sp.r_cut * u.nm
-
-    seedslist = [
-        [7860904, 8601355],
-        [5793508, 4173039],
-        [4420642, 8720464],
-        [8120272, 5850411],
-        [7616664, 1492980],
-        [6844679, 6087693],
-        [2175335, 1317929],
-        [9725500, 6331893],
-        [4247127, 1385831],
-        [2946981, 9870819],
-        [8434295, 8017520],
-        [8424221, 4595446],
-        [8870203, 3009902],
-        [4564019, 4788324],
-        [3927152, 2536489],
-        [3375750, 1798462],
-    ]
-
-    seeds = seedslist[job.sp.replica]
     cbmc_n_ins = 12
-    cbmc_n_dihed = 50
-
+    # cbmc_n_dihed = 50
+    cbmc_n_dihed = 12
     prop_freq = 10
     coord_freq = 10
-    if ff.combining_rule == "geometric":
-        comb_rule = "geometric"
-    else:
-        comb_rule = "lb"
-
     proplist = [
         "energy_total",
         "volume",
@@ -224,48 +187,161 @@ def run_cassandra(job):
         "energy_self",
         "enthalpy",
     ]
+    seedslist = [
+        [7860904, 8601355],
+        [5793508, 4173039],
+        [4420642, 8720464],
+        [8120272, 5850411],
+        [7616664, 1492980],
+        [6844679, 6087693],
+        [2175335, 1317929],
+        [9725500, 6331893],
+        [4247127, 1385831],
+        [2946981, 9870819],
+        [8434295, 8017520],
+        [8424221, 4595446],
+        [8870203, 3009902],
+        [4564019, 4788324],
+        [3927152, 2536489],
+        [3375750, 1798462],
+    ]
 
-    meltsystem_liq = mc.System([liqbox_filled], species_list, [[Nliq]])
+    # Set seeds
 
-    p_volume = 0.01
-    p_translate = 0.0
-    p_rotate = 0.0
-    p_regrow = 0.0
-    p_swap = 0.0
+    seeds = seedslist[replica]
+
+    # Set probabilities
 
     if molecule == "methaneUA":
         if ensemble == "NPT":
             p_translate = 0.99
-        else:
+            p_volume = 0.01
+        elif ensemble == "GEMC-NVT":
+            p_volume = 0.01
             p_translate = 0.7
             p_swap = 0.29
-    elif molecule == "pentaneUA" and ensemble == "GEMC-NVT":
-        p_swap = 0.2
-        p_translate = 0.27
-        p_rotate = 0.26
-        p_regrow = 0.26
-    elif molecule == "waterSPCE":
-        p_translate = 0.49
-        p_rotate = 0.5
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "waterSPCE":
+        if ensemble == "NPT":
+            p_translate = 0.499
+            p_rotate = 0.5
+            p_volume = 0.001
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "ethanolAA":
+        if ensemble == "NPT":
+            p_translate = 0.337
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.003
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "benzeneUA":
+        if ensemble == "NPT":
+            p_translate = 0.33
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.01
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    if molecule == "pentaneUA":
+        if ensemble == "NPT":
+            p_translate = 0.33
+            p_rotate = 0.33
+            p_regrow = 0.33
+            p_volume = 0.01
+        elif ensemble == "GEMC-NVT":
+            p_swap = 0.2
+            p_translate = 0.27
+            p_rotate = 0.26
+            p_regrow = 0.26
+            p_volume = 0.01
+        else:
+            raise ValueError(
+                "Could not set probabilities for {} since ensemble was not recognized. ".format(
+                    molecule
+                )
+            )
+
+    # Set number of molecules
+
+    if ensemble == "GEMC-NVT":
+        Nvap = job.sp.N_vap
+        Nliq = job.sp.N_liquid
+        Nlist = [[Nliq][Nvap]]
     else:
-        p_translate = 0.33
-        p_rotate = 0.33
-        p_regrow = 0.33
+        Nvap = 0
+        Nliq = job.sp.N_liquid
+        Nlist = [[Nliq]]
 
-    nvtmoves = mc.MoveSet("nvt", species_list)
-    nvtmoves.prob_rotate = p_rotate
-    nvtmoves.prob_translate = p_translate
-    nvtmoves.prob_regrow = p_regrow
+    N = Nliq + Nvap
 
-    moveset = mc.MoveSet(cass_ensembles[ensemble], species_list)
-    moveset.prob_volume = p_volume
-    moveset.prob_translate = p_translate
-    moveset.prob_rotate = p_rotate
-    moveset.prob_regrow = p_regrow
-    moveset.cbmc_n_ins = cbmc_n_ins
-    moveset.cbmc_n_dihed = cbmc_n_dihed
+    # Paramterize current compound with forcefield
+
+    ff = load_ff(ffname)
+    structure = ff.apply(compound)
+    species_list = [structure]
+
+    # Get initial configurations
+
+    filled_boxes = construct_system(job.sp)
+
+    if ensemble == "GEMC-NVT":
+        liqbox_filled = filled_boxes[0]
+        vapbox_filled = filled_boxes[1]
+    else:
+        liqbox_filled = filled_boxes[0]
+        vapbox_filled = None
+
+    # Set combining rule
+
+    if ff.combining_rule == "geometric":
+        comb_rule = "geometric"
+    else:
+        comb_rule = "lb"
+
+    # Set charge style
+
+    if molecule == "methaneUA":
+        charge_style = "none"
+    else:
+        charge_style = "ewald"
+
+    # Set cutoff style
+
+    cutoff_style = cass_cutoffs[(cutoff_style, long_range_correction)]
 
     with job:
+
+        meltsystem_liq = mc.System([liqbox_filled], species_list, [[Nliq]])
+
+        nvtmoves = mc.MoveSet("nvt", species_list)
+        nvtmoves.prob_rotate = p_rotate
+        nvtmoves.prob_translate = p_translate
+        nvtmoves.prob_regrow = p_regrow
+        nvtmoves.cbmc_n_dihed = cbmc_n_dihed
+
         if not check_complete("nvt_melt"):
             mc.run(
                 system=meltsystem_liq,
@@ -274,8 +350,9 @@ def run_cassandra(job):
                 run_length=5000,
                 temperature=Tmelt,
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
                 vdw_cutoff=cutoff,
+                charge_style=charge_style,
                 charge_cutoff=cutoff,
                 run_name="nvt_melt",
                 prop_freq=prop_freq,
@@ -299,8 +376,9 @@ def run_cassandra(job):
                 run_length=5000,
                 temperature=T,
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
                 vdw_cutoff=cutoff,
+                charge_style=charge_style,
                 charge_cutoff=cutoff,
                 run_name="nvt_equil",
                 prop_freq=prop_freq,
@@ -313,10 +391,12 @@ def run_cassandra(job):
         nvtendbox_liq = read_xyz("nvt_equil.out.xyz")
 
         nvtendbox_liq.box = liqbox_filled.box
+
         boxlist = [nvtendbox_liq]
 
         if ensemble == "GEMC-NVT":
             meltsystem_vap = mc.System([vapbox_filled], species_list, [[Nvap]])
+
             if not check_complete("nvt_melt_vap"):
                 mc.run(
                     system=meltsystem_vap,
@@ -325,8 +405,9 @@ def run_cassandra(job):
                     run_length=5000,
                     temperature=Tmelt,
                     properties=proplist,
-                    cutoff_style="cut",
+                    cutoff_style=cutoff_style,
                     vdw_cutoff=cutoff,
+                    charge_style=charge_style,
                     charge_cutoff=cutoff,
                     run_name="nvt_melt_vap",
                     prop_freq=prop_freq,
@@ -335,10 +416,13 @@ def run_cassandra(job):
                     steps_per_sweep=Nvap,
                     seeds=seeds,
                 )
+
             meltendbox_vap = read_xyz("nvt_melt_vap.out.xyz")
 
             meltendbox_vap.box = vapbox_filled.box
+
             nvtsystem_vap = mc.System([meltendbox_vap], species_list, [[Nvap]])
+
             if not check_complete("nvt_equil_vap"):
                 mc.run(
                     system=nvtsystem_vap,
@@ -347,8 +431,9 @@ def run_cassandra(job):
                     run_length=5000,
                     temperature=T,
                     properties=proplist,
-                    cutoff_style="cut",
+                    cutoff_style=cutoff_style,
                     vdw_cutoff=cutoff,
+                    charge_style=charge_style,
                     charge_cutoff=cutoff,
                     run_name="nvt_equil_vap",
                     prop_freq=prop_freq,
@@ -357,16 +442,28 @@ def run_cassandra(job):
                     steps_per_sweep=Nvap,
                     seeds=seeds,
                 )
+
             nvtendbox_vap = read_xyz("nvt_equil_vap.out.xyz")
 
             nvtendbox_vap.box = vapbox_filled.box
+
             boxlist.append(nvtendbox_vap)
+
             moveset.prob_swap = p_swap
 
         system = mc.System(boxlist, species_list, Nlist)
 
         l_equil = False
+
         cycles_done = 0
+
+        moveset = mc.MoveSet(cass_ensembles[ensemble], species_list)
+        moveset.prob_volume = p_volume
+        moveset.prob_translate = p_translate
+        moveset.prob_rotate = p_rotate
+        moveset.prob_regrow = p_regrow
+        moveset.cbmc_n_ins = cbmc_n_ins
+        moveset.cbmc_n_dihed = cbmc_n_dihed
 
         this_run = "equil_" + str(cycles_done)
         if not has_checkpoint(this_run):
@@ -378,8 +475,9 @@ def run_cassandra(job):
                 temperature=T,
                 pressure=P,  # this line is ignored if ensemble isn't NPT
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
                 vdw_cutoff=cutoff,
+                charge_style=charge_style,
                 charge_cutoff=cutoff,
                 run_name=this_run,
                 prop_freq=prop_freq,
