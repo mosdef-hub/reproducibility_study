@@ -4,9 +4,9 @@ import os
 import pathlib
 
 import flow
+import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
-import numpy as np
 
 
 class Project(FlowProject):
