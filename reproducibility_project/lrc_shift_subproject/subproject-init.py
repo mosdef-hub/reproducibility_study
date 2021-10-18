@@ -81,7 +81,7 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "methaneUA": ["NPT", "GEMC-NVT"],
+    "methaneUA": ["NPT", None],
     "waterSPCE": ["NPT", None],
     "ethanolAA": ["NPT", None],
 }
