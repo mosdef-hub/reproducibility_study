@@ -6,6 +6,7 @@ import pathlib
 import flow
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
+import numpy as np
 
 
 class Project(FlowProject):
