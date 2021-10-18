@@ -278,6 +278,15 @@ def check_equilibration(job, method, eq_property):
     return iseq
 
 
+def clean_data(data):
+    """Delete rows in numpy array which contain nan values.
+
+    The HOOMD Table file writer always writes a header, but for restarted jobs,
+    this header is in the middle of the file, which creates nan values.
+    """
+    return np.delete(data, np.where(np.isnan(data["timestep"]))[0], axis=0)
+
+
 class Status:
     """Monitor the status of a simulation."""
 
