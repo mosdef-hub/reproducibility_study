@@ -10,5 +10,6 @@
 
 module load anaconda/v3.6_5.2
 source activate mosdef-study38
+module load gromacs/2020.6
 
 {% endblock header %}
