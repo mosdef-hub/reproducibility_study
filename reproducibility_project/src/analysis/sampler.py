@@ -1,5 +1,8 @@
 """Use the pymbar package to perform decorrelated equilibration sampling."""
 
+from typing import List
+from warnings import warn
+
 import numpy as np
 import pandas as pd
 import signac
@@ -9,11 +12,12 @@ from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 def sample_job(
-    job,
-    filename="log.txt",
-    variable="potential_energy",
-    threshold_fraction=0.75,
-    threshold_neff=100,
+    job: signac.contrib.job.Job,
+    ensemble: str,
+    filename: str = "log.txt",
+    variable: str = "potential_energy",
+    threshold_fraction: float = 0.75,
+    threshold_neff: int = 100,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
@@ -24,6 +28,9 @@ def sample_job(
     ----------
     job : signac.contrib.job.Job
         The Job object.
+    ensemble : str
+        The ensemble of interest, affects the name of the sampled values in
+        the job.doc
     filename : str, default "log.txt"
         The relative path (from the job directory) to the log file to be
         analyzed.
@@ -34,10 +41,11 @@ def sample_job(
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
     """
+    doc_name = f"{ensemble}/sampling_results"
     try:
-        job.doc["sampling_results"]
+        job.doc[doc_name]
     except KeyError:
-        job.doc["sampling_results"] = {}
+        job.doc[doc_name] = {}
 
     data = np.genfromtxt(job.fn(filename), names=True)[variable]
     start, stop, step, Neff = _decorr_sampling(
@@ -45,21 +53,49 @@ def sample_job(
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
     )
-    job.doc["sampling_results"][variable] = {
-        "start": start,
-        "stop": stop,
-        "step": step,
-        "Neff": Neff,
-    }
+    if start is not None:
+        job.doc[doc_name][variable] = {
+            "start": start,
+            "stop": stop,
+            "step": step,
+            "Neff": Neff,
+        }
+    else:
+        warn(f"Property {variable} is not equilibrated.")
 
 
-def write_subsampled_values(
+def get_subsampled_values(
     job: signac.contrib.project.Job,
     property: str,
-    property_filename: str = "log.txt",
-    overwrite: bool = False,
+    ensemble: str,
+    property_filename: str = "log-npt.txt",
 ) -> None:
-    """Write out subsampled values to a Job's 'data' document."""
+    """Return subsampled values based on the sampling results of sample_job.
+
+    Using the results from `sample_job` in the job document, iterate through
+    the property file and return a numpy array of the subsampled data.
+
+    This only writes out the subsampled values, the statistical averaging
+    will take place in the `analysis-project.py` file.
+
+    Parameters
+    ----------
+    job : signac.contrib.project.Job, required
+        The signac job to operate on.
+    property : str, required
+        The property of interest to write out the subsampled data.
+    ensemble : str, required
+        The ensemble that the data was sampled from.
+    property_filename : str, optional, default="log-npt.txt"
+        The filename to sample the data from.
+
+    Examples
+    --------
+    >>> arr = write_subsampled_values(job, property="potential_energy",
+                                ensemble="npt",
+                                property_filename="log-npt.txt")
+    >>> assert isinstance(arr, np.ndarray)
+    """
     if not isinstance(job, signac.contrib.project.Job):
         raise TypeError(
             f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
@@ -70,15 +106,7 @@ def write_subsampled_values(
             f"Expected 'property' to be a name of a property, was provided {property}."
         )
 
-    if (
-        not overwrite
-        and job.data.get(f"subsamples/{property}", None) is not None
-    ):
-        raise ValueError(
-            f"Attempting to overwrite already existing data for property: {property}, set overwrite=True to do this."
-        )
-
-    sampling_dict = job.doc["sampling_results"][f"{property}"]
+    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{property}"]
     start = sampling_dict["start"]
     stop = sampling_dict["stop"]
     step = sampling_dict["step"]
@@ -93,8 +121,7 @@ def write_subsampled_values(
         df = pd.read_csv(
             f"{property_filename}", delim_whitespace=True, header=0
         )
-        property_subsamples = df[f"{property}"].to_numpy()[indices]
-        job.data[f"subsamples/{property}"] = property_subsamples
+        return df[f"{property}"].to_numpy()[indices]
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
@@ -126,9 +153,38 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
             Neff,
         )
     else:
-        raise ValueError(
+        warn(
             "Property does not have requisite threshold of production data "
             "expected. More production data is needed, or the threshold needs "
             "to be lowered. See project.src.analysis.equilibration.is_equilibrated"
             " for more information."
         )
+        return (None, None, None, None)
+
+
+def get_decorr_samples_using_max_t0(
+    job: signac.contrib.Project.Job,
+    ensemble: str,
+    property_filename: str,
+    property: str,
+    threshold_fraction: float = 0.75,
+    threshold_neff: int = 100,
+) -> List[float]:
+    """Return the subsamples of data according to maximum t0."""
+    t0 = job.doc.get(f"{ensemble}/max_t0")
+
+    if t0 is None:
+        raise ValueError(
+            "Max t0 has not be calculated yet, refer to project-analysis.py"
+        )
+
+    with job:
+        df = pd.read_csv(
+            f"{property_filename}", delim_whitespace=True, header=0
+        )
+        a_t = df[f"{property}"].to_numpy()[t0:]
+        uncorr_indices = timeseries.subsampleCorrelatedData(
+            A_t=a_t,
+            conservative=True,
+        )
+    return a_t[uncorr_indices]
