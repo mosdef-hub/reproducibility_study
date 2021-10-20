@@ -211,6 +211,10 @@ def run_cassandra(job):
     seeds = seedslist[replica]
 
     # Set probabilities
+    p_translate = 0.0
+    p_rotate = 0.0
+    p_volume = 0.0
+    p_regrow = 0.0
 
     if molecule == "methaneUA":
         if ensemble == "NPT":
