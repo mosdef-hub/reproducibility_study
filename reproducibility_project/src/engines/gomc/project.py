@@ -101,28 +101,28 @@ use_pymbar = True  # True of False
 ff_info_dict = {
     "trappe-ua": {
         "ngpu": 0,
-        "ncpu": 2,
+        "ncpu": 1,
         "Ewald": False,
         "ElectroStatic": False,
         "VDWGeometricSigma": False,
     },
     "benzene-ua": {
         "ngpu": 0,
-        "ncpu": 2,
+        "ncpu": 1,
         "Ewald": False,
         "ElectroStatic": False,
         "VDWGeometricSigma": False,
     },
     "spce": {
         "ngpu": 1,
-        "ncpu": 4,
+        "ncpu": 1,
         "Ewald": True,
         "ElectroStatic": True,
         "VDWGeometricSigma": False,
     },
     "oplsaa": {
-        "ngpu": 1,
-        "ncpu": 4,
+        "ngpu": 0,
+        "ncpu": 8,
         "Ewald": True,
         "ElectroStatic": True,
         "VDWGeometricSigma": True,
