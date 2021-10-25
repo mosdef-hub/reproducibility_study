@@ -50,12 +50,12 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/wsu/home/go/go07/go0719/GOMC/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10# ** 3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10# ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10  # ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10  # ** 3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10# ** 3
+    40 * 10  # ** 3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120# * 10# ** 3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 120  # * 10# ** 3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
@@ -644,10 +644,14 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
 def part_4d_job_production_run_completed_properly(job):
     """Check to see if the production run (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, production_control_file_name_str)
-    
+
+
 @FlowProject.label
 def after_all_jobs_ran(*jobs):
-    return all(gomc_sim_completed_properly(job, production_control_file_name_str) for job in jobs)
+    return all(
+        gomc_sim_completed_properly(job, production_control_file_name_str)
+        for job in jobs
+    )
 
 
 # ******************************************************
@@ -2232,15 +2236,14 @@ def run_production_run_gomc_command(job):
 #       analysis
 #
 
-#def statepoint_minus_replica(job):
+# def statepoint_minus_replica(job):
 #    keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
 #    return [job.sp[k] for k in keys]
 
 
-
-@aggregator.groupby("molecule", sort_by="ensemble") #use g/cm^3
-#@aggregator.groupby(key=statepoint_minus_replica)
-#returns a function as an argument and returns a function
+@aggregator.groupby("molecule", sort_by="ensemble")  # use g/cm^3
+# @aggregator.groupby(key=statepoint_minus_replica)
+# returns a function as an argument and returns a function
 @Project.operation.with_directives(
     {
         "np": 1,
@@ -2249,22 +2252,24 @@ def run_production_run_gomc_command(job):
         "walltime": walltime_gomc_hr,
     }
 )
-#@FlowProject.pre(lambda *jobs: all(is_started(job) for job in jobs))
+# @FlowProject.pre(lambda *jobs: all(is_started(job) for job in jobs))
 @FlowProject.pre(after_all_jobs_ran)
 @FlowProject.post.isfile("log.txt")
 def analysis(*jobs):
-#    if not all(is_done(job) for job in jobs):
-#        warnings.warn("Not all jobs are complete! Proceed cautiously, statisticians beware.")
-#        print("Not all jobs are complete! Proceed cautiously, statisticians beware." ,job)
+    #    if not all(is_done(job) for job in jobs):
+    #        warnings.warn("Not all jobs are complete! Proceed cautiously, statisticians beware.")
+    #        print("Not all jobs are complete! Proceed cautiously, statisticians beware." ,job)
 
-    dataHere = open("log.txt","w")
-    moreDateHere = open("averagesWithinReplicates.txt","w")
-    #evenMoreDataHere = open("replicateAverage.txt","w")
-    dataHere.write(f"{'mean energy':22} {'std energy':22} {'mean pressure':22} {'std pressure':22} {'mean density':22} {'std density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} \n")
-   
-    allTheJobs = np.double(len(list(pr.groupby())))#{"replica"}))))
+    dataHere = open("log.txt", "w")
+    moreDateHere = open("averagesWithinReplicates.txt", "w")
+    # evenMoreDataHere = open("replicateAverage.txt","w")
+    dataHere.write(
+        f"{'mean energy':22} {'std energy':22} {'mean pressure':22} {'std pressure':22} {'mean density':22} {'std density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} \n"
+    )
+
+    allTheJobs = np.double(len(list(pr.groupby())))  # {"replica"}))))
     print(len(jobs))
-    replicaCount = allTheJobs/np.double(len(pr.find_jobs({"replica":1})))
+    replicaCount = allTheJobs / np.double(len(pr.find_jobs({"replica": 1})))
     uniqueJobs = np.double(len(pr.find_jobs())) / replicaCount
 
     allTheJobs = int(allTheJobs)
@@ -2291,37 +2296,69 @@ def analysis(*jobs):
     replicateAveZ_averageB2 = pd.DataFrame()
 
     for i in range(replicaCount):
-        replicateAvedensity_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAvepotential_energy_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAvepressure_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveT_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveMol_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveZ_average.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        simNameHolder.insert(loc = 0, column = "rep{}".format(int(i)), value = "")
+        replicateAvedensity_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAvepotential_energy_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAvepressure_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAveT_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAveMol_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAveZ_average.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        simNameHolder.insert(loc=0, column="rep{}".format(int(i)), value="")
 
-        replicateAvedensity_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAvepotential_energy_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAvepressure_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveT_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveMol_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        simNameHolderB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
-        replicateAveZ_averageB2.insert(loc = 0, column = "rep{}".format(int(i)), value = 0)
+        replicateAvedensity_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAvepotential_energy_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAvepressure_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAveT_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        replicateAveMol_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
+        simNameHolderB2.insert(loc=0, column="rep{}".format(int(i)), value=0)
+        replicateAveZ_averageB2.insert(
+            loc=0, column="rep{}".format(int(i)), value=0
+        )
 
     loopCount = 0
 
     for job in jobs:
-        with(job):
-            
-            if ((job.sp.ensemble == "GEMC-NVT") or (job.sp.ensemble == "GEMC-NVT")):
-                dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_1.dat")
-                dataFileName_2 = str("Blk_"+production_control_file_name_str+"_BOX_0.dat")
+        with (job):
+
+            if (job.sp.ensemble == "GEMC-NVT") or (
+                job.sp.ensemble == "GEMC-NVT"
+            ):
+                dataFileName_1 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                )
+                dataFileName_2 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_0.dat"
+                )
 
                 potential_energyB2 = np.loadtxt(dataFileName_2)[:, 1]
                 pressureB2 = np.loadtxt(dataFileName_2)[:, 10]
                 densityB2 = np.loadtxt(dataFileName_2)[:, 12]
                 ZB2 = np.loadtxt(dataFileName_2)[:, 13]
             else:
-                dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_0.dat")
+                dataFileName_1 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_0.dat"
+                )
 
             MCstep = np.loadtxt(dataFileName_1)[:, 0]
             MCstepCount = len(MCstep)
@@ -2331,187 +2368,347 @@ def analysis(*jobs):
             density = np.loadtxt(dataFileName_1)[:, 12]
             Z = np.loadtxt(dataFileName_1)[:, 13]
 
-            if((job.sp.ensemble == "GEMC-NVT") or (job.sp.ensemble == "GEMC-NVT")):#(averageIdeeName[0] in replicateAvedensity_average.index):
-                averageIdeeName = [str(str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.molecule) + str(job.sp.temperature) + str(job.sp.pressure) + str(job.sp.ensemble)) + dataFileName_1 + dataFileName_2 + str(job.sp.cutoff_style) + str(job.sp.long_range_correction), "rep{}".format(int(job.sp.replica))]
+            if (job.sp.ensemble == "GEMC-NVT") or (
+                job.sp.ensemble == "GEMC-NVT"
+            ):  # (averageIdeeName[0] in replicateAvedensity_average.index):
+                averageIdeeName = [
+                    str(
+                        str(job.sp.engine)
+                        + str(job.sp.ensemble)
+                        + str(job.sp.molecule)
+                        + str(job.sp.temperature)
+                        + str(job.sp.pressure)
+                        + str(job.sp.ensemble)
+                    )
+                    + dataFileName_1
+                    + dataFileName_2
+                    + str(job.sp.cutoff_style)
+                    + str(job.sp.long_range_correction),
+                    "rep{}".format(int(job.sp.replica)),
+                ]
 
-                replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(density)/np.double(len(density)))
-                replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(potential_energy)/np.double(len(potential_energy)))
-                replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(pressure)/np.double(len(pressure)))
-                replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]] = job.sp.temperature
-                simNameHolder.loc[averageIdeeName[0], averageIdeeName[1]] =  str(job.sp.engine) + str(job.sp.ensemble) + dataFileName_1 + str(job.sp.cutoff_style) + str(job.sp.long_range_correction) + str(job.sp.ensemble)
+                replicateAvedensity_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(density) / np.double(len(density)))
+                replicateAvepotential_energy_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(
+                    np.sum(potential_energy) / np.double(len(potential_energy))
+                )
+                replicateAvepressure_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(pressure) / np.double(len(pressure)))
+                replicateAveT_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = job.sp.temperature
+                simNameHolder.loc[averageIdeeName[0], averageIdeeName[1]] = (
+                    str(job.sp.engine)
+                    + str(job.sp.ensemble)
+                    + dataFileName_1
+                    + str(job.sp.cutoff_style)
+                    + str(job.sp.long_range_correction)
+                    + str(job.sp.ensemble)
+                )
 
-                replicateAveZ_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(Z)/np.double(len(Z)))
-                
+                replicateAveZ_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(Z) / np.double(len(Z)))
 
-                replicateAvedensity_averageB2.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(densityB2)/np.double(len(densityB2)))
-                replicateAvepotential_energy_averageB2.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(potential_energyB2)/np.double(len(potential_energyB2)))
-                replicateAvepressure_averageB2.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(pressureB2)/np.double(len(pressureB2)))
-                replicateAveT_averageB2.loc[averageIdeeName[0], averageIdeeName[1]] = job.sp.temperature
-                simNameHolderB2.loc[averageIdeeName[0], averageIdeeName[1]] =  str(job.sp.engine) + str(job.sp.ensemble) + dataFileName_2
-                
-                replicateAveZ_averageB2.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(ZB2)/np.double(len(ZB2)))
+                replicateAvedensity_averageB2.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(densityB2) / np.double(len(densityB2)))
+                replicateAvepotential_energy_averageB2.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(
+                    np.sum(potential_energyB2)
+                    / np.double(len(potential_energyB2))
+                )
+                replicateAvepressure_averageB2.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(pressureB2) / np.double(len(pressureB2)))
+                replicateAveT_averageB2.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = job.sp.temperature
+                simNameHolderB2.loc[averageIdeeName[0], averageIdeeName[1]] = (
+                    str(job.sp.engine) + str(job.sp.ensemble) + dataFileName_2
+                )
+
+                replicateAveZ_averageB2.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(ZB2) / np.double(len(ZB2)))
 
             else:
-                averageIdeeName = [str(str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.molecule) + str(job.sp.temperature) + str(job.sp.pressure) + str(job.sp.ensemble)) + dataFileName_1 + str(job.sp.cutoff_style) + str(job.sp.long_range_correction), "rep{}".format(int(job.sp.replica))]
+                averageIdeeName = [
+                    str(
+                        str(job.sp.engine)
+                        + str(job.sp.ensemble)
+                        + str(job.sp.molecule)
+                        + str(job.sp.temperature)
+                        + str(job.sp.pressure)
+                        + str(job.sp.ensemble)
+                    )
+                    + dataFileName_1
+                    + str(job.sp.cutoff_style)
+                    + str(job.sp.long_range_correction),
+                    "rep{}".format(int(job.sp.replica)),
+                ]
 
-                replicateAvedensity_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(density)/np.double(len(density)))
-                replicateAvepotential_energy_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(potential_energy)/np.double(len(potential_energy)))
-                replicateAvepressure_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(pressure)/np.double(len(pressure)))
-                replicateAveT_average.loc[averageIdeeName[0], averageIdeeName[1]] = job.sp.temperature
-                simNameHolder.loc[averageIdeeName[0], averageIdeeName[1]] =  str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.cutoff_style) + str(job.sp.long_range_correction) + str(job.sp.ensemble)
-                
-                replicateAveZ_average.loc[averageIdeeName[0], averageIdeeName[1]] = np.double(np.sum(Z)/np.double(len(Z)))
-                            
+                replicateAvedensity_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(density) / np.double(len(density)))
+                replicateAvepotential_energy_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(
+                    np.sum(potential_energy) / np.double(len(potential_energy))
+                )
+                replicateAvepressure_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(pressure) / np.double(len(pressure)))
+                replicateAveT_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = job.sp.temperature
+                simNameHolder.loc[averageIdeeName[0], averageIdeeName[1]] = (
+                    str(job.sp.engine)
+                    + str(job.sp.ensemble)
+                    + str(job.sp.cutoff_style)
+                    + str(job.sp.long_range_correction)
+                    + str(job.sp.ensemble)
+                )
 
-    simulationAvepotential_energy_average = [0.0]*len(replicateAvedensity_average.index)
-    simulationAvepressure_average = [0.0]*len(replicateAvedensity_average.index)
-    simulationAvedensity_average = [0.0]*len(replicateAvedensity_average.index)
-    simulationAveT = [0.0]*len(replicateAvedensity_average.index)    
-    simName = [""]*len(replicateAvedensity_average.index)
-    zOutAve = [0.0]*len(replicateAvedensity_average.index) 
-    
-    simulationStdpotential_energy_average = [0.0]*len(replicateAvedensity_average.index)
-    simulationStdpressure_average = [0.0]*len(replicateAvedensity_average.index)
-    simulationStddensity = [0.0]*len(replicateAvedensity_average.index)
-    zOutStd = [0.0]*len(replicateAvedensity_average.index)
+                replicateAveZ_average.loc[
+                    averageIdeeName[0], averageIdeeName[1]
+                ] = np.double(np.sum(Z) / np.double(len(Z)))
 
-    simulationAvepotential_energy_averageB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    simulationAvepressure_averageB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    simulationAvedensity_averageB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    simulationAveTB2 = [0.0]*len(replicateAvedensity_averageB2.index)    
-    simNameB2 = [""]*len(replicateAvedensity_averageB2.index)
-    zOutAveB2 = [0.0]*len(replicateAvedensity_averageB2.index) 
-    
-    simulationStdpotential_energy_averageB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    simulationStdpressure_averageB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    simulationStddensityB2 = [0.0]*len(replicateAvedensity_averageB2.index)
-    zOutStdB2 = [0.0]*len(replicateAvedensity_averageB2.index)
+    simulationAvepotential_energy_average = [0.0] * len(
+        replicateAvedensity_average.index
+    )
+    simulationAvepressure_average = [0.0] * len(
+        replicateAvedensity_average.index
+    )
+    simulationAvedensity_average = [0.0] * len(
+        replicateAvedensity_average.index
+    )
+    simulationAveT = [0.0] * len(replicateAvedensity_average.index)
+    simName = [""] * len(replicateAvedensity_average.index)
+    zOutAve = [0.0] * len(replicateAvedensity_average.index)
+
+    simulationStdpotential_energy_average = [0.0] * len(
+        replicateAvedensity_average.index
+    )
+    simulationStdpressure_average = [0.0] * len(
+        replicateAvedensity_average.index
+    )
+    simulationStddensity = [0.0] * len(replicateAvedensity_average.index)
+    zOutStd = [0.0] * len(replicateAvedensity_average.index)
+
+    simulationAvepotential_energy_averageB2 = [0.0] * len(
+        replicateAvedensity_averageB2.index
+    )
+    simulationAvepressure_averageB2 = [0.0] * len(
+        replicateAvedensity_averageB2.index
+    )
+    simulationAvedensity_averageB2 = [0.0] * len(
+        replicateAvedensity_averageB2.index
+    )
+    simulationAveTB2 = [0.0] * len(replicateAvedensity_averageB2.index)
+    simNameB2 = [""] * len(replicateAvedensity_averageB2.index)
+    zOutAveB2 = [0.0] * len(replicateAvedensity_averageB2.index)
+
+    simulationStdpotential_energy_averageB2 = [0.0] * len(
+        replicateAvedensity_averageB2.index
+    )
+    simulationStdpressure_averageB2 = [0.0] * len(
+        replicateAvedensity_averageB2.index
+    )
+    simulationStddensityB2 = [0.0] * len(replicateAvedensity_averageB2.index)
+    zOutStdB2 = [0.0] * len(replicateAvedensity_averageB2.index)
 
     k = 0
-    for i in replicateAvedensity_average.index:#j in replicateAvedensity_average.columns:
+    for (
+        i
+    ) in (
+        replicateAvedensity_average.index
+    ):  # j in replicateAvedensity_average.columns:
 
-        for j in replicateAvedensity_average.columns:#i in replicateAvedensity_average.index:
-            simulationAvedensity_average[k] = simulationAvedensity_average[k] + replicateAvedensity_average.loc[i,j]
-            simulationAvepotential_energy_average[k] = simulationAvepotential_energy_average[k] + replicateAvepotential_energy_average.loc[i,j]
-            simulationAvepressure_average[k] = simulationAvepressure_average[k] + replicateAvepressure_average.loc[i,j]
-            simulationAveT[k] = replicateAveT_average.loc[i,j]
-            simName[k] = simNameHolder.loc[i,j] + "|BOXgas|"
-            zOutAve[k] = zOutAve[k] + replicateAveZ_average.loc[i,j]
+        for (
+            j
+        ) in (
+            replicateAvedensity_average.columns
+        ):  # i in replicateAvedensity_average.index:
+            simulationAvedensity_average[k] = (
+                simulationAvedensity_average[k]
+                + replicateAvedensity_average.loc[i, j]
+            )
+            simulationAvepotential_energy_average[k] = (
+                simulationAvepotential_energy_average[k]
+                + replicateAvepotential_energy_average.loc[i, j]
+            )
+            simulationAvepressure_average[k] = (
+                simulationAvepressure_average[k]
+                + replicateAvepressure_average.loc[i, j]
+            )
+            simulationAveT[k] = replicateAveT_average.loc[i, j]
+            simName[k] = simNameHolder.loc[i, j] + "|BOXgas|"
+            zOutAve[k] = zOutAve[k] + replicateAveZ_average.loc[i, j]
 
-            #dataHere.write(f"{replicateAvepotential_energy_average.loc[i,j]*8.3144626181532/1000:22} {replicateAvepotential_energy_average.loc[i,j]*8.3144626181532/1000:22} {replicateAvepressure_average.loc[i,j]*100:22} {replicateAvepressure_average.loc[i,j]*100:22} {replicateAvedensity_average.loc[i,j]/1000:22} {replicateAvedensity_average.loc[i,j]/1000:22} {replicateAveZ_average.loc[i,j]:22} {replicateAveZ_average.loc[i,j]:22} {simulationAveT[k]:22} {simName[k]} every sim \n")
+            # dataHere.write(f"{replicateAvepotential_energy_average.loc[i,j]*8.3144626181532/1000:22} {replicateAvepotential_energy_average.loc[i,j]*8.3144626181532/1000:22} {replicateAvepressure_average.loc[i,j]*100:22} {replicateAvepressure_average.loc[i,j]*100:22} {replicateAvedensity_average.loc[i,j]/1000:22} {replicateAvedensity_average.loc[i,j]/1000:22} {replicateAveZ_average.loc[i,j]:22} {replicateAveZ_average.loc[i,j]:22} {simulationAveT[k]:22} {simName[k]} every sim \n")
 
-            if ("GEMC" in i):
-                simulationAvedensity_averageB2[k] = simulationAvedensity_averageB2[k] + replicateAvedensity_averageB2.loc[i,j]
-                simulationAvepotential_energy_averageB2[k] = simulationAvepotential_energy_averageB2[k] + replicateAvepotential_energy_averageB2.loc[i,j]
-                simulationAvepressure_averageB2[k] = simulationAvepressure_averageB2[k] + replicateAvepressure_averageB2.loc[i,j]
-                simulationAveTB2[k] = replicateAveT_averageB2.loc[i,j]
-                simNameB2[k] = simNameHolder.loc[i,j] + "|BOXliq|"        
-                zOutAveB2[k] = zOutAveB2[k] + replicateAveZ_averageB2.loc[i,j]
+            if "GEMC" in i:
+                simulationAvedensity_averageB2[k] = (
+                    simulationAvedensity_averageB2[k]
+                    + replicateAvedensity_averageB2.loc[i, j]
+                )
+                simulationAvepotential_energy_averageB2[k] = (
+                    simulationAvepotential_energy_averageB2[k]
+                    + replicateAvepotential_energy_averageB2.loc[i, j]
+                )
+                simulationAvepressure_averageB2[k] = (
+                    simulationAvepressure_averageB2[k]
+                    + replicateAvepressure_averageB2.loc[i, j]
+                )
+                simulationAveTB2[k] = replicateAveT_averageB2.loc[i, j]
+                simNameB2[k] = simNameHolder.loc[i, j] + "|BOXliq|"
+                zOutAveB2[k] = zOutAveB2[k] + replicateAveZ_averageB2.loc[i, j]
 
-                #dataHere.write(f"{replicateAvepotential_energy_averageB2.loc[i,j]*8.3144626181532/1000:22} {replicateAvepotential_energy_averageB2.loc[i,j]*8.3144626181532/1000:22} {replicateAvepressure_averageB2.loc[i,j]*100:22} {replicateAvepressure_averageB2.loc[i,j]*100:22} {replicateAvedensity_averageB2.loc[i,j]/1000:22} {replicateAvedensity_averageB2.loc[i,j]/1000:22} {replicateAveZ_averageB2.loc[i,j]:22} {replicateAveZ_averageB2.loc[i,j]:22} {simulationAveTB2[k]:22} {simNameB2[k]} every sim \n")
+                # dataHere.write(f"{replicateAvepotential_energy_averageB2.loc[i,j]*8.3144626181532/1000:22} {replicateAvepotential_energy_averageB2.loc[i,j]*8.3144626181532/1000:22} {replicateAvepressure_averageB2.loc[i,j]*100:22} {replicateAvepressure_averageB2.loc[i,j]*100:22} {replicateAvedensity_averageB2.loc[i,j]/1000:22} {replicateAvedensity_averageB2.loc[i,j]/1000:22} {replicateAveZ_averageB2.loc[i,j]:22} {replicateAveZ_averageB2.loc[i,j]:22} {simulationAveTB2[k]:22} {simNameB2[k]} every sim \n")
 
-        
         k += 1
     k = 0
 
-
-
     for i in replicateAvedensity_average.index:
-            simulationAvedensity_average[k] /= replicaCount
-            simulationAvepotential_energy_average[k] /= replicaCount
-            simulationAvepressure_average[k] /= replicaCount
-            zOutAve[k] /= replicaCount
+        simulationAvedensity_average[k] /= replicaCount
+        simulationAvepotential_energy_average[k] /= replicaCount
+        simulationAvepressure_average[k] /= replicaCount
+        zOutAve[k] /= replicaCount
 
-            if ("GEMC" in i):
-                simulationAvedensity_averageB2[k] /= replicaCount
-                simulationAvepotential_energy_averageB2[k] /= replicaCount
-                simulationAvepressure_averageB2[k] /= replicaCount
-                zOutAveB2[k] /= replicaCount
+        if "GEMC" in i:
+            simulationAvedensity_averageB2[k] /= replicaCount
+            simulationAvepotential_energy_averageB2[k] /= replicaCount
+            simulationAvepressure_averageB2[k] /= replicaCount
+            zOutAveB2[k] /= replicaCount
 
-            k += 1
+        k += 1
 
     k = 0
-    for i in replicateAvedensity_average.index: #j in replicateAvedensity_average.columns:
+    for (
+        i
+    ) in (
+        replicateAvedensity_average.index
+    ):  # j in replicateAvedensity_average.columns:
 
-        for j in replicateAvedensity_average.columns: #i in replicateAvedensity_average.index:
-            simulationStddensity[k] += (replicateAvedensity_average.loc[i,j] - simulationAvedensity_average[k])**2
-            simulationStdpotential_energy_average[k] += (replicateAvepotential_energy_average.loc[i,j] - simulationAvepotential_energy_average[k])**2
-            simulationStdpressure_average[k] += (replicateAvepressure_average.loc[i,j] - simulationAvepressure_average[k])**2
-            zOutStd[k] += (replicateAveZ_average.loc[i,j] - zOutAve[k])**2
+        for (
+            j
+        ) in (
+            replicateAvedensity_average.columns
+        ):  # i in replicateAvedensity_average.index:
+            simulationStddensity[k] += (
+                replicateAvedensity_average.loc[i, j]
+                - simulationAvedensity_average[k]
+            ) ** 2
+            simulationStdpotential_energy_average[k] += (
+                replicateAvepotential_energy_average.loc[i, j]
+                - simulationAvepotential_energy_average[k]
+            ) ** 2
+            simulationStdpressure_average[k] += (
+                replicateAvepressure_average.loc[i, j]
+                - simulationAvepressure_average[k]
+            ) ** 2
+            zOutStd[k] += (replicateAveZ_average.loc[i, j] - zOutAve[k]) ** 2
 
-            if ("GEMC" in i):
-                simulationStddensityB2[k] += (replicateAvedensity_averageB2.loc[i,j] - simulationAvedensity_averageB2[k])**2
-                simulationStdpotential_energy_averageB2[k] += (replicateAvepotential_energy_averageB2.loc[i,j] - simulationAvepotential_energy_averageB2[k])**2
-                simulationStdpressure_averageB2[k] += (replicateAvepressure_averageB2.loc[i,j] - simulationAvepressure_averageB2[k])**2
-                zOutStdB2[k] += (replicateAveZ_averageB2.loc[i,j] - zOutAveB2[k])**2
-            
+            if "GEMC" in i:
+                simulationStddensityB2[k] += (
+                    replicateAvedensity_averageB2.loc[i, j]
+                    - simulationAvedensity_averageB2[k]
+                ) ** 2
+                simulationStdpotential_energy_averageB2[k] += (
+                    replicateAvepotential_energy_averageB2.loc[i, j]
+                    - simulationAvepotential_energy_averageB2[k]
+                ) ** 2
+                simulationStdpressure_averageB2[k] += (
+                    replicateAvepressure_averageB2.loc[i, j]
+                    - simulationAvepressure_averageB2[k]
+                ) ** 2
+                zOutStdB2[k] += (
+                    replicateAveZ_averageB2.loc[i, j] - zOutAveB2[k]
+                ) ** 2
+
         k += 1
 
     k = 0
     for i in replicateAvedensity_average.index:
-        simulationStddensity[k]/= (replicaCount - 1)
+        simulationStddensity[k] /= replicaCount - 1
         simulationStddensity[k] = simulationStddensity[k] ** 0.5
-        
-        simulationStdpotential_energy_average[k] /= (replicaCount - 1)
-        simulationStdpotential_energy_average[k] = simulationStdpotential_energy_average[k] ** 0.5
-        
-        simulationStdpressure_average[k] /= (replicaCount - 1)
-        simulationStdpressure_average[k] = simulationStdpressure_average[k] ** 0.5
-        
-        zOutStd[k] /= (replicaCount + 1)
+
+        simulationStdpotential_energy_average[k] /= replicaCount - 1
+        simulationStdpotential_energy_average[k] = (
+            simulationStdpotential_energy_average[k] ** 0.5
+        )
+
+        simulationStdpressure_average[k] /= replicaCount - 1
+        simulationStdpressure_average[k] = (
+            simulationStdpressure_average[k] ** 0.5
+        )
+
+        zOutStd[k] /= replicaCount + 1
         zOutStd[k] = zOutStd[k] ** 0.5
 
-        if ("GEMC" in i):
-            simulationStddensityB2[k]/= (replicaCount - 1)
+        if "GEMC" in i:
+            simulationStddensityB2[k] /= replicaCount - 1
             simulationStddensityB2[k] = simulationStddensityB2[k] ** 0.5
-            
-            simulationStdpotential_energy_averageB2[k] /= (replicaCount - 1)
-            simulationStdpotential_energy_averageB2[k] = simulationStdpotential_energy_averageB2[k] ** 0.5
-            
-            simulationStdpressure_averageB2[k] /= (replicaCount - 1)
-            simulationStdpressure_averageB2[k] = simulationStdpressure_averageB2[k] ** 0.5
-            
-            zOutStdB2[k] /= (replicaCount + 1)
+
+            simulationStdpotential_energy_averageB2[k] /= replicaCount - 1
+            simulationStdpotential_energy_averageB2[k] = (
+                simulationStdpotential_energy_averageB2[k] ** 0.5
+            )
+
+            simulationStdpressure_averageB2[k] /= replicaCount - 1
+            simulationStdpressure_averageB2[k] = (
+                simulationStdpressure_averageB2[k] ** 0.5
+            )
+
+            zOutStdB2[k] /= replicaCount + 1
             zOutStdB2[k] = zOutStdB2[k] ** 0.5
 
-
         k += 1
-        
 
     k = 0
-    
+
     for i in replicateAvedensity_average.index:
-    
-        simulationAvepotential_energy_average[k] *= 8.3144626181532/1000
-        simulationStdpotential_energy_average[k] *= 8.3144626181532/1000
-        
+
+        simulationAvepotential_energy_average[k] *= 8.3144626181532 / 1000
+        simulationStdpotential_energy_average[k] *= 8.3144626181532 / 1000
+
         simulationAvepressure_average[k] *= 100
         simulationStdpressure_average[k] *= 100
-        
-        
+
         simulationAvedensity_average[k] = simulationAvedensity_average[k] / 1000
         simulationStddensity[k] = simulationStddensity[k] / 1000
-        
-        dataHere.write(f"{simulationAvepotential_energy_average[k]:22} {simulationStdpotential_energy_average[k]:22} {simulationAvepressure_average[k]:22} {simulationStdpressure_average[k]:22} {simulationAvedensity_average[k]:22} { simulationStddensity[k]:22} {zOutAve[k]:22} {zOutStd[k]:22} {simulationAveT[k]:22} {simName[k]}\n")
-        
-        if ("GEMC" in i):
-            simulationAvepotential_energy_averageB2[k] *= 8.3144626181532/1000
-            simulationStdpotential_energy_averageB2[k] *= 8.3144626181532/1000
-            
+
+        dataHere.write(
+            f"{simulationAvepotential_energy_average[k]:22} {simulationStdpotential_energy_average[k]:22} {simulationAvepressure_average[k]:22} {simulationStdpressure_average[k]:22} {simulationAvedensity_average[k]:22} { simulationStddensity[k]:22} {zOutAve[k]:22} {zOutStd[k]:22} {simulationAveT[k]:22} {simName[k]}\n"
+        )
+
+        if "GEMC" in i:
+            simulationAvepotential_energy_averageB2[k] *= 8.3144626181532 / 1000
+            simulationStdpotential_energy_averageB2[k] *= 8.3144626181532 / 1000
+
             simulationAvepressure_averageB2[k] *= 100
             simulationStdpressure_averageB2[k] *= 100
-            
-            
-            simulationAvedensity_averageB2[k] = simulationAvedensity_averageB2[k] / 1000
+
+            simulationAvedensity_averageB2[k] = (
+                simulationAvedensity_averageB2[k] / 1000
+            )
             simulationStddensityB2[k] = simulationStddensityB2[k] / 1000
 
-            dataHere.write(f"{simulationAvepotential_energy_averageB2[k]:22} {simulationStdpotential_energy_averageB2[k]:22} {simulationAvepressure_averageB2[k]:22} {simulationStdpressure_averageB2[k]:22} {simulationAvedensity_averageB2[k]:22} { simulationStddensityB2[k]:22} {zOutAveB2[k]:22} {zOutStdB2[k]:22} {simulationAveTB2[k]:22} {simNameB2[k]}\n")
+            dataHere.write(
+                f"{simulationAvepotential_energy_averageB2[k]:22} {simulationStdpotential_energy_averageB2[k]:22} {simulationAvepressure_averageB2[k]:22} {simulationStdpressure_averageB2[k]:22} {simulationAvedensity_averageB2[k]:22} { simulationStddensityB2[k]:22} {zOutAveB2[k]:22} {zOutStdB2[k]:22} {simulationAveTB2[k]:22} {simNameB2[k]}\n"
+            )
 
-        
         k += 1
-    
+
     dataHere.close()
     moreDateHere.close()
+
 
 # ******************************************************
 # ******************************************************
