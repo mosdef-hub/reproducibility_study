@@ -541,7 +541,7 @@ def prod_finished(job):
 """Setting up workflow operation"""
 
 
-@Project.operation
+@Project.operation.with_directives({"np": 4, "memory": 10})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(
     lambda j: (
