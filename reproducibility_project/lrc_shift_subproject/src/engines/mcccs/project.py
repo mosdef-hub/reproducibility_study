@@ -22,20 +22,11 @@ class Project(flow.FlowProject):
 
 
 class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
-    """Subclass of DefaultSlurmEnvironment for Siepmann Group's Metropolis cluster."""
+    """Subclass of DefaultSlurmEnvironment for Siepmann group cluster."""
 
-    hostname_pattern = r".*\.metropolis2\.chem\.umn\.edu"
-    template = "metropolis2.sh"
-
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--walltime",
-            type=float,
-            default=96,
-            help="Walltime for this submission",
-        )
+    # metropolis.chem.umn.edu
+    hostname_pattern = r".*\.chem\.umn\.edu"
+    template = "metropolis.sh"
 
 
 ex = Project.make_group(name="ex")
@@ -43,7 +34,7 @@ ex = Project.make_group(name="ex")
 
 def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
-    return "/home/rs/group-code/MCCCS-MN-9-21/exe-ifort-9-21/src/topmon"
+    return "/home/rs/software/MCCCS-MN-10-21/exe-ifort-10-21/src/topmon"
 
 
 def print_running_string(job, step):
@@ -550,7 +541,7 @@ def prod_finished(job):
 """Setting up workflow operation"""
 
 
-@Project.operation
+@Project.operation.with_directives({"np": 4, "memory": 10})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(
     lambda j: (
@@ -571,6 +562,7 @@ def prod_finished(job):
 @flow.with_job
 def save_top(job):
     """Save topology files for the two boxes."""
+    print("Saving topology file.")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -627,6 +619,7 @@ def set_prod_replicates(job):
 @Project.post(has_fort_files)
 def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
+    print("Copying files from the root directory to workspace.")
     for file in glob(
         Project().root_directory()
         + "/src/engine_input/mcccs/{}/{}/fort.4.*".format(
@@ -642,6 +635,7 @@ def copy_files(job):
 @Project.post(has_topmon)
 def copy_topmon(job):
     """Copy topmon.inp from root directory to mcccs directory."""
+    print("Copying topmon.")
     shutil.copy(
         Project().root_directory()
         + "/src/engine_input/mcccs/{}/{}/topmon.inp".format(
@@ -658,6 +652,7 @@ def copy_topmon(job):
 @Project.post(files_ready)
 def replace_keyword_fort_files_npt(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
+    print("Replacing keywords in fort files.")
     file_names = ["melt", "cool", "equil", "prod"]
     seed = job.sp.replica
     nchain = job.sp.N_liquid
@@ -683,6 +678,7 @@ def replace_keyword_fort_files_npt(job):
 @Project.post(files_ready)
 def replace_keyword_fort_files_gemc(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
+    print("Replacing keywords in fort files.")
     file_names = ["melt", "cool", "equil", "prod"]
     seed = job.sp.replica
     nchain1 = job.sp.N_liquid
@@ -749,6 +745,7 @@ def replace_keyword_fort_files_gemc(job):
 @Project.post(topmon_ready)
 def replace_lrc_shift_topmon(job):
     """Replace ltailc and lshift in topmon."""
+    print("Replacing lrc and shift boolean in topmon.")
     file_name = job.ws + "/topmon.inp"
     if not job.isfile(file_name):
         return
@@ -803,6 +800,7 @@ def make_lshift_T(filename):
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a restart file for the job using fort77maker."""
+    print("Making restart file.")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
         get_molecule,
