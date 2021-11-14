@@ -520,7 +520,10 @@ def part_3c_output_equilb_design_ensemble_started(job):
                     ]["output_name_control_file_name"]
                 )
             ):
-                if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+                if (
+                    job.doc.equilb_design_ensemble_max_number_under_limit
+                    is True
+                ):
                     return gomc_simulation_started(
                         job,
                         job.doc.equilb_design_ensemble_dict[
@@ -1902,7 +1905,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble")
     print("#**********************")
 
-    fraction_data_required_for_equilbrium = 0.25  #0.25 # float
+    fraction_data_required_for_equilbrium = 0.25  # 0.25 # float
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
 
@@ -2128,8 +2131,8 @@ def pymbar_stabilized_equilb_design_ensemble(job):
 def run_equilb_ensemble_gomc_command(job):
     """Run the gomc equilb_ensemble simulation."""
     if (
-            job.doc.equilb_design_ensemble_number
-            >= equilb_design_ensemble_max_number
+        job.doc.equilb_design_ensemble_number
+        >= equilb_design_ensemble_max_number
     ):
         job.doc.equilb_design_ensemble_max_number_under_limit = False
         # after the equilb_design_ensemble_max_number just accept as stable
@@ -2180,8 +2183,12 @@ def run_equilb_ensemble_gomc_command(job):
                 # so it is rerun if restarted
                 job.doc.equilb_design_ensemble_number += 1
 
-                if job.doc.equilb_design_ensemble_number >= job.doc.equilb_design_ensemble_max_number:
+                if (
+                    job.doc.equilb_design_ensemble_number
+                    >= job.doc.equilb_design_ensemble_max_number
+                ):
                     job.doc.stable_equilb_design_ensemble = True
+
 
 # ******************************************************
 # ******************************************************
