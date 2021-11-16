@@ -438,6 +438,8 @@ def part_2c_equilb_design_ensemble_control_file_written(job):
                     str(job.doc.equilb_design_ensemble_number)
                 ]["output_name_control_file_name"],
             )
+        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+            return True
     except:
         return False
 
@@ -456,6 +458,8 @@ def part_2d_production_control_file_written(job):
                     str(job.doc.equilb_design_ensemble_number)
                 ]["input_name_control_file_name"],
             )
+        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+            return True
     except:
         return False
 
@@ -508,25 +512,31 @@ def part_3b_output_equilb_NVT_started(job):
 def part_3c_output_equilb_design_ensemble_started(job):
     """Check to see if the equilb_design_ensemble (set temperature) gomc simulation is started."""
     try:
-        if job.isfile(
-            "out_{}.dat".format(
-                job.doc.equilb_design_ensemble_dict[
-                    str(job.doc.equilb_design_ensemble_number)
-                ]["output_name_control_file_name"]
-            )
-        ):
-            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-                return gomc_simulation_started(
-                    job,
+        if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+            if job.isfile(
+                "out_{}.dat".format(
                     job.doc.equilb_design_ensemble_dict[
                         str(job.doc.equilb_design_ensemble_number)
-                    ]["output_name_control_file_name"],
+                    ]["output_name_control_file_name"]
                 )
+            ):
+                if (
+                    job.doc.equilb_design_ensemble_max_number_under_limit
+                    is True
+                ):
+                    return gomc_simulation_started(
+                        job,
+                        job.doc.equilb_design_ensemble_dict[
+                            str(job.doc.equilb_design_ensemble_number)
+                        ]["output_name_control_file_name"],
+                    )
+                else:
+                    return False
             else:
                 return False
+        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+            return True
 
-        else:
-            return False
     except:
         return False
 
@@ -538,6 +548,7 @@ def part_3c_output_equilb_design_ensemble_started(job):
 def part_3d_output_production_run_started(job):
     """Check to see if the production run (set temperature) gomc simulation is started."""
     try:
+
         if job.isfile(
             "out_{}.dat".format(
                 job.doc.production_run_ensemble_dict[
@@ -626,13 +637,15 @@ def part_4b_job_equilb_NVT_completed_properly(job):
 def part_4c_job_equilb_design_ensemble_completed_properly(job):
     """Check to see if the equilb_design_ensemble (set temperature) gomc simulation was completed properly."""
     try:
-        return gomc_sim_completed_properly(
-            job,
-            job.doc.equilb_design_ensemble_dict[
-                str(job.doc.equilb_design_ensemble_number)
-            ]["output_name_control_file_name"],
-        )
-
+        if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+            return gomc_sim_completed_properly(
+                job,
+                job.doc.equilb_design_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_number)
+                ]["output_name_control_file_name"],
+            )
+        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+            return True
     except:
         return False
 
@@ -1901,7 +1914,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble")
     print("#**********************")
 
-    fraction_data_required_for_equilbrium = 0.25  # float
+    fraction_data_required_for_equilbrium = 0.25  # 0.25 # float
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
 
@@ -2126,6 +2139,14 @@ def pymbar_stabilized_equilb_design_ensemble(job):
 @flow.with_job
 def run_equilb_ensemble_gomc_command(job):
     """Run the gomc equilb_ensemble simulation."""
+    if (
+        job.doc.equilb_design_ensemble_number
+        >= equilb_design_ensemble_max_number
+    ):
+        job.doc.equilb_design_ensemble_max_number_under_limit = False
+        # after the equilb_design_ensemble_max_number just accept as stable
+        job.doc.stable_equilb_design_ensemble = True
+
     for run_equilb_ensemble_i in range(
         job.doc.equilb_design_ensemble_number, equilb_design_ensemble_max_number
     ):
@@ -2138,6 +2159,8 @@ def run_equilb_ensemble_gomc_command(job):
             >= equilb_design_ensemble_max_number
         ):
             job.doc.equilb_design_ensemble_max_number_under_limit = False
+            # after the equilb_design_ensemble_max_number just accept as stable
+            job.doc.stable_equilb_design_ensemble = True
 
         elif (
             job.doc.stable_equilb_design_ensemble is False
@@ -2168,6 +2191,12 @@ def run_equilb_ensemble_gomc_command(job):
                 # need to add equilb_design_ensemble_number by 1 so it is fixed to run the correct job
                 # so it is rerun if restarted
                 job.doc.equilb_design_ensemble_number += 1
+
+                if (
+                    job.doc.equilb_design_ensemble_number
+                    >= job.doc.equilb_design_ensemble_max_number
+                ):
+                    job.doc.stable_equilb_design_ensemble = True
 
 
 # ******************************************************
@@ -2204,13 +2233,23 @@ def run_production_run_gomc_command(job):
     print("# Started the run_production_run_gomc_command function.")
     print("#**********************")
 
-    control_file_name_str = job.doc.production_run_ensemble_dict[
-        str(job.doc.equilb_design_ensemble_number)
-    ]["input_name_control_file_name"]
+    if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+        control_file_name_str = job.doc.production_run_ensemble_dict[
+            str(job.doc.equilb_design_ensemble_number)
+        ]["input_name_control_file_name"]
 
-    output_file_name_str = job.doc.production_run_ensemble_dict[
-        str(job.doc.equilb_design_ensemble_number)
-    ]["output_name_control_file_name"]
+        output_file_name_str = job.doc.production_run_ensemble_dict[
+            str(job.doc.equilb_design_ensemble_number)
+        ]["output_name_control_file_name"]
+
+    elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+        control_file_name_str = job.doc.production_run_ensemble_dict[
+            str(int(job.doc.equilb_design_ensemble_number - 1))
+        ]["input_name_control_file_name"]
+
+        output_file_name_str = job.doc.production_run_ensemble_dict[
+            str(int(job.doc.equilb_design_ensemble_number - 1))
+        ]["output_name_control_file_name"]
 
     print(f"Running simulation job id {job}")
     run_command = "{}/{} +p{} {}.conf > out_{}.dat".format(
