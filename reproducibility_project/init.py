@@ -86,8 +86,8 @@ N_liq_molecules = {
     "methaneUA": [900],
     "pentaneUA": [300],
     "benzeneUA": [400],
-    "waterSPCE": [2000, 2000, 2000],
-    "ethanolAA": [700, 700, 700],
+    "waterSPCE": [1100, 1100, 1100],
+    "ethanolAA": [500, 500, 500],
 }
 
 N_vap_molecules = {
@@ -102,8 +102,8 @@ liq_box_lengths = {
     "methaneUA": [39.98] * u.angstrom,
     "pentaneUA": [40.55] * u.angstrom,
     "benzeneUA": [42.17] * u.angstrom,
-    "waterSPCE": [39.14] * u.angstrom,
-    "ethanolAA": [40.79] * u.angstrom,
+    "waterSPCE": [32.07] * u.angstrom,
+    "ethanolAA": [36.46] * u.angstrom,
 }
 
 vap_box_lengths = {

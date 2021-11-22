@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import flow
+import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
@@ -44,7 +45,7 @@ class Fry(DefaultSlurmEnvironment):
 @Project.post(lambda j: j.doc.get("nvt_finished"))
 def run_nvt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "nvt", restart=job.isfile("nvt-trajectory.gsd"))
+    run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
@@ -52,7 +53,7 @@ def run_nvt(job):
 @Project.post(lambda j: j.doc.get("npt_finished"))
 def run_npt(job):
     """Run a simulation with HOOMD-blue."""
-    run_hoomd(job, "npt", restart=job.isfile("npt-trajectory.gsd"))
+    run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
@@ -112,12 +113,22 @@ def run_hoomd(job, method, restart=False):
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=job.sp.r_cut
     )
+    if job.sp.get("cutoff_style") == "shift":
+        for force in forcefield:
+            if isinstance(force, hoomd.md.pair.LJ):
+                force.mode = "shift"
+                print(f"{force} mode set to {force.mode}")
+    if job.sp.get("long_range_correction") == "energy_pressure":
+        for force in forcefield:
+            if isinstance(force, hoomd.md.pair.LJ):
+                force.tail_correction = True
+                print(f"{force} tail_correction set to {force.tail_correction}")
+
     if method == "npt":
         print("Starting NPT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
-            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-npt.gsd")
         else:
             write_gsd(
                 structure,
@@ -127,17 +138,16 @@ def run_hoomd(job, method, restart=False):
                 ref_mass=m,
             )
             filled_box.save(job.fn("starting_compound.json"))
+            initgsd = job.fn("init.gsd")
 
     else:
         print("Starting NVT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
-            with gsd.hoomd.open(job.fn("trajectory-nvt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-nvt.gsd")
         else:
             # nvt overwrites snapshot information with snapshot from npt run
-            with gsd.hoomd.open(job.fn("trajectory-npt.gsd")) as t:
-                snapshot = t[-1]
+            initgsd = job.fn("trajectory-npt.gsd")
 
     if restart:
         writemode = "a"
@@ -153,7 +163,7 @@ def run_hoomd(job, method, restart=False):
         print("HOOMD is running on CPU", flush=True)
 
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
-    sim.create_state_from_snapshot(snapshot)
+    sim.create_state_from_gsd(initgsd)
     gsd_writer = hoomd.write.GSD(
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
@@ -212,7 +222,8 @@ def run_hoomd(job, method, restart=False):
         )
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
-    sim.state.thermalize_particle_momenta(filter=_all, kT=kT)
+    if not restart:
+        sim.state.thermalize_particle_momenta(filter=_all, kT=kT)
 
     if method == "npt":
         # only run with high tauS if we are starting from scratch
@@ -244,7 +255,7 @@ def run_hoomd(job, method, restart=False):
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-    sim.run(1e6)
+    sim.run(5e6)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
@@ -266,6 +277,15 @@ def check_equilibration(job, method, eq_property):
         job.doc[f"std_{eq_property}"] = np.std(prop_data[indices])
     job.doc[f"{method}_eq"] = iseq
     return iseq
+
+
+def clean_data(data):
+    """Delete rows in numpy array which contain nan values.
+
+    The HOOMD Table file writer always writes a header, but for restarted jobs,
+    this header is in the middle of the file, which creates nan values.
+    """
+    return np.delete(data, np.where(np.isnan(data["timestep"]))[0], axis=0)
 
 
 class Status:
