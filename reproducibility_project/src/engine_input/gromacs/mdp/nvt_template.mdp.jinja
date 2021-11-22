@@ -18,9 +18,12 @@ coulombtype         = Cut-off
 coulomb-modifier    = {{  cutoff_style  }}
 rcoulomb            = {{  r_cut  }}
 
-vdwtype             = Cut-off
+vdwtype             = P3M-AD
 vdw-modifier        = {{  cutoff_style  }}
-rvdw                = {{  r_cut  }}
+rvdw                = {{  r_cut }}
+fourierspacing      = 0.1 0.1 0.1
+ewald-rtol          = 10e-5
+
 
 
 tcoupl              = nose-hoover
