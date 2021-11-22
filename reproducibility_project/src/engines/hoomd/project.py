@@ -111,7 +111,12 @@ def run_hoomd(job, method, restart=False):
     m = 0.9999938574
 
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
-        structure, ref_distance=d, ref_energy=e, ref_mass=m, r_cut=job.sp.r_cut
+        structure,
+        ref_distance=d,
+        ref_energy=e,
+        ref_mass=m,
+        r_cut=job.sp.r_cut,
+        pppm_kwargs={"Nx": 20, "Ny": 20, "Nz": 20},
     )
     if job.sp.get("cutoff_style") == "shift":
         for force in forcefield:
