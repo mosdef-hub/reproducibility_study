@@ -630,6 +630,100 @@ def statistics(job):
         )
 
 
+def prp2txt(prp_path, txt_path, T):
+    """Convert Cassandra prp file to project-standard txt file."""
+    import numpy as np
+
+    prp_array = np.loadtxt(prp_path, usecols=(1, 4, 6))
+    potential_energy = prp_array[:, 0]
+    pressure = prp_array[:, 1] * 100.0
+    density = prp_array[:, 2] * 0.001
+    n_points = len(density)
+    kinetic_energy = np.zeros(n_points, dtype=int)
+    temperature = np.full(n_points, T)
+    timestep = np.arange(10, (n_points + 1) * 10, 10)
+    prpdf = pd.DataFrame(
+        {
+            "timestep": timestep,
+            "potential_energy": potential_energy,
+            "kinetic_energy": kinetic_energy,
+            "pressure": pressure,
+            "temperature": temperature,
+            "density": density,
+        }
+    )
+    prpdf.to_csv(txt_path, sep=" ", index=False)
+
+
+@Project.label
+def output_processed(job):
+    """Check whether Cassandra's output has been processed."""
+    return os.path.exists(job.fn("log-npt.txt")) or os.path.exists(
+        job.fn("log-vapor.txt")
+    )
+
+
+@Project.operation
+@Project.pre(cassandra_complete)
+@Project.post(output_processed)
+def process_output(job):
+    """Convert Cassandra trajectories to gsd format and convert Cassandra property output to project-standard txt files."""
+    import foyer
+    import mbuild as mb
+    import numpy as np
+
+    from reproducibility_project.src.molecules.system_builder import (
+        get_molecule,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
+    from reproducibility_project.src.utils.trajectory_conversion import (
+        cassandra2gsd,
+    )
+
+    species_list = [load_ff(job.sp.forcefield_name).apply(get_molecule(job.sp))]
+    if job.sp.ensemble == "GEMC-NVT":
+        liqbox = "prod.out.box1"
+        vapbox = "prod.out.box2"
+        liq_H = job.fn(liqbox + ".H")
+        liq_xyz = job.fn(liqbox + ".xyz")
+        vap_H = job.fn(vapbox + ".H")
+        vap_xyz = job.fn(vapbox + ".xyz")
+        liq_prp = job.fn(liqbox + ".prp")
+        vap_prp = job.fn(vapbox + ".prp")
+        f_list = [liq_H, liq_xyz, vap_H, vap_xyz, liq_prp, vap_prp]
+        if not all([os.path.exists(f) for f in f_list]):
+            return
+        cassandra2gsd(
+            h_path=liq_H,
+            xyz_path=liq_xyz,
+            gsd_path=job.fn("trajectory-liquid.gsd"),
+            species_list=species_list,
+        )
+        cassandra2gsd(
+            h_path=vap_H,
+            xyz_path=vap_xyz,
+            gsd_path=job.fn("trajectory-vapor.gsd"),
+            species_list=species_list,
+        )
+        prp2txt(liq_prp, job.fn("log-liquid.txt"), job.sp.temperature)
+        prp2txt(vap_prp, job.fn("log-vapor.txt"), job.sp.temperature)
+    else:
+        nptbox = "prod.out"
+        npt_H = job.fn(nptbox + ".H")
+        npt_xyz = job.fn(nptbox + ".xyz")
+        npt_prp = job.fn(nptbox + ".prp")
+        f_list = [npt_H, npt_xyz, npt_prp]
+        if not all([os.path.exists(f) for f in f_list]):
+            return
+        cassandra2gsd(
+            h_path=npt_H,
+            xyz_path=npt_xyz,
+            gsd_path=job.fn("trajectory-npt.gsd"),
+            species_list=species_list,
+        )
+        prp2txt(npt_prp, job.fn("log-npt.txt"), job.sp.temperature)
+
+
 if __name__ == "__main__":
     pr = Project()
     pr.main()
