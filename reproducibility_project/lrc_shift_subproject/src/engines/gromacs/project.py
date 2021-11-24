@@ -98,7 +98,7 @@ def init_job(job):
         "npt_prod": {
             "fname": "npt_prod.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/npt_template_water.jinja",
+            "water-template": f"{mdp_abs_path}/npt_template_water.mdp.jinja",
             "data": {
                 "nsteps": 5000000,
                 "dt": 0.001,
