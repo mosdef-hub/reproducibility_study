@@ -13,15 +13,15 @@ cutoff-scheme       = Verlet
 ns_type             = grid
 nstlist             = 10
 
-vdwtype                  = P3M-AD
-vdw-modifier             = {{  cutoff_style  }}
-rvdw                     = {{  r_cut }}
-fourierspacing           = 0.1 0.1 0.1
-ewald-rtol               = 10e-5
+vdwtype         = Cut-off
+vdw-modifier    = {{  cutoff_style  }}
+rvdw            = {{  r_cut  }}
 
-vdwtype             = Cut-off
-vdw-modifier        = {{  cutoff_style  }}
-rvdw                = {{  r_cut }}
+coulombtype             = P3M-AD
+coulomb-modifier        = {{  cutoff_style  }}
+rcoulomb                = {{  r_cut }}
+fourierspacing      = 0.1 0.1 0.1
+ewald-rtol          = 10e-5
 
 gen_vel             = yes
 gen-temp            = {{  temp  }}
