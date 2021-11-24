@@ -116,7 +116,7 @@ def run_hoomd(job, method, restart=False):
         ref_energy=e,
         ref_mass=m,
         r_cut=job.sp.r_cut,
-        pppm_kwargs={"Nx": 20, "Ny": 20, "Nz": 20},
+        pppm_kwargs={"Nx": 40, "Ny": 40, "Nz": 40, "order": 20},
     )
     if job.sp.get("cutoff_style") == "shift":
         for force in forcefield:
