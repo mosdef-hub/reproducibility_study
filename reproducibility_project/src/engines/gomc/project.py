@@ -515,15 +515,12 @@ def part_3c_output_equilb_design_ensemble_started(job):
                 ]["output_name_control_file_name"]
             )
         ):
-            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-                return gomc_simulation_started(
-                    job,
-                    job.doc.equilb_design_ensemble_dict[
-                        str(job.doc.equilb_design_ensemble_number)
-                    ]["output_name_control_file_name"],
-                )
-            else:
-                return False
+            return gomc_simulation_started(
+                job,
+                job.doc.equilb_design_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_number)
+                ]["output_name_control_file_name"],
+            )
 
         else:
             return False
@@ -545,15 +542,12 @@ def part_3d_output_production_run_started(job):
                 ]["output_name_control_file_name"]
             )
         ):
-            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-                return gomc_simulation_started(
-                    job,
-                    job.doc.production_run_ensemble_dict[
-                        str(job.doc.equilb_design_ensemble_number)
-                    ]["output_name_control_file_name"],
-                )
-            else:
-                return False
+            return gomc_simulation_started(
+                job,
+                job.doc.production_run_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_number)
+                ]["output_name_control_file_name"],
+            )
 
         else:
             return False
