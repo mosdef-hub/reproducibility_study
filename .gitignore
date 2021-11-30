@@ -125,7 +125,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.pre-commit-config.yaml
 
 # Spyder project settings
 .spyderproject
