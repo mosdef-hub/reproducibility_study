@@ -1,1 +1,1 @@
-The average density is nan g/ml with SEM nan from 0 samples
+The average density is 0.9912256562499999 g/ml with SEM 0.0005055608498372671 from 16 samples
