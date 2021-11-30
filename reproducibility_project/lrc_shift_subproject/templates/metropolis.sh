@@ -4,7 +4,7 @@
 #SBATCH --job-name="{{ id }}"
 #SBATCH -t 199:59:59
 #SBATCH --ntasks=1
-#SBATCH --mem=1g
+#SBATCH --mem=10g
 module purge
 conda --version
 source /home/rs/anaconda3/etc/profile.d/conda.sh
