@@ -282,7 +282,7 @@ def traj_exists(job):
         # return job.isfile('log-liquid.txt') and job.isfile('log-vapor.txt')
 
 
-def sanitize_npt_log(step, job):
+def sanitize_npt_log(step):
     """Sanitize the output logs for NPT simulations."""
     import numpy as np
 
@@ -305,18 +305,14 @@ def sanitize_npt_log(step, job):
         timestep[i] = i
     volume = arrays[:, 0] * arrays[:, 1] * arrays[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
-    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
-    temperature = 0 * np.copy(volume)
     arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
     arrays = np.append(arrays, timestep, axis=1)  # timestep
     arrays = np.append(arrays, volume, axis=1)  # volume nm3
-    arrays = np.append(arrays, density_gml, axis=1)  # density (g/ml)
-    arrays = np.append(arrays, temperature, axis=1)  # temperature (K)
 
     np.savetxt(
         "{}_log.txt".format(step),
         arrays,
-        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume \t density \t temperature",
+        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume",
     )
     return arrays
 
@@ -351,8 +347,6 @@ def sanitize_gemc_log(step, job):
         timestep[i] = i
     volume = arrays_box1[:, 0] * arrays_box1[:, 1] * arrays_box1[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
-    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
-    temperature = 0 * np.copy(volume)
 
     arrays_box1 = np.append(
         arrays_box1, density_array, axis=1
@@ -360,8 +354,6 @@ def sanitize_gemc_log(step, job):
 
     arrays_box1 = np.append(arrays_box1, timestep, axis=1)  # timestep
     arrays_box1 = np.append(arrays_box1, volume, axis=1)  # volume nm3
-    arrays_box1 = np.append(arrays_box1, density_gml, axis=1)  # density (g/ml)
-    arrays_box1 = np.append(arrays_box1, temperature, axis=1)  # temperature (K)
 
     # arrays_box1[:, 6] = arrays_box1[:, 5]/ (arrays_box1[:, 0]) **3 # density molcules/nm3
     arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
@@ -377,8 +369,6 @@ def sanitize_gemc_log(step, job):
         timestep[i] = i
     volume = arrays_box2[:, 0] * arrays_box2[:, 1] * arrays_box2[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
-    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
-    temperature = 0 * np.copy(volume)
 
     arrays_box2 = np.append(
         arrays_box2, density_array, axis=1
@@ -386,18 +376,16 @@ def sanitize_gemc_log(step, job):
 
     arrays_box2 = np.append(arrays_box2, timestep, axis=1)  # timestep
     arrays_box2 = np.append(arrays_box2, volume, axis=1)  # volume nm3
-    arrays_box2 = np.append(arrays_box2, density_gml, axis=1)  # density (g/ml)
-    arrays_box2 = np.append(arrays_box2, temperature, axis=1)  # temperature (K)
 
     np.savetxt(
         "{}_log_box1.txt".format(step),
         arrays_box1,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume",
     )
     np.savetxt(
         "{}_log_box2.txt".format(step),
         arrays_box2,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume",
     )
     return arrays_box1, arrays_box2
 
@@ -1095,13 +1083,13 @@ def convert_to_txt(job):
 
     with job:
         if job.sp.ensemble == "GEMC-NVT":
-            prod_log_box1 = sanitize_gemc_log("prod", job)[0]
-            prod_log_box2 = sanitize_gemc_log("prod", job)[1]
+            prod_log_box1 = sanitize_gemc_log("prod")[0]
+            prod_log_box2 = sanitize_gemc_log("prod")[1]
             os.rename("prod_log_box1.txt", "log-liquid.txt")
             os.rename("prod_log_box1.txt", "log-vapor.txt")
 
         elif job.sp.ensemble == "NPT":
-            prod_log = sanitize_npt_log("prod", job)
+            prod_log = sanitize_npt_log("prod")
             os.rename("prod_log.txt", "log-npt.txt")
 
 
