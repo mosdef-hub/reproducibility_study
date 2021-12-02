@@ -1,4 +1,5 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+import pathlib
 from typing import List
 
 import flow
@@ -578,7 +579,6 @@ def nvt_calc_density_statistics(job):
     _calc_statistics(job, ensemble="nvt", prop="density")
 
 
-"""
 @aggregator.groupby(
     key=[
         "ensemble",
@@ -599,7 +599,9 @@ def nvt_calc_density_statistics(job):
     lambda *jobs: all([job.doc.get("nvt_density_std") for job in jobs])
 )
 def nvt_calc_aggregate_density_statistics(*jobs):
+    """Store aggregate statistics for the nvt density calculations."""
     # should be grouped enough such that only the 16 replicates are the groupings
+    agg_project = signac.Project(pathlib.Path("./aggregate_summary/signac.rc"))
     assert (
         len(jobs) == 16
     ), "Not all 16 replicates have their property averaged."
@@ -609,13 +611,12 @@ def nvt_calc_aggregate_density_statistics(*jobs):
     std = np.std(avg_vals)
     sem = std / np.sqrt(num_replicas)
     a_job = jobs[0]
-    avg_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-avg"
-    std_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-std"
-    sem_str = f"{a_job.ensemble}_{a_job.sp.molecule}_{a_job.sp.temperature}_{a_job.sp.pressure}_{a_job.sp.cutoff_style}_{a_job.long_range_correction}_{a_job.sp.engine}_density-sem"
-    Project.doc[avg_str] = avg
-    Project.doc[std_str] = std
-    Project.doc[sem_str] = sem
-"""
+    job_sp = a_job.sp
+    _ = job_sp.pop("replica")
+    agg_job = agg_project.open_job(statepoint=job_sp)
+    agg_job.doc["density-avg"] = avg
+    agg_job.doc["density-std"] = std
+    agg_job.doc["density-sem"] = sem
 
 
 @Project.operation
