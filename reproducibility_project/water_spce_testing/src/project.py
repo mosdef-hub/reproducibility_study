@@ -114,7 +114,9 @@ def run_hoomd(job, method, restart=False):
     # Ignore the vapor box
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
-    filled_box, _ = construct_system(job.sp, scale_liq_box=2)
+    filled_box, _ = construct_system(
+        job.sp, scale_liq_box=2, fix_orientation=rigid
+    )
 
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
@@ -238,18 +240,20 @@ def run_hoomd(job, method, restart=False):
         rigid = hoomd.md.constrain.Rigid()
         inds = mol_inds[0]
 
-        r_pos = snap.particles.position[0]
-        c_pos = snap.particles.position[inds]
+        r_pos = snapshot.particles.position[0]
+        c_pos = snapshot.particles.position[inds]
         c_pos -= r_pos
         c_pos = [tuple(i) for i in c_pos]
 
-        c_types = [snap.particles.types[i] for i in snap.particles.typeid[inds]]
+        c_types = [
+            snapshot.particles.types[i] for i in snapshot.particles.typeid[inds]
+        ]
 
-        c_orient = [tuple(i) for i in snap.particles.orientation[inds]]
+        c_orient = [tuple(i) for i in snapshot.particles.orientation[inds]]
 
-        c_charge = [i for i in snap.particles.charge[inds]]
+        c_charge = [i for i in snapshot.particles.charge[inds]]
 
-        c_diam = [i for i in snap.particles.diameter[inds]]
+        c_diam = [i for i in snapshot.particles.diameter[inds]]
 
         rigid.body["R"] = {
             "constituent_types": c_types,
@@ -305,9 +309,13 @@ def run_hoomd(job, method, restart=False):
     sim.operations.writers.append(table_file)
 
     dt = 0.001
-    integrator = hoomd.md.Integrator(dt=dt)
+    if rigid:
+        integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
+        integrator.rigid = rigid
+    else:
+        integrator = hoomd.md.Integrator(dt=dt)
     integrator.forces = forcefield
-    print(list(integrator.forces))
+
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
     if method == "npt":
