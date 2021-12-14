@@ -194,16 +194,24 @@ def run_hoomd(job, method, restart=False):
                 force.tail_correction = True
                 print(f"{force} tail_correction set to {force.tail_correction}")
 
+    device = hoomd.device.auto_select()
+    print(f"Running HOOMD version {hoomd.version.version}", flush=True)
+    if isinstance(device, hoomd.device.GPU):
+        print("HOOMD is running on GPU", flush=True)
+        print(f"GPU api version {hoomd.version.gpu_api_version}", flush=True)
+    else:
+        print("HOOMD is running on CPU", flush=True)
+
     if method == "npt":
         print("Starting NPT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
             initgsd = job.fn("trajectory-npt.gsd")
         else:
+            sim = hoomd.Simulation(device=device, seed=job.sp.replica)
+            sim.create_state_from_snapshot(snapshot)
             hoomd.write.GSD.write(
-                state=sim.state,
-                filename=job.fn("init.gsd"),
-                mode="wb"
+                state=sim.state, filename=job.fn("init.gsd"), mode="wb"
             )
             filled_box.save(job.fn("starting_compound.json"))
             initgsd = job.fn("init.gsd")
@@ -221,14 +229,6 @@ def run_hoomd(job, method, restart=False):
         writemode = "a"
     else:
         writemode = "w"
-
-    device = hoomd.device.auto_select()
-    print(f"Running HOOMD version {hoomd.version.version}", flush=True)
-    if isinstance(device, hoomd.device.GPU):
-        print("HOOMD is running on GPU", flush=True)
-        print(f"GPU api version {hoomd.version.gpu_api_version}", flush=True)
-    else:
-        print("HOOMD is running on CPU", flush=True)
 
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_gsd(initgsd)
