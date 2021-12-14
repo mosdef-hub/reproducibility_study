@@ -8,7 +8,13 @@ from reproducibility_project.src.molecules.methane_ua import MethaneUA
 from reproducibility_project.src.molecules.pentane_ua import PentaneUA
 
 
-def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0, constrain=False):
+def construct_system(
+    sp,
+    scale_liq_box=1.0,
+    scale_vap_box=1.0,
+    constrain=False,
+    fix_orientation=False
+):
     """Construct systems according to job statepoint.
 
     Parameters
@@ -37,7 +43,11 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0, constrain=False):
     scale_vap_box: float, optional, default=1.0
         Option to scale sizes of the vapor box.
     constrain: boolean, optional, default=False
-        Option to use constrainmol on bond lengths to make them exactly equal to the bond lengths in the FF file.
+        Option to use constrainmol on bond lengths to make them exactly equal
+        to the bond lengths in the FF file.
+    fix_orientation : boolean, optional, default=False
+        Option to specify that compounds should not be rotated when filling the
+        box. Useful for rigid bodies in HOOMD.
 
     Returns
     -------
@@ -48,7 +58,10 @@ def construct_system(sp, scale_liq_box=1.0, scale_vap_box=1.0, constrain=False):
     liq_box = mb.Box([sp["box_L_liq"] * scale_liq_box] * 3)
 
     filled_liq_box = mb.fill_box(
-        compound=[molecule], n_compounds=[sp["N_liquid"]], box=liq_box
+        compound=[molecule],
+        n_compounds=[sp["N_liquid"]],
+        box=liq_box,
+        fix_orientation=fix_orientation
     )
 
     if sp["box_L_vap"] and sp["N_vap"]:
