@@ -86,12 +86,28 @@ def run_hoomd(job, method, restart=False):
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
     from reproducibility_project.src.molecules.system_builder import (
-        construct_system,
+        construct_system, get_molecule
     )
     from reproducibility_project.src.utils.forcefields import load_ff
+    from reproducibility_project.src.utils.rigid import moit
+
 
     if method not in ["npt", "nvt"]:
         raise ValueError("Method must be 'nvt' or 'npt'.")
+
+    # For rigid molecules, we need to create an initial snapshot with only the
+    # rigid body centers
+    # Only the number matters at this point--all other attributes of the
+    # snapshot will be adjusted later.
+    if job.sp["molecule"] in ["waterSPCE"]:
+        rigid = True
+        init_snap = hoomd.Snapshot()
+        init_snap.particles.types = ["R"]
+        N_mols = job.sp["N_liquid"]
+        init_snap.particles.N = N_mols
+    else:
+        rigid = False
+        init_snap = None
 
     # This structure will only be used for the initial npt run,
     # but we need forcefield info for all sims.
@@ -116,6 +132,7 @@ def run_hoomd(job, method, restart=False):
         ref_energy=e,
         ref_mass=m,
         r_cut=job.sp.r_cut,
+        init_snap=init_snap,
         pppm_kwargs={
             "Nx": job.sp.resolution,
             "Ny": job.sp.resolution,
@@ -123,6 +140,48 @@ def run_hoomd(job, method, restart=False):
             "order": job.sp.order,
         },
     )
+
+    # Adjust the snapshot rigid bodies
+    if rigid:
+        # number of particles per molecule
+        N_p = get_molecule(job.sp).n_particles
+        mol_inds = [
+            np.arange(N_mols + i * N_p, N_mols + i * N_p + N_p)
+            for i in range(N_mols)
+        ]
+        for i, inds in enumerate(mol_inds):
+            total_mass = np.sum(snapshot.particles.mass[inds])
+            # set the rigid body position at the center of mass
+            com = np.sum(
+                snapshot.particles.position[inds] *
+                snapshot.particles.mass[inds, np.newaxis], axis=0
+            ) / total_mass
+            snapshot.particles.position[i] = com
+            # set the body attribute for the rigid center and its constituents
+            snapshot.particles.body[i] = i
+            snapshot.particles.body[inds] = i * np.ones_like(inds)
+            # set the rigid body center's mass
+            snapshot.particles.mass[i] = np.sum(snapshot.particles.mass[inds])
+            # set moment of inertia
+            snapshot.particles.moment_inertia[i] = moit(
+                snapshot.particles.position[inds],
+                snapshot.particles.mass[inds],
+                center=com
+            )
+
+        # delete the harmonic bond and angle potentials
+        remove = [
+            f for f in forcefield
+            if isinstance(f, hoomd.md.bond.Harmonic)
+            or isinstance(f, hoomd.md.angle.Harmonic)
+        ]
+        for f in remove:
+            forcefield.remove(f)
+
+        # update the neighborlist exclusions
+        for f in forcefield:
+            f.nlist.exclusions += ["body"]
+
     if job.sp.get("cutoff_style") == "shift":
         for force in forcefield:
             if isinstance(force, hoomd.md.pair.LJ):
@@ -174,6 +233,42 @@ def run_hoomd(job, method, restart=False):
 
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_gsd(initgsd)
+
+    if rigid:
+        rigid = hoomd.md.constrain.Rigid()
+        inds = mol_inds[0]
+
+        r_pos = snap.particles.position[0]
+        c_pos = snap.particles.position[inds]
+        c_pos -= r_pos
+        c_pos = [tuple(i) for i in c_pos]
+
+        c_types = [snap.particles.types[i] for i in snap.particles.typeid[inds]]
+
+        c_orient = [tuple(i) for i in snap.particles.orientation[inds]]
+
+        c_charge = [i for i in snap.particles.charge[inds]]
+
+        c_diam = [i for i in snap.particles.diameter[inds]]
+
+        rigid.body["R"] = {
+            "constituent_types": c_types,
+            "positions": c_pos,
+            "orientations": c_orient,
+            "charges": c_charge,
+            "diameters": c_diam
+        }
+
+        for force in forcefield:
+            if isinstance(force, hoomd.md.pair.LJ):
+                for t in snapshot.particles.types:
+                    force.params[("R", t)] = dict(epsilon=0, sigma=0)
+                    force.r_cut[("R", t)] = 0
+
+        _all = hoomd.filter.Rigid(("center", "free"))
+    else:
+        _all = hoomd.filter.All()
+
     gsd_writer = hoomd.write.GSD(
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
@@ -184,7 +279,6 @@ def run_hoomd(job, method, restart=False):
 
     logger = hoomd.logging.Logger(categories=["scalar", "string"])
     logger.add(sim, quantities=["timestep", "tps"])
-    _all = hoomd.filter.All()
     thermo_props = hoomd.md.compute.ThermodynamicQuantities(filter=_all)
     sim.operations.computes.append(thermo_props)
     logger.add(
