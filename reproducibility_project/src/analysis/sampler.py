@@ -18,6 +18,7 @@ def sample_job(
     variable: str = "potential_energy",
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    monte_carlo_override : bool = False,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
@@ -40,6 +41,8 @@ def sample_job(
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
+    monte_carlo_override : bool, optional, default=False
+        Consider the entire data set passed in as production data that is fully equilibrated.
     """
     doc_name = f"{ensemble}/sampling_results"
     try:
@@ -48,11 +51,19 @@ def sample_job(
         job.doc[doc_name] = {}
 
     data = np.genfromtxt(job.fn(filename), names=True)[variable]
-    start, stop, step, Neff = _decorr_sampling(
-        data,
-        threshold_fraction=threshold_fraction,
-        threshold_neff=threshold_neff,
-    )
+    data_shape = data.shape
+    if not monte_carlo_override:
+        start, stop, step, Neff = _decorr_sampling(
+            data,
+            threshold_fraction=threshold_fraction,
+            threshold_neff=threshold_neff,
+        )
+    else:
+        start = 0
+        stop = data_shape[0] - 1
+        step = 1
+        Neff = data_shape[0]
+
     if start is not None:
         job.doc[doc_name][variable] = {
             "start": start,
