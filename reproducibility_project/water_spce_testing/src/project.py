@@ -82,7 +82,6 @@ def run_hoomd(job, method, restart=False):
     import hoomd.md
     import numpy as np
     import unyt as u
-    from mbuild.formats.gsdwriter import write_gsd
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
     from reproducibility_project.src.molecules.system_builder import (
@@ -100,13 +99,13 @@ def run_hoomd(job, method, restart=False):
     # Only the number matters at this point--all other attributes of the
     # snapshot will be adjusted later.
     if job.sp["molecule"] in ["waterSPCE"]:
-        rigid = True
+        isrigid = True
         init_snap = hoomd.Snapshot()
         init_snap.particles.types = ["R"]
         N_mols = job.sp["N_liquid"]
         init_snap.particles.N = N_mols
     else:
-        rigid = False
+        isrigid = False
         init_snap = None
 
     # This structure will only be used for the initial npt run,
@@ -115,7 +114,7 @@ def run_hoomd(job, method, restart=False):
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
     filled_box, _ = construct_system(
-        job.sp, scale_liq_box=2, fix_orientation=rigid
+        job.sp, scale_liq_box=2, fix_orientation=isrigid
     )
 
     ff = load_ff(job.sp.forcefield_name)
@@ -144,7 +143,7 @@ def run_hoomd(job, method, restart=False):
     )
 
     # Adjust the snapshot rigid bodies
-    if rigid:
+    if isrigid:
         # number of particles per molecule
         N_p = get_molecule(job.sp).n_particles
         mol_inds = [
@@ -201,12 +200,10 @@ def run_hoomd(job, method, restart=False):
             print("Restarting from last frame of existing gsd", flush=True)
             initgsd = job.fn("trajectory-npt.gsd")
         else:
-            write_gsd(
-                structure,
-                job.fn("init.gsd"),
-                ref_distance=d,
-                ref_energy=e,
-                ref_mass=m,
+            hoomd.write.GSD.write(
+                state=sim.state,
+                filename=job.fn("init.gsd"),
+                mode="wb"
             )
             filled_box.save(job.fn("starting_compound.json"))
             initgsd = job.fn("init.gsd")
@@ -236,7 +233,7 @@ def run_hoomd(job, method, restart=False):
     sim = hoomd.Simulation(device=device, seed=job.sp.replica)
     sim.create_state_from_gsd(initgsd)
 
-    if rigid:
+    if isrigid:
         rigid = hoomd.md.constrain.Rigid()
         inds = mol_inds[0]
 
@@ -309,7 +306,7 @@ def run_hoomd(job, method, restart=False):
     sim.operations.writers.append(table_file)
 
     dt = 0.001
-    if rigid:
+    if isrigid:
         integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
         integrator.rigid = rigid
     else:
@@ -318,7 +315,7 @@ def run_hoomd(job, method, restart=False):
 
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
-    if rigid:
+    if isrigid:
         tau = 10000 * dt
         tauS = 50000 * dt
     else:
