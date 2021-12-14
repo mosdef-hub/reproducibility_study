@@ -318,21 +318,25 @@ def run_hoomd(job, method, restart=False):
 
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    if rigid:
+        tau = 10000 * dt
+        tauS = 50000 * dt
+    else:
+        tau = 1000 * dt
+        tauS = 5000 * dt
     if method == "npt":
         # convert pressure to unit system
         pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
         integrator_method = hoomd.md.methods.NPT(
             filter=_all,
             kT=kT,
-            tau=1000 * dt,
+            tau=tau,
             S=pressure,
-            tauS=5000 * dt,
+            tauS=tauS,
             couple="xyz",
         )
     else:
-        integrator_method = hoomd.md.methods.NVT(
-            filter=_all, kT=kT, tau=1000 * dt
-        )
+        integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
     if not restart:
@@ -342,7 +346,7 @@ def run_hoomd(job, method, restart=False):
         # only run with high tauS if we are starting from scratch
         if not restart:
             sim.run(1e6)
-        integrator.tauS = 500 * dt
+        integrator.tauS = tauS/10
     else:
         if not restart:
             # Shrink step follows this example
