@@ -18,7 +18,7 @@ def sample_job(
     variable: str = "potential_energy",
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
-    monte_carlo_override : bool = False,
+    monte_carlo_override: bool = False,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
@@ -77,7 +77,7 @@ def sample_job(
 
 def get_subsampled_values(
     job: signac.contrib.project.Job,
-    property: str,
+    prop: str,
     ensemble: str,
     property_filename: str = "log-npt.txt",
 ) -> None:
@@ -93,7 +93,7 @@ def get_subsampled_values(
     ----------
     job : signac.contrib.project.Job, required
         The signac job to operate on.
-    property : str, required
+    prop : str, required
         The property of interest to write out the subsampled data.
     ensemble : str, required
         The ensemble that the data was sampled from.
@@ -102,7 +102,7 @@ def get_subsampled_values(
 
     Examples
     --------
-    >>> arr = write_subsampled_values(job, property="potential_energy",
+    >>> arr = write_subsampled_values(job, prop="potential_energy",
                                 ensemble="npt",
                                 property_filename="log-npt.txt")
     >>> assert isinstance(arr, np.ndarray)
@@ -112,12 +112,12 @@ def get_subsampled_values(
             f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
         )
 
-    if property is None or property == "":
+    if prop is None or prop == "":
         raise ValueError(
-            f"Expected 'property' to be a name of a property, was provided {property}."
+            f"Expected 'prop' to be a name of a property, was provided {prop}."
         )
 
-    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{property}"]
+    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{prop}"]
     start = sampling_dict["start"]
     stop = sampling_dict["stop"]
     step = sampling_dict["step"]
@@ -132,7 +132,7 @@ def get_subsampled_values(
         df = pd.read_csv(
             f"{property_filename}", delim_whitespace=True, header=0
         )
-        return df[f"{property}"].to_numpy()[indices]
+        return df[f"{prop}"].to_numpy()[indices]
 
 
 def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
@@ -177,7 +177,7 @@ def get_decorr_samples_using_max_t0(
     job: signac.contrib.Project.Job,
     ensemble: str,
     property_filename: str,
-    property: str,
+    prop: str,
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
 ) -> List[float]:
@@ -193,7 +193,7 @@ def get_decorr_samples_using_max_t0(
         df = pd.read_csv(
             f"{property_filename}", delim_whitespace=True, header=0
         )
-        a_t = df[f"{property}"].to_numpy()[t0:]
+        a_t = df[f"{prop}"].to_numpy()[t0:]
         uncorr_indices = timeseries.subsampleCorrelatedData(
             A_t=a_t,
             conservative=True,
