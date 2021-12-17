@@ -4,7 +4,7 @@ import numpy as np
 
 
 def moit(points, masses, center=np.zeros(3)):
-    """Calculates moment of inertia tensor (moit) for rigid bodies.
+    """Calculate moment of inertia tensor (moit) for rigid bodies.
 
     Assumes rigid body center is at origin unless center is provided.
     Only calculates diagonal elements.
