@@ -13,7 +13,7 @@ def construct_system(
     scale_liq_box=1.0,
     scale_vap_box=1.0,
     constrain=False,
-    fix_orientation=False
+    fix_orientation=False,
 ):
     """Construct systems according to job statepoint.
 
@@ -61,7 +61,7 @@ def construct_system(
         compound=[molecule],
         n_compounds=[sp["N_liquid"]],
         box=liq_box,
-        fix_orientation=fix_orientation
+        fix_orientation=fix_orientation,
     )
 
     if sp["box_L_vap"] and sp["N_vap"]:

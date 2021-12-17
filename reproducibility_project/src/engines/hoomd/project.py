@@ -8,8 +8,8 @@ import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-
 rigid_molecules = ["waterSPCE"]
+
 
 class Project(FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -75,6 +75,7 @@ def check_equilibration_nvt(job):
     """Check the equilibration of the NVT simulation."""
     job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
 
+
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("nvt_eq"))
@@ -82,9 +83,9 @@ def check_equilibration_nvt(job):
 def post_process(job):
     """Run post-processing on the log files."""
     from shutil import copy
+
     import numpy.lib.recfunctions as rf
     import unyt as u
-
 
     for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
         # Make a copy, just in case
@@ -94,8 +95,8 @@ def post_process(job):
         data = clean_data(data)
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
-        volume = data["volume"] * u.nm**3
-        density = (system_mass/volume).to("g/cm**3")
+        volume = data["volume"] * u.nm ** 3
+        density = (system_mass / volume).to("g/cm**3")
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
@@ -117,11 +118,11 @@ def run_hoomd(job, method, restart=False):
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
     from reproducibility_project.src.molecules.system_builder import (
-        construct_system, get_molecule
+        construct_system,
+        get_molecule,
     )
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
-
 
     if method not in ["npt", "nvt"]:
         raise ValueError("Method must be 'nvt' or 'npt'.")
@@ -180,10 +181,14 @@ def run_hoomd(job, method, restart=False):
         for i, inds in enumerate(mol_inds):
             total_mass = np.sum(snapshot.particles.mass[inds])
             # set the rigid body position at the center of mass
-            com = np.sum(
-                snapshot.particles.position[inds] *
-                snapshot.particles.mass[inds, np.newaxis], axis=0
-            ) / total_mass
+            com = (
+                np.sum(
+                    snapshot.particles.position[inds]
+                    * snapshot.particles.mass[inds, np.newaxis],
+                    axis=0,
+                )
+                / total_mass
+            )
             snapshot.particles.position[i] = com
             # set the body attribute for the rigid center and its constituents
             snapshot.particles.body[i] = i
@@ -194,12 +199,13 @@ def run_hoomd(job, method, restart=False):
             snapshot.particles.moment_inertia[i] = moit(
                 snapshot.particles.position[inds],
                 snapshot.particles.mass[inds],
-                center=com
+                center=com,
             )
 
         # delete the harmonic bond and angle potentials
         remove = [
-            f for f in forcefield
+            f
+            for f in forcefield
             if isinstance(f, hoomd.md.bond.Harmonic)
             or isinstance(f, hoomd.md.angle.Harmonic)
         ]
@@ -289,7 +295,7 @@ def run_hoomd(job, method, restart=False):
             "positions": c_pos,
             "orientations": c_orient,
             "charges": c_charge,
-            "diameters": c_diam
+            "diameters": c_diam,
         }
 
         for force in forcefield:
@@ -372,7 +378,7 @@ def run_hoomd(job, method, restart=False):
         # only run with high tauS if we are starting from scratch
         if not restart:
             sim.run(1e6)
-        integrator.tauS = tauS/10
+        integrator.tauS = tauS / 10
     else:
         if not restart:
             # Shrink step follows this example
