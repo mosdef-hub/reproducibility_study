@@ -84,7 +84,7 @@ def post_process(job):
     import unyt as u
 
 
-    for logfile in ["log-npt.txt", "log-nvt.txt"]:
+    for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
         # Make a copy, just in case
         copy(logfile, f"{logfile}.bkup")
 
