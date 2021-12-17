@@ -148,7 +148,9 @@ def run_cassandra(job):
         ("hard", "energy_pressure"): "cut_tail",
         ("shift", "None"): "cut_shift",
     }
-    cutoff_style = cass_cutoffs[(job.sp.cutoff_style, job.sp.long_range_correction)]
+    cutoff_style = cass_cutoffs[
+        (job.sp.cutoff_style, job.sp.long_range_correction)
+    ]
 
     Nliq = job.sp.N_liquid
     if ensemble == "GEMC-NVT":
@@ -174,7 +176,7 @@ def run_cassandra(job):
     ff = load_ff(ffname)
     structure = ff.apply(compound)
 
-    if any([abs(a.charge)>0.0 for a in structure.atoms]):
+    if any([abs(a.charge) > 0.0 for a in structure.atoms]):
         charge_style = "ewald"
     else:
         charge_style = "none"
