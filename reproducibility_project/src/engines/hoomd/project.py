@@ -167,7 +167,7 @@ def run_hoomd(job, method, restart=False):
         ref_mass=m,
         r_cut=job.sp.r_cut,
         init_snap=init_snap,
-        pppm_kwargs={"Nx": 128, "Ny": 128, "Nz": 128, "order": 7},
+        pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
 
     # Adjust the snapshot rigid bodies
