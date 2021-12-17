@@ -44,7 +44,7 @@ class Fry(DefaultSlurmEnvironment):
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("nvt_finished"))
 def run_nvt(job):
-    """Run a simulation with HOOMD-blue."""
+    """Run an NVT simulation with HOOMD-blue."""
     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 
 
@@ -52,7 +52,7 @@ def run_nvt(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(lambda j: j.doc.get("npt_finished"))
 def run_npt(job):
-    """Run a simulation with HOOMD-blue."""
+    """Run an NPT simulation with HOOMD-blue."""
     run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
 
 
@@ -61,7 +61,7 @@ def run_npt(job):
 @Project.pre(lambda j: j.doc.get("npt_finished"))
 @Project.post(lambda j: j.doc.get("npt_eq"))
 def check_equilibration_npt(job):
-    """Run a simulation with HOOMD-blue."""
+    """Check the equilibration of the NPT simulation."""
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
@@ -70,8 +70,38 @@ def check_equilibration_npt(job):
 @Project.pre(lambda j: j.doc.get("nvt_finished"))
 @Project.post(lambda j: j.doc.get("nvt_eq"))
 def check_equilibration_nvt(job):
-    """Run a simulation with HOOMD-blue."""
+    """Check the equilibration of the NVT simulation."""
     job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
+
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.pre(lambda j: j.doc.get("nvt_eq"))
+@Project.post(lambda j: j.doc.get("post_processed"))
+def post_process(job):
+    """Run post-processing on the log files."""
+    from shutil import copy
+    import numpy.lib.recfunctions as rf
+    import unyt as u
+
+
+    for logfile in ["log-npt.txt", "log-nvt.txt"]:
+        # Make a copy, just in case
+        copy(logfile, f"{logfile}.bkup")
+
+        data = np.genfromtxt(logfile, names=True)
+        data = clean_data(data)
+
+        system_mass = job.sp.mass * u.amu * job.sp.N_liquid
+        volume = data["volume"] * u.nm**3
+        density = (system_mass/volume).to("g/cm**3")
+
+        data = rf.drop_fields(data, ["time_remaining"])
+        data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
+        data = rf.append_fields(
+            data, "density", np.array(density), usemask=False
+        )
+        np.savetxt(logfile, data, header=" ".join(data.dtype.names))
+    job.doc.post_processed = True
 
 
 def run_hoomd(job, method, restart=False):
