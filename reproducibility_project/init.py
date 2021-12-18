@@ -31,6 +31,7 @@ mc_engines = ["cassandra", "mcccs", "gomc"]
 forcefields = {}
 r_cuts = {}
 cutoff_styles = ["hard"]
+long_range_correction = ["energy_pressure"]
 for key in molecules:
     if "UA" in key:
         if "benz" not in key:
@@ -140,6 +141,7 @@ for molecule in molecules:
         vap_box_L,
         (init_liq_den, init_vap_den),
         mass,
+        lrc,
         cutoff_style,
         replica,
     ) in itertools.product(
@@ -152,6 +154,7 @@ for molecule in molecules:
         vap_box_lengths[molecule],
         zip(init_density_liq[molecule], init_density_vap[molecule]),
         masses[molecule],
+        long_range_correction,
         cutoff_styles,
         replicas,
     ):
@@ -195,6 +198,7 @@ for molecule in molecules:
             ).item(),
             "forcefield_name": forcefields[molecule],
             "cutoff_style": cutoff_style,
+            "long_range_correction": lrc,
             "r_cut": np.round(
                 r_cuts[molecule].to_value("nm"),
                 decimals=3,
