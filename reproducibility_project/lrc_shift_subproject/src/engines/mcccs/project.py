@@ -282,10 +282,11 @@ def traj_exists(job):
         # return job.isfile('log-liquid.txt') and job.isfile('log-vapor.txt')
 
 
-def sanitize_npt_log(step):
+def sanitize_npt_log(step, job):
     """Sanitize the output logs for NPT simulations."""
     import numpy as np
 
+    mw = job.sp.mass
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
     for filecurrent in files:
@@ -304,22 +305,27 @@ def sanitize_npt_log(step):
         timestep[i] = i
     volume = arrays[:, 0] * arrays[:, 1] * arrays[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
     arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
     arrays = np.append(arrays, timestep, axis=1)  # timestep
     arrays = np.append(arrays, volume, axis=1)  # volume nm3
+    arrays = np.append(arrays, density_gml, axis=1)  # density (g/ml)
+    arrays = np.append(arrays, temperature, axis=1)  # temperature (K)
 
     np.savetxt(
         "{}_log.txt".format(step),
         arrays,
-        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume",
+        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume \t density \t temperature",
     )
     return arrays
 
 
-def sanitize_gemc_log(step):
+def sanitize_gemc_log(step, job):
     """Sanitize the output logs for gemc simulations."""
     import numpy as np
 
+    mw = job.sp.mass
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays_box1 = []
     arrays_box2 = []
@@ -345,6 +351,8 @@ def sanitize_gemc_log(step):
         timestep[i] = i
     volume = arrays_box1[:, 0] * arrays_box1[:, 1] * arrays_box1[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
 
     arrays_box1 = np.append(
         arrays_box1, density_array, axis=1
@@ -352,6 +360,8 @@ def sanitize_gemc_log(step):
 
     arrays_box1 = np.append(arrays_box1, timestep, axis=1)  # timestep
     arrays_box1 = np.append(arrays_box1, volume, axis=1)  # volume nm3
+    arrays_box1 = np.append(arrays_box1, density_gml, axis=1)  # density (g/ml)
+    arrays_box1 = np.append(arrays_box1, temperature, axis=1)  # temperature (K)
 
     # arrays_box1[:, 6] = arrays_box1[:, 5]/ (arrays_box1[:, 0]) **3 # density molcules/nm3
     arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
@@ -367,6 +377,8 @@ def sanitize_gemc_log(step):
         timestep[i] = i
     volume = arrays_box2[:, 0] * arrays_box2[:, 1] * arrays_box2[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
 
     arrays_box2 = np.append(
         arrays_box2, density_array, axis=1
@@ -374,16 +386,18 @@ def sanitize_gemc_log(step):
 
     arrays_box2 = np.append(arrays_box2, timestep, axis=1)  # timestep
     arrays_box2 = np.append(arrays_box2, volume, axis=1)  # volume nm3
+    arrays_box2 = np.append(arrays_box2, density_gml, axis=1)  # density (g/ml)
+    arrays_box2 = np.append(arrays_box2, temperature, axis=1)  # temperature (K)
 
     np.savetxt(
         "{}_log_box1.txt".format(step),
         arrays_box1,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
     )
     np.savetxt(
         "{}_log_box2.txt".format(step),
         arrays_box2,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
     )
     return arrays_box1, arrays_box2
 
@@ -417,7 +431,7 @@ def system_equilibrated(job):
             return False
 
         if job.sp.ensemble == "NPT":
-            equil_log = sanitize_npt_log("equil")
+            equil_log = sanitize_npt_log("equil", job)
             # Now run pymbar on box length and box energy
             equil_status_density = is_equilibrated(
                 equil_log[:, 6], threshold_fraction=0.2, nskip=100
@@ -474,8 +488,8 @@ def system_equilibrated(job):
 
         if job.sp.ensemble == "GEMC-NVT":
             print("Checking eqlb for GEMC-NVT")
-            equil_log_box1 = sanitize_gemc_log("equil")[0]
-            equil_log_box2 = sanitize_gemc_log("equil")[1]
+            equil_log_box1 = sanitize_gemc_log("equil", job)[0]
+            equil_log_box2 = sanitize_gemc_log("equil", job)[1]
             equil_status_density1 = is_equilibrated(
                 equil_log_box1[:, 6], threshold_fraction=0.2, nskip=100
             )
@@ -1081,13 +1095,13 @@ def convert_to_txt(job):
 
     with job:
         if job.sp.ensemble == "GEMC-NVT":
-            prod_log_box1 = sanitize_gemc_log("prod")[0]
-            prod_log_box2 = sanitize_gemc_log("prod")[1]
+            prod_log_box1 = sanitize_gemc_log("prod", job)[0]
+            prod_log_box2 = sanitize_gemc_log("prod", job)[1]
             os.rename("prod_log_box1.txt", "log-liquid.txt")
             os.rename("prod_log_box1.txt", "log-vapor.txt")
 
         elif job.sp.ensemble == "NPT":
-            prod_log = sanitize_npt_log("prod")
+            prod_log = sanitize_npt_log("prod", job)
             os.rename("prod_log.txt", "log-npt.txt")
 
 
