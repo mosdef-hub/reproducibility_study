@@ -21,3 +21,6 @@
 #SBATCH --ntasks={{ np_global }}
 {% endblock %}
 {% endblock %}
+{% block project_header %}
+module load cuda
+{% endblock project_header %}

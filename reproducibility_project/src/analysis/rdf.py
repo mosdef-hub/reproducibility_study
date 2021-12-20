@@ -15,6 +15,7 @@ def gsd_rdf(
     bins=50,
     r_min=0.5,
     r_max=None,
+    ensemble=None,
 ):
     """Compute the RDF given a Signac Job object.
 
@@ -44,12 +45,22 @@ def gsd_rdf(
     r_max : float, default None
         The maximum distance (in nm) to calculate the RDF. If None is provided,
         the minimum box length times a factor of 0.45 will be used.
+    ensemble : str, default None
+        The ensemble the rdf data is being calculated from, will change output file names.
 
     Returns
     -------
     freud.density.RDF
         Computed RDF object
     """
+    if ensemble is None:
+        ensemble = ""
+    elif ensemble in ["npt", "nvt"]:
+        pass
+    else:
+        raise ValueError(
+            f"Ensemble provided: {ensemble}. Expected: 'None', 'npt', 'nvt'."
+        )
     rdf = _gsd_rdf(job.fn(filename), frames, stride, bins, r_min, r_max)
 
     fig, ax = plt.subplots()
@@ -58,10 +69,10 @@ def gsd_rdf(
     ax.set_ylabel("$g(r)$")
     ax.set_title("RDF")
 
-    fig.savefig(job.fn("rdf.png"))
+    fig.savefig(job.fn(f"{ensemble}_rdf.png"))
 
     rdf_array = np.vstack((rdf.bin_centers, rdf.rdf)).T
-    np.savetxt(job.fn("rdf.txt"), rdf_array)
+    np.savetxt(job.fn(f"{ensemble}_rdf.txt"), rdf_array)
     return rdf
 
 

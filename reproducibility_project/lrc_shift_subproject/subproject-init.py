@@ -182,11 +182,6 @@ for i, sp in enumerate(total_statepoints):
     ):
         indices_to_remove.add(i)
 
-    # hoomd-blue does not have long range correction
-    if sp["engine"] == "hoomd":
-        if sp["long_range_correction"] != "None":
-            indices_to_remove.add(i)
-
     if sp["ensemble"] == "NPT":
         sp["N_vap"] = None
         sp["box_L_vap"] = None

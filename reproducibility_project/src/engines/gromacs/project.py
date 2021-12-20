@@ -70,6 +70,7 @@ def init_job(job):
         "em": {
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/em_template_water.mdp.jinja",
             "data": {
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
@@ -80,6 +81,7 @@ def init_job(job):
         "nvt": {
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "data": {
                 "nsteps": 2500000,
                 "dt": 0.002,
@@ -91,6 +93,7 @@ def init_job(job):
         "npt_prod": {
             "fname": "npt_prod.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/npt_template_water.mdp.jinja",
             "data": {
                 "nsteps": 5000000,
                 "dt": 0.001,
@@ -103,6 +106,7 @@ def init_job(job):
         "nvt_prod": {
             "fname": "nvt_prod.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "data": {
                 "nsteps": 5000000,
                 "dt": 0.001,
@@ -114,12 +118,20 @@ def init_job(job):
     }
 
     for op, mdp in mdps.items():
-        _setup_mdp(
-            fname=mdp["fname"],
-            template=mdp["template"],
-            data=mdp["data"],
-            overwrite=True,
-        )
+        if job.sp.molecule == "waterSPCE":
+            _setup_mdp(
+                fname=mdp["fname"],
+                template=mdp["water-template"],
+                data=mdp["data"],
+                overwrite=True,
+            )
+        else:
+            _setup_mdp(
+                fname=mdp["fname"],
+                template=mdp["template"],
+                data=mdp["data"],
+                overwrite=True,
+            )
 
 
 @Project.operation
@@ -302,7 +314,7 @@ def sample_nvt_properties(job):
 
 def _mdrun_str(op):
     """Output an mdrun string for arbitrary operation."""
-    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt"
+    msg = f"gmx mdrun -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -nt 16"
     return msg
 
 

@@ -31,6 +31,7 @@ mc_engines = ["cassandra", "mcccs", "gomc"]
 forcefields = {}
 r_cuts = {}
 cutoff_styles = ["hard"]
+long_range_correction = ["energy_pressure"]
 for key in molecules:
     if "UA" in key:
         if "benz" not in key:
@@ -86,8 +87,8 @@ N_liq_molecules = {
     "methaneUA": [900],
     "pentaneUA": [300],
     "benzeneUA": [400],
-    "waterSPCE": [2000, 2000, 2000],
-    "ethanolAA": [700, 700, 700],
+    "waterSPCE": [1100, 1100, 1100],
+    "ethanolAA": [500, 500, 500],
 }
 
 N_vap_molecules = {
@@ -102,8 +103,8 @@ liq_box_lengths = {
     "methaneUA": [39.98] * u.angstrom,
     "pentaneUA": [40.55] * u.angstrom,
     "benzeneUA": [42.17] * u.angstrom,
-    "waterSPCE": [39.14] * u.angstrom,
-    "ethanolAA": [40.79] * u.angstrom,
+    "waterSPCE": [32.07] * u.angstrom,
+    "ethanolAA": [36.46] * u.angstrom,
 }
 
 vap_box_lengths = {
@@ -140,6 +141,7 @@ for molecule in molecules:
         vap_box_L,
         (init_liq_den, init_vap_den),
         mass,
+        lrc,
         cutoff_style,
         replica,
     ) in itertools.product(
@@ -152,6 +154,7 @@ for molecule in molecules:
         vap_box_lengths[molecule],
         zip(init_density_liq[molecule], init_density_vap[molecule]),
         masses[molecule],
+        long_range_correction,
         cutoff_styles,
         replicas,
     ):
@@ -195,6 +198,7 @@ for molecule in molecules:
             ).item(),
             "forcefield_name": forcefields[molecule],
             "cutoff_style": cutoff_style,
+            "long_range_correction": lrc,
             "r_cut": np.round(
                 r_cuts[molecule].to_value("nm"),
                 decimals=3,
