@@ -155,6 +155,7 @@ view/
 slurm*
 *.out
 *.err
+rclone.sh
 
 # UGE
 *.o*
