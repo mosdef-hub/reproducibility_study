@@ -354,8 +354,14 @@ def run_hoomd(job, method, restart=False):
 
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
-    tau = 1000 * dt
-    tauS = 5000 * dt
+
+    if isrigid:
+        tau = 10000 * dt
+        tauS = 50000 * dt
+    else:
+        tau = 1000 * dt
+        tauS = 5000 * dt
+
     if method == "npt":
         # convert pressure to unit system
         pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
