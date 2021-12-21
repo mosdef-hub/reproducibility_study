@@ -235,15 +235,13 @@ def run_hoomd(job, method, restart=False):
     else:
         print("HOOMD is running on CPU", flush=True)
 
-    sim = hoomd.Simulation(device=device, seed=job.sp.replica)
-
     if method == "npt":
         print("Starting NPT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
             initgsd = job.fn("trajectory-npt.gsd")
-            sim.create_state_from_gsd(initgsd)
         else:
+            sim = hoomd.Simulation(device=device, seed=job.sp.replica)
             sim.create_state_from_snapshot(snapshot)
             hoomd.write.GSD.write(
                 state=sim.state, filename=job.fn("init.gsd"), mode="wb"
@@ -256,16 +254,17 @@ def run_hoomd(job, method, restart=False):
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
             initgsd = job.fn("trajectory-nvt.gsd")
-            sim.create_state_from_gsd(initgsd)
         else:
             # nvt overwrites snapshot information with snapshot from npt run
             initgsd = job.fn("trajectory-npt.gsd")
-            sim.create_state_from_gsd(initgsd)
 
     if restart:
         writemode = "a"
     else:
         writemode = "w"
+
+    sim = hoomd.Simulation(device=device, seed=job.sp.replica)
+    sim.create_state_from_gsd(initgsd)
 
     if isrigid:
         # Because we use the fix_orientation flag with fill box, we can safely
@@ -318,7 +317,6 @@ def run_hoomd(job, method, restart=False):
 
     logger = hoomd.logging.Logger(categories=["scalar", "string"])
     logger.add(sim, quantities=["timestep", "tps"])
-    _all = hoomd.filter.All()
     thermo_props = hoomd.md.compute.ThermodynamicQuantities(filter=_all)
     sim.operations.computes.append(thermo_props)
     logger.add(
@@ -355,12 +353,8 @@ def run_hoomd(job, method, restart=False):
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
 
-    if isrigid:
-        tau = 10000 * dt
-        tauS = 50000 * dt
-    else:
-        tau = 1000 * dt
-        tauS = 5000 * dt
+    tau = 1000 * dt
+    tauS = 5000 * dt
 
     if method == "npt":
         # convert pressure to unit system
