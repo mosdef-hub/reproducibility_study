@@ -143,6 +143,15 @@ def run_cassandra(job):
         "GEMC-NVT": "gemc",
     }
 
+    cass_cutoffs = {
+        ("hard", "None"): "cut",
+        ("hard", "energy_pressure"): "cut_tail",
+        ("shift", "None"): "cut_shift",
+    }
+    cutoff_style = cass_cutoffs[
+        (job.sp.cutoff_style, job.sp.long_range_correction)
+    ]
+
     Nliq = job.sp.N_liquid
     if ensemble == "GEMC-NVT":
         Nvap = job.sp.N_vap
@@ -166,6 +175,11 @@ def run_cassandra(job):
     ffname = job.sp.forcefield_name
     ff = load_ff(ffname)
     structure = ff.apply(compound)
+
+    if any([abs(a.charge) > 0.0 for a in structure.atoms]):
+        charge_style = "ewald"
+    else:
+        charge_style = "none"
 
     Tmelt = 1000.0 * u.K
 
@@ -274,7 +288,8 @@ def run_cassandra(job):
                 run_length=5000,
                 temperature=Tmelt,
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
+                charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
                 run_name="nvt_melt",
@@ -299,7 +314,8 @@ def run_cassandra(job):
                 run_length=5000,
                 temperature=T,
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
+                charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
                 run_name="nvt_equil",
@@ -325,7 +341,8 @@ def run_cassandra(job):
                     run_length=5000,
                     temperature=Tmelt,
                     properties=proplist,
-                    cutoff_style="cut",
+                    cutoff_style=cutoff_style,
+                    charge_style=charge_style,
                     vdw_cutoff=cutoff,
                     charge_cutoff=cutoff,
                     run_name="nvt_melt_vap",
@@ -347,7 +364,8 @@ def run_cassandra(job):
                     run_length=5000,
                     temperature=T,
                     properties=proplist,
-                    cutoff_style="cut",
+                    cutoff_style=cutoff_style,
+                    charge_style=charge_style,
                     vdw_cutoff=cutoff,
                     charge_cutoff=cutoff,
                     run_name="nvt_equil_vap",
@@ -378,7 +396,8 @@ def run_cassandra(job):
                 temperature=T,
                 pressure=P,  # this line is ignored if ensemble isn't NPT
                 properties=proplist,
-                cutoff_style="cut",
+                cutoff_style=cutoff_style,
+                charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
                 run_name=this_run,
