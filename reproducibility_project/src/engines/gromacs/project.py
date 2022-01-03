@@ -117,6 +117,7 @@ def init_job(job):
                 "temp": job.sp.temperature,
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
     }
