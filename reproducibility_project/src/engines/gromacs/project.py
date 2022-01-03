@@ -63,6 +63,7 @@ def init_job(job):
 
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
+    lrcs = {"None": "no", "energy_pressure": "EnerPres"}
 
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
@@ -76,6 +77,7 @@ def init_job(job):
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
                 "temp": job.sp.temperature,
                 "replica": job.sp.replica,
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "nvt": {
@@ -88,6 +90,7 @@ def init_job(job):
                 "temp": job.sp.temperature,
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "npt_prod": {
@@ -101,6 +104,7 @@ def init_job(job):
                 "refp": pressure.to_value("bar"),
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
+                "lrc": lrcs[job.sp.long_range_correction],
             },
         },
         "nvt_prod": {
