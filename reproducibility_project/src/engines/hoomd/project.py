@@ -147,7 +147,7 @@ def run_hoomd(job, method, restart=False):
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
     filled_box, _ = construct_system(
-        job.sp, scale_liq_box=2, fix_orientation=isrigid
+        job.sp, scale_liq_box=1.2, fix_orientation=isrigid
     )
 
     ff = load_ff(job.sp.forcefield_name)
