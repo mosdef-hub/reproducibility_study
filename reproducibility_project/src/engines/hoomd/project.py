@@ -43,6 +43,14 @@ class Fry(DefaultSlurmEnvironment):
 # with the mosdef-study38 conda env active
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.post(lambda j: j.doc.get("shrink_finished"))
+def run_shrink(job):
+    """Initialize volume for simulation with HOOMD-blue."""
+    run_hoomd(job, "shrink")
+
+
+@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("nvt_finished"))
 def run_nvt(job):
@@ -52,6 +60,7 @@ def run_nvt(job):
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
 def run_npt(job):
     """Run an NPT simulation with HOOMD-blue."""
@@ -124,8 +133,8 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
-    if method not in ["npt", "nvt"]:
-        raise ValueError("Method must be 'nvt' or 'npt'.")
+    if method not in ["npt", "nvt", "shrink"]:
+        raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 
     # For rigid molecules, we need to create an initial snapshot with only the
     # rigid body centers
@@ -147,7 +156,7 @@ def run_hoomd(job, method, restart=False):
     # Initializing at high density causes issues, so instead we initialize
     # with box expanded by factor
     filled_box, _ = construct_system(
-        job.sp, scale_liq_box=1.2, fix_orientation=isrigid
+        job.sp, scale_liq_box=2, fix_orientation=isrigid
     )
 
     ff = load_ff(job.sp.forcefield_name)
@@ -208,13 +217,22 @@ def run_hoomd(job, method, restart=False):
             for f in forcefield
             if isinstance(f, hoomd.md.bond.Harmonic)
             or isinstance(f, hoomd.md.angle.Harmonic)
+            or isinstance(f, hoomd.md.dihedral.Harmonic)
+            or isinstance(f, hoomd.md.dihedral.OPLS)
         ]
         for f in remove:
             forcefield.remove(f)
 
-        # update the neighborlist exclusions
+        # update the neighborlist exclusions for rigid
         for f in forcefield:
             f.nlist.exclusions += ["body"]
+
+    # update the neighborlist exclusions for all
+    for f in forcefield:
+        try:
+            f.nlist.exclusions += ["1-4"]
+        except AttributeError:
+            pass
 
     if job.sp.get("cutoff_style") == "shift":
         for force in forcefield:
@@ -235,19 +253,24 @@ def run_hoomd(job, method, restart=False):
     else:
         print("HOOMD is running on CPU", flush=True)
 
-    if method == "npt":
+    if method == "shrink":
+        print("Starting shrink", flush=True)
+        sim = hoomd.Simulation(device=device, seed=job.sp.replica)
+        sim.create_state_from_snapshot(snapshot)
+        hoomd.write.GSD.write(
+            state=sim.state, filename=job.fn("init.gsd"), mode="wb"
+        )
+        filled_box.save(job.fn("starting_compound.json"))
+        initgsd = job.fn("init.gsd")
+
+    elif method == "npt":
         print("Starting NPT", flush=True)
         if restart:
             print("Restarting from last frame of existing gsd", flush=True)
             initgsd = job.fn("trajectory-npt.gsd")
         else:
-            sim = hoomd.Simulation(device=device, seed=job.sp.replica)
-            sim.create_state_from_snapshot(snapshot)
-            hoomd.write.GSD.write(
-                state=sim.state, filename=job.fn("init.gsd"), mode="wb"
-            )
-            filled_box.save(job.fn("starting_compound.json"))
-            initgsd = job.fn("init.gsd")
+            # npt overwrites snapshot information with snapshot from shrink run
+            initgsd = job.fn("trajectory-shrink.gsd")
 
     else:
         print("Starting NVT", flush=True)
@@ -368,7 +391,9 @@ def run_hoomd(job, method, restart=False):
             couple="xyz",
         )
     else:
+        # shrink and nvt both use nvt
         integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
+
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
     if not restart:
@@ -380,17 +405,26 @@ def run_hoomd(job, method, restart=False):
             sim.run(1e6)
         integrator.tauS = tauS / 10
     else:
+        if method == "shrink":
+            # shrink to the desired box length
+            L = job.sp.box_L_liq
+            shrink_steps = 1e5
+        else:
+            # the target volume should be the average volume from NPT
+            target_volume = job.doc.avg_volume
+            L = target_volume ** (1 / 3)
+            shrink_steps = 2e4
+
         if not restart:
+            # shrink and nvt methods both use shrink step
             # Shrink step follows this example
             # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
             # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
             ramp = hoomd.variant.Ramp(
-                A=0, B=1, t_start=sim.timestep, t_ramp=int(2e4)
+                A=0, B=1, t_start=sim.timestep, t_ramp=int(shrink_steps)
             )
             # the target volume should be the average volume from NPT
-            target_volume = job.doc.avg_volume
             initial_box = sim.state.box
-            L = target_volume ** (1 / 3)
             final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
             box_resize_trigger = hoomd.trigger.Periodic(10)
             box_resize = hoomd.update.BoxResize(
@@ -400,11 +434,12 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
-            sim.run(2e4 + 1)
+            sim.run(shrink_steps + 1)
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-    sim.run(5e6)
+    if method != "shrink":
+        sim.run(5e6)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
