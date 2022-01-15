@@ -22,20 +22,11 @@ class Project(flow.FlowProject):
 
 
 class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
-    """Subclass of DefaultSlurmEnvironment for Siepmann Group's Metropolis cluster."""
+    """Subclass of DefaultSlurmEnvironment for Siepmann group cluster."""
 
-    hostname_pattern = r".*\.metropolis2\.chem\.umn\.edu"
-    template = "metropolis2.sh"
-
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--walltime",
-            type=float,
-            default=96,
-            help="Walltime for this submission",
-        )
+    # metropolis.chem.umn.edu
+    hostname_pattern = r".*\.chem\.umn\.edu"
+    template = "metropolis.sh"
 
 
 ex = Project.make_group(name="ex")
@@ -43,7 +34,7 @@ ex = Project.make_group(name="ex")
 
 def mc3s_exec():
     """Return the path of MCCCS-MN executable."""
-    return "/home/rs/group-code/MCCCS-MN-9-21/exe-ifort-9-21/src/topmon"
+    return "/home/rs/software/MCCCS-MN-10-21/exe-ifort-10-21/src/topmon"
 
 
 def print_running_string(job, step):
@@ -157,6 +148,31 @@ def files_ready(job):
 
 
 @Project.label
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+def topmon_ready(job):
+    """Check if the keywords in the topmon have been replaced correctly."""
+    job.doc.topmon_ready = False
+    file_name = job.ws + "/topmon.inp"
+    if not job.isfile("topmon.inp"):
+        return False
+    if job.sp.cutoff_style == "shift":
+        a = False
+        with open(file_name) as myfile:
+            if "lshift= T" in myfile.read():
+                a = True
+    else:
+        a = True
+    if job.sp.long_range_correction == "energy_pressure":
+        b = False
+        with open(file_name) as myfile:
+            if "ltailc= T" in myfile.read():
+                b = True
+    else:
+        b = True
+    return a and b
+
+
+@Project.label
 def has_restart_file(job):
     """Check if the job has a restart file."""
     return job.isfile("fort.77")
@@ -195,8 +211,8 @@ def replicate_set(job):
 def all_prod_replicates_done(job):
     """Check if all prod replicate simulations completed."""
     try:
-        a = job.doc.get("prod_replicates_done, 0")
-        b = job.doc.get("num_prod_replicates, 4")
+        a = job.doc.get("prod_replicates_done")
+        b = job.doc.get("num_prod_replicates")
         if a >= b:
             print("simulation complete for {} job".format(job))
         return a >= b
@@ -245,10 +261,32 @@ def equil_finished(job):
         return False
 
 
-def sanitize_npt_log(step):
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+def log_exists(job):
+    """Check if production log file has been generated."""
+    if job.sp.ensemble == "NPT":
+        return job.isfile("log-npt.txt")
+    elif job.sp.ensemble == "GEMC-NVT":
+        return job.isfile("log-liquid.txt") and job.isfile("log-vapor.txt")
+
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+def traj_exists(job):
+    """Check if production traj file has been generated."""
+    if job.sp.ensemble == "NPT":
+        return job.isfile("trajectory-npt.gsd")
+    elif job.sp.ensemble == "GEMC-NVT":
+        return True
+        # return job.isfile('log-liquid.txt') and job.isfile('log-vapor.txt')
+
+
+def sanitize_npt_log(step, job):
     """Sanitize the output logs for NPT simulations."""
     import numpy as np
 
+    mw = job.sp.mass
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
     for filecurrent in files:
@@ -262,20 +300,32 @@ def sanitize_npt_log(step):
     arrays[:, 4] = arrays[:, 4]  # Pressure kPa to kPa
     density_array = arrays[:, 5] / (arrays[:, 0]) ** 3  # density(molecules/nm3)
     density_array = density_array.reshape(density_array.shape[0], 1)
+    timestep = np.copy(density_array)
+    for i in range(timestep.shape[0]):
+        timestep[i] = i
+    volume = arrays[:, 0] * arrays[:, 1] * arrays[:, 2]
+    volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
     arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
+    arrays = np.append(arrays, timestep, axis=1)  # timestep
+    arrays = np.append(arrays, volume, axis=1)  # volume nm3
+    arrays = np.append(arrays, density_gml, axis=1)  # density (g/ml)
+    arrays = np.append(arrays, temperature, axis=1)  # temperature (K)
 
     np.savetxt(
         "{}_log.txt".format(step),
         arrays,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm3)",
+        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume \t density \t temperature",
     )
     return arrays
 
 
-def sanitize_gemc_log(step):
+def sanitize_gemc_log(step, job):
     """Sanitize the output logs for gemc simulations."""
     import numpy as np
 
+    mw = job.sp.mass
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays_box1 = []
     arrays_box2 = []
@@ -295,9 +345,24 @@ def sanitize_gemc_log(step):
     arrays_box1[:, 4] = arrays_box1[:, 4]  # Pressure kPa to kPa
     density_array = arrays_box1[:, 5] / (arrays_box1[:, 0]) ** 3
     density_array = density_array.reshape(density_array.shape[0], 1)
+
+    timestep = np.copy(density_array)
+    for i in range(timestep.shape[0]):
+        timestep[i] = i
+    volume = arrays_box1[:, 0] * arrays_box1[:, 1] * arrays_box1[:, 2]
+    volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
+
     arrays_box1 = np.append(
         arrays_box1, density_array, axis=1
     )  # density molcules/nm3
+
+    arrays_box1 = np.append(arrays_box1, timestep, axis=1)  # timestep
+    arrays_box1 = np.append(arrays_box1, volume, axis=1)  # volume nm3
+    arrays_box1 = np.append(arrays_box1, density_gml, axis=1)  # density (g/ml)
+    arrays_box1 = np.append(arrays_box1, temperature, axis=1)  # temperature (K)
+
     # arrays_box1[:, 6] = arrays_box1[:, 5]/ (arrays_box1[:, 0]) **3 # density molcules/nm3
     arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
     arrays_box2[:, 1] = arrays_box2[:, 1] / 10  # Ang to nm
@@ -307,19 +372,32 @@ def sanitize_gemc_log(step):
     # arrays_box2[:, 6] = arrays_box2[:, 5]/ (arrays_box2[:, 0]) **3 # density molcules/nm3
     density_array = arrays_box2[:, 5] / (arrays_box2[:, 0]) ** 3
     density_array = density_array.reshape(density_array.shape[0], 1)
+    timestep = np.copy(density_array)
+    for i in range(timestep.shape[0]):
+        timestep[i] = i
+    volume = arrays_box2[:, 0] * arrays_box2[:, 1] * arrays_box2[:, 2]
+    volume = volume.reshape(volume.shape[0], 1)
+    density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
+    temperature = 0 * np.copy(volume)
+
     arrays_box2 = np.append(
         arrays_box2, density_array, axis=1
     )  # density molcules/nm3
 
+    arrays_box2 = np.append(arrays_box2, timestep, axis=1)  # timestep
+    arrays_box2 = np.append(arrays_box2, volume, axis=1)  # volume nm3
+    arrays_box2 = np.append(arrays_box2, density_gml, axis=1)  # density (g/ml)
+    arrays_box2 = np.append(arrays_box2, temperature, axis=1)  # temperature (K)
+
     np.savetxt(
         "{}_log_box1.txt".format(step),
         arrays_box1,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm^3)",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
     )
     np.savetxt(
         "{}_log_box2.txt".format(step),
         arrays_box2,
-        header="a (nm) \t b (nm) \t c (nm) \t Energy (kJ/mol) \t Pressure (kPa) \t #molecules \t density (molecules/nm^3)",
+        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
     )
     return arrays_box1, arrays_box2
 
@@ -353,7 +431,7 @@ def system_equilibrated(job):
             return False
 
         if job.sp.ensemble == "NPT":
-            equil_log = sanitize_npt_log("equil")
+            equil_log = sanitize_npt_log("equil", job)
             # Now run pymbar on box length and box energy
             equil_status_density = is_equilibrated(
                 equil_log[:, 6], threshold_fraction=0.2, nskip=100
@@ -410,8 +488,8 @@ def system_equilibrated(job):
 
         if job.sp.ensemble == "GEMC-NVT":
             print("Checking eqlb for GEMC-NVT")
-            equil_log_box1 = sanitize_gemc_log("equil")[0]
-            equil_log_box2 = sanitize_gemc_log("equil")[1]
+            equil_log_box1 = sanitize_gemc_log("equil", job)[0]
+            equil_log_box2 = sanitize_gemc_log("equil", job)[1]
             equil_status_density1 = is_equilibrated(
                 equil_log_box1[:, 6], threshold_fraction=0.2, nskip=100
             )
@@ -546,6 +624,7 @@ def prod_finished(job):
 @flow.with_job
 def save_top(job):
     """Save topology files for the two boxes."""
+    print("Saving topology file.")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
     )
@@ -602,6 +681,7 @@ def set_prod_replicates(job):
 @Project.post(has_fort_files)
 def copy_files(job):
     """Copy the files for simulation from engine_input folder."""
+    print("Copying files from the root directory to workspace.")
     for file in glob(
         Project().root_directory()
         + "/src/engine_input/mcccs/{}/{}/fort.4.*".format(
@@ -617,6 +697,7 @@ def copy_files(job):
 @Project.post(has_topmon)
 def copy_topmon(job):
     """Copy topmon.inp from root directory to mcccs directory."""
+    print("Copying topmon.")
     shutil.copy(
         Project().root_directory()
         + "/src/engine_input/mcccs/{}/{}/topmon.inp".format(
@@ -633,6 +714,7 @@ def copy_topmon(job):
 @Project.post(files_ready)
 def replace_keyword_fort_files_npt(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
+    print("Replacing keywords in fort files.")
     file_names = ["melt", "cool", "equil", "prod"]
     seed = job.sp.replica
     nchain = job.sp.N_liquid
@@ -658,6 +740,7 @@ def replace_keyword_fort_files_npt(job):
 @Project.post(files_ready)
 def replace_keyword_fort_files_gemc(job):
     """Replace keywords with the values of the variables defined in signac statepoint."""
+    print("Replacing keywords in fort files.")
     file_names = ["melt", "cool", "equil", "prod"]
     seed = job.sp.replica
     nchain1 = job.sp.N_liquid
@@ -720,9 +803,66 @@ def replace_keyword_fort_files_gemc(job):
 @ex
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(has_topmon)
+@Project.post(topmon_ready)
+def replace_lrc_shift_topmon(job):
+    """Replace ltailc and lshift in topmon."""
+    print("Replacing lrc and shift boolean in topmon.")
+    file_name = job.ws + "/topmon.inp"
+    if not job.isfile(file_name):
+        return
+    # default ltailc and lshift are F
+    if job.sp.cutoff_style == "shift":
+        make_lshift_T(file_name)
+    if job.sp.long_range_correction == "energy_pressure":
+        make_ltailc_T(file_name)
+
+
+def make_ltailc_T(filename):
+    """Flip the value of ltailc in topmon from F to T."""
+    file = open(filename, "r")
+    replacement = ""
+    # using the for loop
+    for line in file:
+        if "ltailc" in line:
+            changes = line.replace("F", "T")
+            replacement = replacement + changes
+        else:
+            replacement = replacement + line
+
+    file.close()
+    # opening the file in write mode
+    fout = open(filename, "w")
+    fout.write(replacement)
+    fout.close()
+
+
+def make_lshift_T(filename):
+    """Flip the value of lshift in topmon from F to T."""
+    file = open(filename, "r")
+    replacement = ""
+    # using the for loop
+    for line in file:
+        if "lshift" in line:
+            changes = line.replace("F", "T")
+            replacement = replacement + changes
+        else:
+            replacement = replacement + line
+
+    file.close()
+    # opening the file in write mode
+    fout = open(filename, "w")
+    fout.write(replacement)
+    fout.close()
+
+
+@ex
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "mcccs")
 @Project.post(has_restart_file)
 def make_restart_file(job):
     """Make a restart file for the job using fort77maker."""
+    print("Making restart file.")
     from reproducibility_project.src.molecules.system_builder import (
         construct_system,
         get_molecule,
@@ -773,6 +913,7 @@ def make_restart_file(job):
 @Project.pre(has_fort_files)
 @Project.pre(has_topmon)
 @Project.pre(files_ready)
+@Project.pre(topmon_ready)
 @Project.post(melt_finished)
 def run_melt(job):
     """Run melting stage."""
@@ -943,6 +1084,129 @@ def run_prod(job):
             text_file.close()
 
 
+@Project.operation.with_directives({"walltime": 200})
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(prod_finished)
+@Project.pre(all_prod_replicates_done)
+@Project.post(log_exists)
+def convert_to_txt(job):
+    """Make txt log file for the job."""
+    import os
+
+    with job:
+        if job.sp.ensemble == "GEMC-NVT":
+            prod_log_box1 = sanitize_gemc_log("prod", job)[0]
+            prod_log_box2 = sanitize_gemc_log("prod", job)[1]
+            os.rename("prod_log_box1.txt", "log-liquid.txt")
+            os.rename("prod_log_box2.txt", "log-vapor.txt")
+
+        elif job.sp.ensemble == "NPT":
+            prod_log = sanitize_npt_log("prod", job)
+            os.rename("prod_log.txt", "log-npt.txt")
+
+
+@Project.operation.with_directives({"walltime": 200})
+@Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(prod_finished)
+@Project.pre(all_prod_replicates_done)
+@Project.post(traj_exists)
+def convert_to_gsd(job):
+    """Make a gsd traj file for the job."""
+    import os
+
+    import mdtraj as md
+    import numpy as np
+
+    with job:
+        if job.sp.ensemble == "GEMC-NVT":
+            traj_list = []
+            traj_files = sorted(glob("box1movie1a*prod*xyz*"))
+            print(traj_files)
+            prod_number = 0
+            for filename in traj_files:
+                print(
+                    "The filename is {} and the prod number is {}. These two should match.".format(
+                        filename, prod_number
+                    )
+                )
+                traj = md.load(filename, top="init1.mol2")
+                fort12_filename = "fort.12.prod{}".format(prod_number)
+                fort12 = np.genfromtxt(fort12_filename, skip_header=1)
+                traj = md.Trajectory(
+                    traj.xyz,
+                    traj.top,
+                    unitcell_lengths=fort12[19::20, 0:3] / 10,
+                    unitcell_angles=np.tile(
+                        [90.0, 90.0, 90.0], (traj.n_frames, 1)
+                    ),
+                )
+                traj_list.append(traj)
+                print("one traj loaded")
+                prod_number += 1
+            comb_traj = md.join(traj_list)
+            comb_traj.save_gsd("trajectory-liquid.gsd")
+
+            traj_list = []
+            traj_files = sorted(glob("box2movie1a*prod*xyz*"))
+            print(traj_files)
+            prod_number = 0
+            for filename in traj_files:
+                print(
+                    "The filename is {} and the prod number is {}. These two should match.".format(
+                        filename, prod_number
+                    )
+                )
+                traj = md.load(filename, top="init1.mol2")
+                fort12_filename = "fort.12.prod{}".format(prod_number)
+                fort12 = np.genfromtxt(fort12_filename, skip_header=1)
+                traj = md.Trajectory(
+                    traj.xyz,
+                    traj.top,
+                    unitcell_lengths=fort12[20::20, 0:3] / 10,
+                    unitcell_angles=np.tile(
+                        [90.0, 90.0, 90.0], (traj.n_frames, 1)
+                    ),
+                )
+                traj_list.append(traj)
+                print("one traj loaded")
+                prod_number += 1
+            comb_traj = md.join(traj_list)
+            comb_traj.save_gsd("trajectory-vapor.gsd")
+
+        elif job.sp.ensemble == "NPT":
+            traj_list = []
+            traj_files = sorted(glob("box1movie1a*prod*xyz*"))
+            print(traj_files)
+            prod_number = 0
+            for filename in traj_files:
+                print(
+                    "The filename is {} and the prod number is {}. These two should match.".format(
+                        filename, prod_number
+                    )
+                )
+                traj = md.load(filename, top="init1.mol2")
+                fort12_filename = "fort.12.prod{}".format(prod_number)
+                fort12 = np.genfromtxt(fort12_filename, skip_header=1)
+                traj = md.Trajectory(
+                    traj.xyz,
+                    traj.top,
+                    unitcell_lengths=fort12[9::10, 0:3] / 10,
+                    unitcell_angles=np.tile(
+                        [90.0, 90.0, 90.0], (traj.n_frames, 1)
+                    ),
+                )
+                traj_list.append(traj)
+                print("one traj loaded")
+                prod_number += 1
+            comb_traj = md.join(traj_list)
+            comb_traj.save_gsd("trajectory-npt.gsd")
+
+
 if __name__ == "__main__":
     pr = Project()
+    for job in pr.find_jobs():
+        if job.sp.long_range_correction == None:
+            pr.update_statepoint(
+                job, {"long_range_correction": "None"}, overwrite=True
+            )
     pr.main()
