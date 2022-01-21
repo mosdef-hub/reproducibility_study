@@ -273,7 +273,7 @@ def create_property_sampling(
     @Project.post(
         lambda job: job.doc.get(f"{ensemble}/sampling_results", {}).get(
             f"{prop}"
-        )
+        ) is not None
     )
     @flow.with_job
     def sample_property(job):
@@ -316,7 +316,7 @@ def create_largest_t0_operations(
             ]
         )
     )
-    @Project.post(lambda job: job.doc.get(f"{ensemble}/max_t0"))
+    @Project.post(lambda job: job.doc.get(f"{ensemble}/max_t0") is not None)
     def write_largest_t0(job):
         """Write out maximium t0 for all subsampled values in npt production."""
         job.doc[f"{ensemble}/max_t0"] = _get_largest_t0(
@@ -337,7 +337,7 @@ for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
     )
 
 def create_write_subsampled_max_t0(
-        ensemble: str, prop_list: List[str], simulation_type: str, engine_list: List[str]
+        ensemble: str, prop_list: List[str], simulation_type: str, engine_list: List[str], is_monte_carlo: bool
 ):
     """Dynamically create the operations to write the subsampled data based on max t0."""
 
@@ -345,7 +345,7 @@ def create_write_subsampled_max_t0(
         f"{ensemble}_{simulation_type}_write_subsampled_data_max_t0"
     )
     @Project.pre(lambda job: job.isfile(f"log-{ensemble}.txt"))
-    @Project.pre(lambda job: job.doc.get(f"{ensemble}/max_t0"))
+    @Project.pre(lambda job: job.doc.get(f"{ensemble}/max_t0") is not None)
     @Project.pre(lambda job: job.sp.engine in engine_list)
     @Project.post(
         lambda job: all(
@@ -366,19 +366,20 @@ def create_write_subsampled_max_t0(
                     ensemble=ensemble,
                     property_filename=f"log-{ensemble}.txt",
                     prop=prop,
+                    is_monte_carlo=is_monte_carlo,
                 )
 
 
 # md operations
 for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
     create_write_subsampled_max_t0(
-        ensemble=ensemble, prop_list=prop_list, simulation_type="md", engine_list=md_engines,
+        ensemble=ensemble, prop_list=prop_list, simulation_type="md", engine_list=md_engines, is_monte_carlo=False
     )
 
 # mc operations
 for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
     create_write_subsampled_max_t0(
-        ensemble=ensemble, prop_list=prop_list, simulation_type="mc", engine_list=mc_engines,
+        ensemble=ensemble, prop_list=prop_list, simulation_type="mc", engine_list=mc_engines, is_monte_carlo=True
     )
 
 
@@ -391,8 +392,8 @@ def create_calc_prop_statistics(ensemble: str, prop: str, simulation_type: str, 
     )
     @Project.pre(lambda job: job.isfile(f"{ensemble}_{prop}.h5"))
     @Project.pre(lambda job: job.sp.engine in engine_list)
-    @Project.post(lambda job: job.doc.get(f"{ensemble}_{prop}_avg"))
-    @Project.post(lambda job: job.doc.get(f"{ensemble}_{prop}_std"))
+    @Project.post(lambda job: job.doc.get(f"{ensemble}_{prop}_avg") is not None)
+    @Project.post(lambda job: job.doc.get(f"{ensemble}_{prop}_std") is not None)
     @flow.with_job
     def calc_prop_stats(job):
         """Calc statistics on subsampled property."""
@@ -437,12 +438,17 @@ def create_calc_aggregate_statistics(
     )
     @Project.pre(
         lambda *jobs: all(
-            [job.doc.get(f"{ensemble}_{prop}_avg") for job in jobs]
+            [job.doc.get(f"{ensemble}_{prop}_avg") is not None for job in jobs]
         )
     )
     @Project.pre(
         lambda *jobs: all(
-            [job.doc.get(f"{ensemble}_{prop}_std") for job in jobs]
+            [job.doc.get(f"{ensemble}_{prop}_std") is not None for job in jobs]
+        )
+    )
+    @Project.post(
+        lambda *jobs: all(
+            [job.isfile(f"{ensemble}_{prop}_calculated.txt") for job in jobs]
         )
     )
     def calc_aggregate_prop_statistics(*jobs):
@@ -466,6 +472,8 @@ def create_calc_aggregate_statistics(
         agg_job.doc[f"{prop}-avg"] = avg
         agg_job.doc[f"{prop}-std"] = std
         agg_job.doc[f"{prop}-sem"] = sem
+        for job in jobs:
+            my_job_path = pathlib.Path(job.fn(f"{ensemble}_{prop}_calculated.txt")).touch()
 
 
 # generate md aggreagate values

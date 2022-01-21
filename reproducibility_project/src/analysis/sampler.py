@@ -72,7 +72,7 @@ def sample_job(
             "Neff": Neff,
         }
     else:
-        warn(f"Property {variable} is not equilibrated.")
+        warn(f"JOB_ID: {job.id}\nProperty {variable} is not equilibrated.")
 
 
 def get_subsampled_values(
@@ -180,6 +180,7 @@ def get_decorr_samples_using_max_t0(
     prop: str,
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    is_monte_carlo: bool = False,
 ) -> List[float]:
     """Return the subsamples of data according to maximum t0."""
     t0 = job.doc.get(f"{ensemble}/max_t0")
@@ -194,8 +195,11 @@ def get_decorr_samples_using_max_t0(
             f"{property_filename}", delim_whitespace=True, header=0
         )
         a_t = df[f"{prop}"].to_numpy()[t0:]
-        uncorr_indices = timeseries.subsampleCorrelatedData(
-            A_t=a_t,
-            conservative=True,
-        )
+        if is_monte_carlo:
+            uncorr_indices = [val for val in range(t0, len(a_t))]
+        else:
+            uncorr_indices = timeseries.subsampleCorrelatedData(
+                A_t=a_t,
+                conservative=True,
+            )
     return a_t[uncorr_indices]
