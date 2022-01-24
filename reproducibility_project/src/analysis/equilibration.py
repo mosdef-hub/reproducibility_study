@@ -13,6 +13,7 @@ def is_equilibrated(
     a_t: npt.ArrayLike,
     threshold_fraction: float = 0.8,
     threshold_neff: int = 100,
+    strict: bool = False,
     nskip: int = 1,
 ) -> List:
     """Check if a dataset is equilibrated based on a fraction of equil data.
@@ -39,6 +40,9 @@ def is_equilibrated(
     threshold_neff : int, optional, default=100
         Minimum amount of effectively correlated samples to consider a_t
         'equilibrated'.
+    strict : bool, optional, default=False
+        If strict require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated', else require either or.
     nskip : int, optional, default=1
         Since the statistical inefficiency is computed for every time origin
         in a call to timeseries.detectEquilibration, for larger datasets
@@ -61,16 +65,27 @@ def is_equilibrated(
     [t0, g, Neff] = timeseries.detectEquilibration(a_t, nskip=nskip)
     frac_equilibrated = 1.0 - (t0 / np.shape(a_t)[0])
 
-    if (frac_equilibrated >= threshold_fraction) and (Neff >= threshold_neff):
-        return [True, t0, g, Neff]
+    if strict:
+        if (frac_equilibrated >= threshold_fraction) and (
+            Neff >= threshold_neff
+        ):
+            return [True, t0, g, Neff]
+        else:
+            return [False, None, None, None]
     else:
-        return [False, None, None, None]
+        if (frac_equilibrated >= threshold_fraction) or (
+            Neff >= threshold_neff
+        ):
+            return [True, t0, g, Neff]
+        else:
+            return [False, None, None, None]
 
 
 def trim_non_equilibrated(
     a_t: npt.ArrayLike,
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    strict: bool = False,
     nskip: int = 1,
 ) -> List:
     """Prune timeseries array to just the production data.
@@ -94,6 +109,9 @@ def trim_non_equilibrated(
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples.
+    strict : bool, optional, default=False
+        If strict require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated', else require either or.
     nskip : int, optional, default=1
         Since the statistical inefficiency is computed for every time origin
         in a call to timeseries.detectEquilibration, for larger datasets
@@ -104,6 +122,7 @@ def trim_non_equilibrated(
         a_t,
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
+        strict=strict,
         nskip=nskip,
     )
     if not truth:

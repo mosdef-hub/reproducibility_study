@@ -18,6 +18,7 @@ def sample_job(
     variable: str = "potential_energy",
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    strict: bool = False,
     monte_carlo_override: bool = False,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
@@ -41,6 +42,9 @@ def sample_job(
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
+    strict : bool, default=False
+        If strict, require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated'.
     monte_carlo_override : bool, optional, default=False
         Consider the entire data set passed in as production data that is fully equilibrated.
     """
@@ -57,6 +61,7 @@ def sample_job(
             data,
             threshold_fraction=threshold_fraction,
             threshold_neff=threshold_neff,
+            strict=strict,
         )
     else:
         start = 0
@@ -135,7 +140,9 @@ def get_subsampled_values(
         return df[f"{prop}"].to_numpy()[indices]
 
 
-def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
+def _decorr_sampling(
+    data, threshold_fraction=0.75, threshold_neff=100, strict=False
+):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
     Parameters
@@ -146,11 +153,15 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
         Fraction of data expected to be equilibrated.
     threshold_neff : int, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
+    strict : bool, default=False
+        If strict, require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated'.
     """
     is_equil, prod_start, ineff, Neff = is_equilibrated(
         data,
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
+        strict=strict,
         nskip=1,
     )
     if is_equil:
