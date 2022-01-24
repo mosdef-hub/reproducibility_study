@@ -8,6 +8,6 @@
 #PBS -j oe
 cd $PBS_O_WORKDIR
 module load lammps
-
-mpirun -np 8 lmp < $infile -var seed $seed -var T $T -var P $P -var rcut $rcut -var tstep $tstep -var pass_lrc $pass_lrc -var pass_shift $pass_shift
+export OMP_NUM_THREADS=16
+mpirun -np 8 lmp < $infile -var seed $seed -var T $T -var P $P -var rcut $rcut -var tstep $tstep -var tlrc $tlrc -var tshift $tshift
 echo $PBS_JOBID $PBS_O_WORKDIR >> ~/job-id-dirs.txt
