@@ -7,8 +7,6 @@ import flow
 import numpy as np
 from flow import environments
 
-# from reproducibility_project.src.analysis.equilibration import is_equilibrated
-
 
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -35,7 +33,8 @@ def lammps_created_box(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_copy_files(job):
     """Check if the submission scripts have been copied over for the job."""
-    return job.isfile("submit.pbs") and job.isfile("in.minimize")
+    return (job.isfile("submit.pbs") and job.isfile("in.minimize") 
+	    and job.isfile("in.equilibration") and job.isfile("in.production-npt"))
 
 
 @Project.label
@@ -77,7 +76,7 @@ def lammps_equilibrated_npt(job):
             is_equilibrated(data[:, 6])[0],
         ]
     else:
-        check_equil = False
+        check_equil = [False, False, False, False]
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
 
 
@@ -90,26 +89,16 @@ def lammps_production_npt(job):
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
-def lammps_production_nvt(job):
-    """Check if the lammps nvt production step has run for the job."""
-    return job.isfile("production-nvt.restart")
-
-
-# sample job to get decorrelated data
-
-
-@Project.label
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_reformatted_data(job):
     """Check if lammps has output density information for the job."""
-    return job.isfile("log-npt.txt") and job.isfile("log-nvt.txt")
+    return job.isfile("log-npt.txt")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_created_gsd(job):
     """Check if the mdtraj has converted the production to a gsd trajectory for the job."""
-    return job.isfile("trajectory-npt.gsd") and job.isfile("trajectory-nvt.gsd")
+    return job.isfile("trajectory-npt.gsd")
 
 
 # _____________________________________________________________________
@@ -163,8 +152,8 @@ def built_lammps(job):
 @flow.cmd
 def lammps_cp_files(job):
     """Copy over run files for lammps and the PBS scheduler."""
-    lmps_submit_path = "../../src/engine_input/lammps/VU_scripts/submit.pbs"
-    lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
+    lmps_submit_path = "../../src/engine_input/lammps-VU/submit.pbs"
+    lmps_run_path = "../../src/engine_input/lammps-VU/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
 
@@ -177,14 +166,21 @@ def lammps_cp_files(job):
 @flow.cmd
 def lammps_em_nvt(job):
     """Run energy minimization and nvt ensemble."""
+    in_script_name = 'submit.pbs'
+    modify_submit_scripts(in_script_name, job.id)
+    in_script_name = "in.minimize"
+    r_cut = job.sp.r_cut * 10
+
     if job.sp.molecule == "ethanolAA":
         tstep = 1.0
     else:
         tstep = 2.0
-    in_script_name = "in.minimize"
-    r_cut = job.sp.r_cut * 10
-    modify_submit_scripts(in_script_name, job.id)
+
+    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
+        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
+        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+
     return msg
 
 
@@ -196,14 +192,22 @@ def lammps_em_nvt(job):
 @flow.cmd
 def lammps_equil_npt(job):
     """Run npt ensemble equilibration."""
+    in_script_name = 'submit.pbs'
+    modify_submit_scripts(in_script_name, job.id)
+    in_script_name = "in.equilibration"
+    r_cut = job.sp.r_cut * 10
     if job.sp.molecule == "ethanolAA":
         tstep = 1.0
     else:
         tstep = 2.0
-    in_script_name = "in.equilibration"
-    modify_submit_scripts(in_script_name, job.id)
-    r_cut = job.sp.r_cut * 10
+    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
+        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
+        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
+        if 'SPCE' in job.sp.molecule:
+            modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
+
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+
     return msg
 
 
@@ -215,47 +219,36 @@ def lammps_equil_npt(job):
 @flow.cmd
 def lammps_prod_npt(job):
     """Run npt ensemble production."""
+    in_script_name = 'submit.pbs'
+    modify_submit_scripts(in_script_name, job.id)
+    in_script_name = "in.production-npt"
+    r_cut = job.sp.r_cut * 10
     if job.sp.molecule == "ethanolAA":
         tstep = 1.0
     else:
         tstep = 2.0
-    in_script_name = "in.production-npt"
-    modify_submit_scripts(in_script_name, job.id)
-    r_cut = job.sp.r_cut * 10
+
+    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
+        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
+        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
+        if 'SPCE' in job.sp.molecule: #add SHAKE for SPCE
+            modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
+
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+
     return msg
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_production_npt)
-@Project.post(lammps_production_nvt)
-@flow.with_job
-@flow.cmd
-def lammps_prod_nvt(job):
-    """Run npt ensemble production."""
-    if job.sp.molecule == "ethanolAA":
-        tstep = 1.0
-    else:
-        tstep = 2.0
-    in_script_name = "in.production-nvt"
-    modify_submit_scripts(in_script_name, job.id)
-    r_cut = job.sp.r_cut * 10
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
-
-    return msg
-
-
-@Project.operation
-@Project.pre(lambda j: j.sp.engine == "lammps-VU")
-@Project.pre(lammps_production_nvt)
 @Project.post(lammps_reformatted_data)
 @flow.with_job
 def lammps_reformat_data(job):
     """Take data from thermo.txt and reformat to log.txt with correct units.
 
     Lammps units real: energy=kcal/mol, temp=K, press=atm, density=g/cm^3, step=2fs
-    Project units: energy=kJ/mol, temp=K, press=MPa, density=amu/nm^3, step=1ps
+    Project units: energy=kJ/mol, temp=K, press=MPa, density=g/cm^3, step=1ps
     """
     import numpy as np
     import pandas as pd
@@ -273,32 +266,12 @@ def lammps_reformat_data(job):
     # convert units
     KCAL_TO_KJ = 4.184  # kcal to kj
     ATM_TO_MPA = 0.101325  # atm to mpa
-    GPCM3_TO_AMUPNM3 = 0.6023  # g/cm^3 to amu/nm^3
     df_in["pe"] = df_in["pe"] * KCAL_TO_KJ
     df_in["ke"] = df_in["ke"] * KCAL_TO_KJ
     df_in["press"] = df_in["press"] * ATM_TO_MPA
-    df_in["density"] = df_in["density"] * GPCM3_TO_AMUPNM3
     df_out = df_in[attr_list]
     df_out.columns = new_titles_list
     df_out.to_csv("log-npt.txt", header=True, index=False, sep=" ")
-
-    df_in = pd.read_csv(job.ws + "/prlog-nvt.txt", delimiter=" ", header=0)
-    attr_list = ["step", "pe", "ke", "press", "temp", "density"]
-    new_titles_list = [
-        "timestep",
-        "potential_energy",
-        "kinetic_energy",
-        "pressure",
-        "temperature",
-        "density",
-    ]
-    df_in["pe"] = df_in["pe"] * KCAL_TO_KJ
-    df_in["ke"] = df_in["ke"] * KCAL_TO_KJ
-    df_in["press"] = df_in["press"] * ATM_TO_MPA
-    df_in["density"] = df_in["density"] * GPCM3_TO_AMUPNM3
-    df_out = df_in[attr_list]
-    df_out.columns = new_titles_list
-    df_out.to_csv("log-nvt.txt", header=True, index=False, sep=" ")
 
 
 @Project.operation
@@ -310,11 +283,13 @@ def lammps_create_gsd(job):
     """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mdtraj as md
-
+    
     traj = md.load("prod-npt.xtc", top="box.gro")
     traj.save("trajectory-npt.gsd")
+    """
     traj = md.load("prod-nvt.xtc", top="box.gro")
     traj.save("trajectory-nvt.gsd")
+    """
     return
 
 
@@ -322,11 +297,19 @@ def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open("submit.pbs", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}-{}\n".format(filename[3:], jobid[0:4])
+        lines[1] = "#PBS -N {}\n".format(jobid)
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
     return
 
+def modify_engine_scripts(filename, msg, line):
+    """Modify the submission scripts to include the job and simulation type in the header."""
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        lines[line] = msg
+    with open(filename, "w") as f:
+        f.writelines(lines)
+    return
 
 if __name__ == "__main__":
     pr = Project()
