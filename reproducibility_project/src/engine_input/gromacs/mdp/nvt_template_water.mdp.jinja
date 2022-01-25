@@ -24,14 +24,14 @@ rcoulomb                = {{  r_cut }}
 fourierspacing      = 0.1
 ewald-rtol          = 10e-5
 
-
-
 tcoupl              = nose-hoover
 tc-grps             = System
 tau_t               = 1
 ref_t               = {{  temp  }}
 
 pcoupl              = no
+
+DispCorr            = {{  lrc  }}
 
 constraints         = h-angles
 constraint-algorithm = LINCS
