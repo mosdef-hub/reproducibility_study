@@ -278,6 +278,7 @@ def traj_exists(job):
     if job.sp.ensemble == "NPT":
         return job.isfile("trajectory-npt.gsd")
     elif job.sp.ensemble == "GEMC-NVT":
+        # return job.isfile("trajectory-liquid.gsd") and job.isfile("trajectory-vapor.gsd" )
         return True
         # return job.isfile('log-liquid.txt') and job.isfile('log-vapor.txt')
 
@@ -312,11 +313,12 @@ def sanitize_npt_log(step, job):
     arrays = np.append(arrays, volume, axis=1)  # volume nm3
     arrays = np.append(arrays, density_gml, axis=1)  # density (g/ml)
     arrays = np.append(arrays, temperature, axis=1)  # temperature (K)
+    arrays = np.append(arrays, temperature, axis=1)  # kinetic_energy
 
     np.savetxt(
         "{}_log.txt".format(step),
         arrays,
-        header="a \t b  \t c  \t potential_energy \t pressure \t #molecules \t density(molecules/nm3) \t timestep \t volume \t density \t temperature",
+        header="a \t b  \t c  \t potential_energy \t pressure \t num_molecules \t rho_molecules_per_nm3 \t timestep \t volume \t density \t temperature \t kinetic_energy",
     )
     return arrays
 
@@ -362,6 +364,9 @@ def sanitize_gemc_log(step, job):
     arrays_box1 = np.append(arrays_box1, volume, axis=1)  # volume nm3
     arrays_box1 = np.append(arrays_box1, density_gml, axis=1)  # density (g/ml)
     arrays_box1 = np.append(arrays_box1, temperature, axis=1)  # temperature (K)
+    arrays_box1 = np.append(
+        arrays_box1, temperature, axis=1
+    )  # kinetic_energy (0)
 
     # arrays_box1[:, 6] = arrays_box1[:, 5]/ (arrays_box1[:, 0]) **3 # density molcules/nm3
     arrays_box2[:, 0] = arrays_box2[:, 0] / 10  # Ang to nm
@@ -388,16 +393,17 @@ def sanitize_gemc_log(step, job):
     arrays_box2 = np.append(arrays_box2, volume, axis=1)  # volume nm3
     arrays_box2 = np.append(arrays_box2, density_gml, axis=1)  # density (g/ml)
     arrays_box2 = np.append(arrays_box2, temperature, axis=1)  # temperature (K)
+    arrays_box2 = np.append(arrays_box2, temperature, axis=1)  # Kinetic energy
 
     np.savetxt(
         "{}_log_box1.txt".format(step),
         arrays_box1,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
+        header="a \t b\t c \t potential_energy \t pressure \t num_molecules \t rho_molecules_per_nm3 \t timestep \t volume \t density \t temperature \t kinetic_energy",
     )
     np.savetxt(
         "{}_log_box2.txt".format(step),
         arrays_box2,
-        header="a \t b\t c \t potential_energy \t pressure \t #molecules \t density(molecules/nm^3) \t timestep \t volume \t density \t temperature",
+        header="a \t b\t c \t potential_energy \t pressure \t num_molecules \t rho_molecules_per_nm3 \t timestep \t volume \t density \t temperature \t kinetic_energy",
     )
     return arrays_box1, arrays_box2
 

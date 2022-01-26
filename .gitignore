@@ -159,3 +159,6 @@ rclone.sh
 
 # UGE
 *.o*
+
+#Local analysis
+analysis_data/
