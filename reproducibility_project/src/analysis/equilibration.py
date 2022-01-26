@@ -143,6 +143,7 @@ def plot_job_property_with_t0(
     vline_scale: float = 1.1,
     threshold_fraction: float = 0.0,
     threshold_neff: int = 1,
+    strict: bool = False,
     overwrite: bool = False,
     data_plt_kwargs: dict = None,
     vline_plt_kwargs: dict = None,
@@ -169,6 +170,8 @@ def plot_job_property_with_t0(
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=1
         Minimum amount of uncorrelated samples.
+    strict : bool, optional, default=False
+        How strict should equilibration check be?
     overwrite : bool, optional, default=False
         Do not write to filename if a file already exists with the same name.
         Set to True to overwrite exisiting files.
@@ -184,11 +187,10 @@ def plot_job_property_with_t0(
 
     fname = pathlib.Path(filename)
     fname = fname.name
-    a_t = pd.read_csv(
-        job.fn(log_filename),
-        delim_whitespace=True,
-        header=0,
-    )
+    with open(job.fn(log_filename), 'r') as f:
+        line1 = f.readline()
+        a_t = pd.read_csv(f, sep='\s+', names=line1.replace(' #', '').split(), dtype=np.float)
+
     if data_plt_kwargs is None:
         data_plt_kwargs = dict()
     if vline_plt_kwargs is None:

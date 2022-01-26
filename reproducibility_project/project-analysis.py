@@ -73,6 +73,7 @@ def _determine_sampling_information(
     job: signac.contrib.project.Job,
     ensemble: str,
     prop: str,
+    strict: bool,
     filename: str = None,
 ) -> None:
     """Write out sampling results for production properties."""
@@ -91,6 +92,7 @@ def _determine_sampling_information(
             variable=prop,
             threshold_fraction=0.75,
             threshold_neff=100,
+            strict=strict,
             monte_carlo_override=True,
         )
     else:
@@ -101,6 +103,7 @@ def _determine_sampling_information(
             variable=prop,
             threshold_fraction=0.75,
             threshold_neff=100,
+            strict=strict,
             monte_carlo_override=False,
         )
 
@@ -562,6 +565,7 @@ def plot_npt_prod_data_with_t0(job):
             overwrite=True,
             threshold_fraction=0.0,
             threshold_neff=1,
+            strict=False,
             vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )
@@ -596,6 +600,7 @@ def plot_nvt_prod_data_with_t0(job):
             overwrite=True,
             threshold_fraction=0.0,
             threshold_neff=1,
+            strict=False,
             vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )

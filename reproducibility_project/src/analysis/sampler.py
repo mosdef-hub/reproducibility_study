@@ -134,9 +134,9 @@ def get_subsampled_values(
         )
 
     with job:
-        df = pd.read_csv(
-            f"{property_filename}", delim_whitespace=True, header=0
-        )
+        with open(f"{property_filename}", 'r') as f:
+            line1 = f.readline()
+            df = pd.read_csv(f, sep='\s+', names=line1.replace(' #', '').split())
         return df[f"{prop}"].to_numpy()[indices]
 
 
@@ -202,15 +202,15 @@ def get_decorr_samples_using_max_t0(
         )
 
     with job:
-        df = pd.read_csv(
-            f"{property_filename}", delim_whitespace=True, header=0
-        )
-        a_t = df[f"{prop}"].to_numpy()[t0:]
-        if is_monte_carlo:
-            uncorr_indices = [val for val in range(t0, len(a_t))]
-        else:
-            uncorr_indices = timeseries.subsampleCorrelatedData(
-                A_t=a_t,
-                conservative=True,
-            )
-    return a_t[uncorr_indices]
+        with open(f"{property_filename}", 'r') as f:
+            line1 = f.readline()
+            df = pd.read_csv(f, sep='\s+', names=line1.replace(' #', '').split())
+            a_t = df[f"{prop}"].to_numpy()[t0:]
+            if is_monte_carlo:
+                uncorr_indices = [val for val in range(t0, len(a_t))]
+            else:
+                uncorr_indices = timeseries.subsampleCorrelatedData(
+                    A_t=a_t,
+                    conservative=True,
+                )
+        return a_t[uncorr_indices]
