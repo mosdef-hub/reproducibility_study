@@ -5,8 +5,8 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-import signac
 import pymbar
+import signac
 from pymbar import timeseries
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
@@ -138,7 +138,9 @@ def get_subsampled_values(
     with job:
         with open(f"{property_filename}", "r") as f:
             line1 = f.readline()
-            df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
+            df = pd.read_csv(
+                f, delim_whitespace=True, names=line1.replace("#", "").split()
+            )
         return df[f"{prop}"].to_numpy()[indices]
 
 
@@ -206,7 +208,9 @@ def get_decorr_samples_using_max_t0(
     with job:
         with open(f"{property_filename}", "r") as f:
             line1 = f.readline()
-            df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
+            df = pd.read_csv(
+                f, delim_whitespace=True, names=line1.replace("#", "").split()
+            )
             a_t = df[f"{prop}"].to_numpy()[t0:]
             if is_monte_carlo:
                 uncorr_indices = [val for val in range(t0, len(a_t))]
@@ -217,7 +221,9 @@ def get_decorr_samples_using_max_t0(
                         conservative=True,
                     )
                 except pymbar.utils.ParameterError as e:
-                    warn(f"This is a captured ParameterError from pymbar {e}, most likely due to zeroes being passed for the values. Returning the unsampled data")
+                    warn(
+                        f"This is a captured ParameterError from pymbar {e}, most likely due to zeroes being passed for the values. Returning the unsampled data"
+                    )
                     uncorr_indices = [i for i in range(t0, len(a_t))]
 
         return a_t[uncorr_indices]

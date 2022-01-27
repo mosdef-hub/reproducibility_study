@@ -189,7 +189,9 @@ def plot_job_property_with_t0(
     fname = fname.name
     with open(job.fn(log_filename), "r") as f:
         line1 = f.readline()
-        a_t = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
+        a_t = pd.read_csv(
+            f, delim_whitespace=True, names=line1.replace("#", "").split()
+        )
 
     if data_plt_kwargs is None:
         data_plt_kwargs = dict()

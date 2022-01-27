@@ -285,7 +285,11 @@ def create_property_sampling(
         from reproducibility_project.src.analysis.sampler import sample_job
 
         _determine_sampling_information(
-            job=job, ensemble=ensemble, prop=prop, filename=None, strict=False,
+            job=job,
+            ensemble=ensemble,
+            prop=prop,
+            filename=None,
+            strict=False,
         )
 
 
