@@ -187,7 +187,7 @@ def plot_job_property_with_t0(
 
     fname = pathlib.Path(filename)
     fname = fname.name
-    with open(job.fn(log_filename), 'r') as f:
+    with open(job.fn(log_filename), "r") as f:
         line1 = f.readline()
         a_t = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
 

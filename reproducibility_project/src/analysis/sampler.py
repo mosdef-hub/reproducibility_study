@@ -136,7 +136,7 @@ def get_subsampled_values(
         )
 
     with job:
-        with open(f"{property_filename}", 'r') as f:
+        with open(f"{property_filename}", "r") as f:
             line1 = f.readline()
             df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
         return df[f"{prop}"].to_numpy()[indices]
@@ -204,7 +204,7 @@ def get_decorr_samples_using_max_t0(
         )
 
     with job:
-        with open(f"{property_filename}", 'r') as f:
+        with open(f"{property_filename}", "r") as f:
             line1 = f.readline()
             df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
             a_t = df[f"{prop}"].to_numpy()[t0:]
