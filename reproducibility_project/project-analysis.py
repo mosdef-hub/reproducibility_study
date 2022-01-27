@@ -285,7 +285,7 @@ def create_property_sampling(
         from reproducibility_project.src.analysis.sampler import sample_job
 
         _determine_sampling_information(
-            job=job, ensemble=ensemble, prop=prop, filename=None
+            job=job, ensemble=ensemble, prop=prop, filename=None, strict=False,
         )
 
 
@@ -552,7 +552,9 @@ def plot_npt_prod_data_with_t0(job):
     ensemble = "npt"
 
     # plot t0
-    df = pd.read_csv(job.fn("log-npt.txt"), delim_whitespace=True, header=0)
+    with open(job.fn("log-npt.txt", 'r') as f:
+        line1 = f.readline()
+        df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
     for prop in df.columns:
         data_plt_kwarg = {"label": prop}
         fname = str(prop) + "-" + ensemble + ".png"
@@ -587,7 +589,9 @@ def plot_nvt_prod_data_with_t0(job):
     ensemble = "nvt"
 
     # plot t0
-    df = pd.read_csv(job.fn("log-nvt.txt"), delim_whitespace=True, header=0)
+    with open(job.fn("log-nvt.txt", 'r') as f:
+        line1 = f.readline()
+        df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
     for prop in df.columns:
         data_plt_kwarg = {"label": prop}
         fname = str(prop) + "-" + ensemble + ".png"
