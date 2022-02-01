@@ -689,12 +689,12 @@ def replace_keyword_fort_files_gemc(job):
     pressure = job.sp.pressure / 1000  # kPa to MPa
     rcut = job.sp.r_cut * 10
     nchaintot = nchain1 + nchain2
-    inix1 = 1 + math.ceil(nchain1 ** 0.33)
-    iniy1 = 1 + math.ceil(nchain1 ** 0.33)
-    iniz1 = 1 + math.ceil(nchain1 ** 0.33)
-    inix2 = 1 + math.ceil(nchain2 ** 0.33)
-    iniy2 = 1 + math.ceil(nchain2 ** 0.33)
-    iniz2 = 1 + math.ceil(nchain2 ** 0.33)
+    inix1 = 1 + math.ceil(nchain1**0.33)
+    iniy1 = 1 + math.ceil(nchain1**0.33)
+    iniz1 = 1 + math.ceil(nchain1**0.33)
+    inix2 = 1 + math.ceil(nchain2**0.33)
+    iniy2 = 1 + math.ceil(nchain2**0.33)
+    iniz2 = 1 + math.ceil(nchain2**0.33)
     variables = [
         nchain1,
         length1,
