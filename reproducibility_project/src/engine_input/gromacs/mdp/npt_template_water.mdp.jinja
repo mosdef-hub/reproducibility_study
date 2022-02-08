@@ -13,6 +13,7 @@ cutoff-scheme            = Verlet
 ns-type                  = grid
 nstlist                  = 10
 pbc                      = xyz
+periodic-molecules       = yes
 
 vdwtype         = Cut-off
 vdw-modifier    = {{  cutoff_style  }}
@@ -22,7 +23,7 @@ coulombtype             = P3M-AD
 coulomb-modifier        = {{  cutoff_style  }}
 rcoulomb                = {{  r_cut }}
 fourierspacing      = 0.1
-ewald-rtol          = 10e-5
+ewald-rtol          = 0.00001
 
 tcoupl                   = nose-hoover
 tc-grps                  = System
@@ -38,5 +39,6 @@ ref-p                    = {{  refp  }}
 
 DispCorr            = {{  lrc  }}
 
-constraints         = h-angles
-constraint-algorithm = LINCS
+constraints         = all-angles
+constraint-algorithm = SHAKE
+shake-tol           = 0.00001
