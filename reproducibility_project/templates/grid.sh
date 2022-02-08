@@ -14,7 +14,6 @@
 {%- endif %}
 
 #SBATCH -N 1
-#SBATCH --mail-type=ALL
 #SBATCH -o output-%j.dat
 #SBATCH -e error-%j.dat
 
