@@ -72,7 +72,6 @@ def init_job(job):
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
             "water-template": f"{mdp_abs_path}/em_template_water.mdp.jinja",
-            "ethanol-template": f"{mdp_abs_path}/em_template_ethanol.mdp.jinja",
             "data": {
                 "r_cut": job.sp.r_cut,
                 "cutoff_style": cutoff_styles[job.sp.cutoff_style],
@@ -85,7 +84,6 @@ def init_job(job):
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
             "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
-            "ethanol-template": f"{mdp_abs_path}/nvt_template_ethanol.mdp.jinja",
             "data": {
                 "nsteps": 2500000,
                 "dt": 0.002,
@@ -99,7 +97,6 @@ def init_job(job):
             "fname": "npt_prod.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
             "water-template": f"{mdp_abs_path}/npt_template_water.mdp.jinja",
-            "ethanol-template": f"{mdp_abs_path}/npt_template_ethanol.mdp.jinja",
             "data": {
                 "nsteps": 5000000,
                 "dt": 0.001,
@@ -130,13 +127,6 @@ def init_job(job):
             _setup_mdp(
                 fname=mdp["fname"],
                 template=mdp["water-template"],
-                data=mdp["data"],
-                overwrite=True,
-            )
-        elif job.sp.molecule == "ethanolAA":
-            _setup_mdp(
-                fname=mdp["fname"],
-                template=mdp["ethanol-template"],
                 data=mdp["data"],
                 overwrite=True,
             )
