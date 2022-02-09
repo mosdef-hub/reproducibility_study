@@ -14,10 +14,6 @@ class Project(flow.FlowProject):
         super().__init__()
 
 
-# ____________________________________________________________________________
-"""Setting progress label"""
-
-
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
 def CreatedEngineInput(job):
@@ -37,10 +33,6 @@ def OutputThermoData(job):
 def FinishedSPECalc(job):
     """Check if the log-spe.txt has been created."""
     return job.isfile("log-spe.txt")
-
-
-# _____________________________________________________________________
-"""Setting up workflow operation"""
 
 
 @Project.operation
@@ -78,8 +70,10 @@ def CalculateEnergy(job):
 @flow.with_job
 @flow.cmd
 def FormatTextFile(job):
-    """Take the output from the simulation engine and convert it to log-spe.txt for data comparisons.
-    See README.md for spe_subproject for formatting information."""
+    """Convert simulation engine output to log-spe.txt for data comparisons.
+
+    See README.md for spe_subproject for formatting information.
+    """
     # __________________________________________________
 
 
