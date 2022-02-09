@@ -1,16 +1,22 @@
 # Create a list of mbuild serialized json snapshots to be compared for single point energies (spe)
 # Create and return only liquid boxes for all systems
-import unyt as u
 import numpy as np
+import unyt as u
 
 from reproducibility_project.src.molecules.system_builder import (
     construct_system,
-    )
+)
 
 
 def Serialize_Systems():
     # Create a pseudo statpoint dict to read info to system builder
-    molecules = ["methaneUA", "pentaneUA", "benzeneUA", "waterSPCE", "ethanolAA"]
+    molecules = [
+        "methaneUA",
+        "pentaneUA",
+        "benzeneUA",
+        "waterSPCE",
+        "ethanolAA",
+    ]
     N_liq_molecules = {
         "methaneUA": 900,
         "pentaneUA": 300,
@@ -68,11 +74,11 @@ def Serialize_Systems():
             "forcefield_name": None,
             "cutoff_style": None,
             "long_range_correction": None,
-            "r_cut": None
+            "r_cut": None,
         }
         print(f"Serializing {molecule} snapshots for SPE calculations.")
         system = construct_system(statepoint_info)[0]
-        system.save(molecule+".json", overwrite=False)
+        system.save(molecule + ".json", overwrite=False)
         print("_____________________________________\n\n")
 
 
