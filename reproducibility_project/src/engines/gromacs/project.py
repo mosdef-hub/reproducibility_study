@@ -277,7 +277,10 @@ def sample_npt_properties(job):
     for prop in poi:
         sample_job(job, filename="log-npt.txt", variable=poi[prop])
         get_subsampled_values(
-            job, property=poi[prop], property_filename="log-npt.txt"
+            job,
+            property=poi[prop],
+            property_filename="log-npt.txt",
+            ensemble="npt",
         )
 
     # Convert trr file to gsd with mdtraj
@@ -327,7 +330,10 @@ def sample_nvt_properties(job):
     for prop in poi:
         sample_job(job, filename="log-nvt.txt", variable=poi[prop])
         get_subsampled_values(
-            job, property=poi[prop], property_filename="log-nvt.txt"
+            job,
+            property=poi[prop],
+            property_filename="log-nvt.txt",
+            ensemble="nvt",
         )
 
     # Convert trr file to gsd with mdtraj
