@@ -227,18 +227,6 @@ def run_hoomd(job, method, restart=False):
         for f in forcefield:
             f.nlist.exclusions += ["body"]
 
-    # update the neighborlist exclusions for all
-    for f in forcefield:
-        try:
-            f.nlist.exclusions += ["1-4"]
-        except AttributeError:
-            pass
-
-    if job.sp.get("cutoff_style") == "shift":
-        for force in forcefield:
-            if isinstance(force, hoomd.md.pair.LJ):
-                force.mode = "shift"
-                print(f"{force} mode set to {force.mode}")
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
             if isinstance(force, hoomd.md.pair.LJ):
