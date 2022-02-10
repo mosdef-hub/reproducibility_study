@@ -24,11 +24,13 @@ def CreatedEngineInput(job):
     """Check if the .json molecule topology was converted to engine input."""
     return job.isfile("MYENGINEINPUTS")
 
+
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
 def OutputThermoData(job):
     """Check if the engine loaded the input files and wrote out thermo data."""
     return job.isfile("NAMEOFMYTHERMOOUTPUT")
+
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
@@ -50,12 +52,15 @@ def LoadSystemSnapShot(job):
     import mbuild as mb
 
     pr = Project()
-    snapshot_directory = pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
+    snapshot_directory = (
+        pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
+    )
     molecule = job.sp.molecule
-    molecule_filename = molecule + '.json'
+    molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
     # Apply forcefield and write out engine input files
-    #__________________________________________________
+    # __________________________________________________
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
@@ -64,7 +69,8 @@ def LoadSystemSnapShot(job):
 @flow.with_job
 def CalculateEnergy(job):
     """Load onto a cluster and output the point energy for the snapshot."""
-    #__________________________________________________
+    # __________________________________________________
+
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
