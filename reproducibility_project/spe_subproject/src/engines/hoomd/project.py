@@ -58,6 +58,7 @@ def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
     import hoomd
     import hoomd.md
+    import mbuild as mb
     import numpy as np
     import unyt as u
     from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
