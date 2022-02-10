@@ -71,7 +71,9 @@ def run_singleframe(job):
 
     molecule = job.sp.molecule
     pr = Project()
-    snapshot_directory = pr.root_directory() / "src" / "system_snapshots"
+    snapshot_directory = pathlib.Path(
+        pr.root_directory() / "src" / "system_snapshots"
+    )
     molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
 
