@@ -70,9 +70,8 @@ def run_singleframe(job):
     from reproducibility_project.src.utils.rigid import moit
 
     molecule = job.sp.molecule
-    snapshot_directory = (
-        pathlib.Path(os.getcwd()).parents[1] / "src" / "system_snapshots"
-    )
+    pr = Project()
+    snapshot_directory = pr.root_directory() / "src" / "system_snapshots"
     molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
 

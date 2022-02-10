@@ -51,10 +51,11 @@ def LoadSystemSnapShot(job):
     """Create initial configurations of the system statepoint."""
     import mbuild as mb
 
-    molecule = job.sp.molecule
+    pr = Project()
     snapshot_directory = (
-        pathlib.Path(os.getcwd()).parents[1] / "src" / "system_snapshots"
+        pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
     )
+    molecule = job.sp.molecule
     molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
     # Apply forcefield and write out engine input files
@@ -79,7 +80,9 @@ def CalculateEnergy(job):
 @flow.cmd
 def FormatTextFile(job):
     """Take the output from the simulation engine and convert it to log-spe.txt for data comparisons.
-    See README.md for spe_subproject for formatting information."""
+
+    See README.md for spe_subproject for formatting information.
+    """
     # __________________________________________________
 
 
