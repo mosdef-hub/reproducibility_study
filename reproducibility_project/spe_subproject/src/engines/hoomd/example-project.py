@@ -83,7 +83,8 @@ def FormatTextFile(job):
 
     See README.md for spe_subproject for formatting information.
     """
-    #__________________________________________________
+    # __________________________________________________
+
 
 if __name__ == "__main__":
     pr = Project()
