@@ -46,6 +46,8 @@ This will start the flask app and output the following message to the screen:
 ```
 Copy and paste the server and port address (`http://localhost:8888/`) into your browser to view the dashboard.
 
+**Note: For unit treatment see reference information in the Reproducibility Study [Project Board](https://github.com/mosdef-hub/reproducibility_study/projects/1)**
+
 ## Layout
 
 ```

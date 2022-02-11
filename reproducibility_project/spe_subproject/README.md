@@ -1,26 +1,27 @@
 ## You are here
-Single Point Energy (SPE) subproject for reproducibility study
+Single Point Energy (SPE) subproject for reproducibility study.
 
 ## How to set up single energy calculations
-Single point energies are calculated from the snapshots found in `src/system_snapshots`. These are created from the file `src/create_snapshots.py`. This utilizes the system builder in the main study to create initial configurations that can be compared across simulation engine for energy calculations.
+Single point energies are calculated from the snapshots found in `src/system_snapshots`. These are created from the file `src/create_snapshots.py`. This utilizes the system builder in the main study to create initial configurations that can be compared across simulation engines for energy calculations.
 
 **NOTE: Packmol is used to pack the simulations box, and can generate different packings with the same seed across Linux and macOS operating distributions. The simulation snapshots used in this study were created using macOS Catalina Version 10.15.7.**
 
-The energy calculations will all be output to `log-spe.txt` and located in the job workspace directories. All energy units will be reported in **extensive**(no division by number of moleules) energies of kJ/mol.
+The energy calculations will all be output to `log-spe.txt` and located in the job workspace directories. All energy units will be reported in **extensive** (no division by number of moleules) energies of kJ/mol.
 
-The energy will be logged as space separated columns with the first row containing headers. They will be as follows:
-total_energy potential_energy kinetic_energy vdw_energy coul_energy pair_energy bonds_energy angles_energy dihedrals_energy
+The energy will be logged as "space" separated columns with the first row containing headers. They will be as follows:
+total_energy potential_energy vdw_energy coul_energy pair_energy bonds_energy angles_energy dihedrals_energy tail_energy kspace_energy
 
 The following energy definitions are calculated using the [lammps thermo](https://docs.lammps.org/thermo_style.html) calculation methods.
 total_energy = etotal
 potential_energy = pe
-kinetic_energy = ke
 vdw_energy = evdwl
 coul_energy = ecoul
 pair_energy = epair
 bonds_energy = ebond
 angles_energy = eangle
 dihedrals_energy = edihed
+tail_energy = etail
+kspace_energy = elong
 **NOTE: Please log a blank column of data for any energies that are not output or calculated by your simulation engine**
 This can be done by using the `None` value for the entries in that pandas dataframe. To write out your data, use:
 ```python
