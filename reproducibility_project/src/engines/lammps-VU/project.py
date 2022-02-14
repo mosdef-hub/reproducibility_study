@@ -240,7 +240,7 @@ def lammps_prod_npt(job):
     if job.sp.molecule == 'ethanolAA': #add 1-4 exclusions for ethanolAA
         modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0.5\n', 16)
     elif job.sp.molecule == 'benzeneUA': #run benzene twice as long to get enough equilibrated points
-        modify_engine_scripts(in_script_name, 'variable runtime equal 10e6/dt\n', 18)
+        modify_engine_scripts(in_script_name, 'variable runtime equal 10e6/dt\n', 17)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 

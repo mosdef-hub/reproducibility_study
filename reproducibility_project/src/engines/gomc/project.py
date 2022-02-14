@@ -50,12 +50,12 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_9_25_21/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10 ** 3
+    40 * 10**3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 120 * 10**3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
@@ -531,7 +531,13 @@ def part_3c_output_equilb_design_ensemble_started(job):
                         ]["output_name_control_file_name"],
                     )
                 else:
-                    return False
+                    return gomc_simulation_started(
+                        job,
+                        job.doc.equilb_design_ensemble_dict[
+                            str(job.doc.equilb_design_ensemble_max_number - 1)
+                        ]["output_name_control_file_name"],
+                    )
+
             else:
                 return False
         elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
@@ -548,26 +554,8 @@ def part_3c_output_equilb_design_ensemble_started(job):
 def part_3d_output_production_run_started(job):
     """Check to see if the production run (set temperature) gomc simulation is started."""
     try:
+        return gomc_simulation_started(job, production_control_file_name_str)
 
-        if job.isfile(
-            "out_{}.dat".format(
-                job.doc.production_run_ensemble_dict[
-                    str(job.doc.equilb_design_ensemble_number)
-                ]["output_name_control_file_name"]
-            )
-        ):
-            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
-                return gomc_simulation_started(
-                    job,
-                    job.doc.production_run_ensemble_dict[
-                        str(job.doc.equilb_design_ensemble_number)
-                    ]["output_name_control_file_name"],
-                )
-            else:
-                return False
-
-        else:
-            return False
     except:
         return False
 
@@ -643,8 +631,13 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
                     str(job.doc.equilb_design_ensemble_number)
                 ]["output_name_control_file_name"],
             )
-        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
-            return True
+        else:
+            return gomc_sim_completed_properly(
+                job,
+                job.doc.equilb_design_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_max_number - 1)
+                ]["output_name_control_file_name"],
+            )
     except:
         return False
 

@@ -3,10 +3,13 @@
 *.png
 *.xyz
 *.pdb
+*.ipynb
 
 # Signac
 .signac_sp_cache.json.gz
 signac_project_document.json
+signac_statepoints.json
+workspace*
 
 # MacOS/finder file
 .DS_Store
