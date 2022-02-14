@@ -8,24 +8,24 @@ Single point energies are calculated from the snapshots found in `src/system_sna
 
 The energy calculations will all be output to `log-spe.txt` and located in the job workspace directories. All energy units will be reported in **extensive** (no division by number of moleules) energies of kJ/mol.
 
-The energy will be logged as "space" separated columns with the first row containing headers. They will be as follows:
-total_energy potential_energy vdw_energy coul_energy pair_energy bonds_energy angles_energy dihedrals_energy tail_energy kspace_energy
+The energy will be logged as "comma" separated columns with the first row containing headers. They will be as follows:
+total_energy, potential_energy, vdw_energy, coul_energy, pair_energy, bonds_energy, angles_energy, dihedrals_energy, tail_energy, kspace_energy,
 
 The following energy definitions are calculated using the [lammps thermo](https://docs.lammps.org/thermo_style.html) calculation methods.
-total_energy = etotal
-potential_energy = pe
-vdw_energy = evdwl
-coul_energy = ecoul
-pair_energy = epair
-bonds_energy = ebond
-angles_energy = eangle
-dihedrals_energy = edihed
-tail_energy = etail
-kspace_energy = elong
+total_energy = etotal </br>
+potential_energy = pe </br>
+vdw_energy = evdwl </br>
+coul_energy = ecoul </br>
+pair_energy = epair </br>
+bonds_energy = ebond </br>
+angles_energy = eangle </br>
+dihedrals_energy = edihed </br>
+tail_energy = etail </br>
+kspace_energy = elong </br>
 **NOTE: Please log a blank column of data for any energies that are not output or calculated by your simulation engine**
 This can be done by using the `None` value for the entries in that pandas dataframe. To write out your data, use:
 ```python
-df.to_csv('log-spe.txt', header=True, index=False, sep=" ")
+df.to_csv('log-spe.txt', header=True, index=False, sep=",")
 ```
 
 ## How to use from scratch
