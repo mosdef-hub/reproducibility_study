@@ -141,7 +141,10 @@ def get_subsampled_values(
             df = pd.read_csv(
                 f, delim_whitespace=True, names=line1.replace("#", "").split()
             )
-        return df[f"{prop}"].to_numpy()[indices]
+            if df.get(f"{prop}", None) is None:
+                return np.asarray([None]*len(indices))
+            else:
+                return df[f"{prop}"].to_numpy()[indices]
 
 
 def _decorr_sampling(
