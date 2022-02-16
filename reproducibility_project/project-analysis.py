@@ -53,12 +53,12 @@ md_nvt_props = [
     "potential_energy",
     "kinetic_energy",
     "temperature",
-    "volume",
+    "density",
 ]
 mc_nvt_props = [
     "potential_energy",
     "temperature",
-    "volume",
+    "density",
 ]
 
 
