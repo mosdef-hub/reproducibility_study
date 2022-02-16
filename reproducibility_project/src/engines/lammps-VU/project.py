@@ -179,8 +179,7 @@ def lammps_em_nvt(job):
     if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
         modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
         modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-    if job.sp.molecule == 'ethanolAA': #add 1-4 exclusions for ethanolAA
-        modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
+    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
@@ -207,8 +206,7 @@ def lammps_equil_npt(job):
         modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
         if 'SPCE' in job.sp.molecule:
             modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
-    if job.sp.molecule == 'ethanolAA': #add 1-4 exclusions for ethanolAA
-        modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
+    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
@@ -237,10 +235,9 @@ def lammps_prod_npt(job):
         modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
         if 'SPCE' in job.sp.molecule: #add SHAKE for SPCE
             modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
-    if job.sp.molecule == 'ethanolAA': #add 1-4 exclusions for ethanolAA
-        modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0.5\n', 16)
     elif job.sp.molecule == 'benzeneUA': #run benzene twice as long to get enough equilibrated points
         modify_engine_scripts(in_script_name, 'variable runtime equal 10e6/dt\n', 17)
+    modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0.5\n', 16)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
