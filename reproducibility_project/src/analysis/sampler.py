@@ -142,7 +142,7 @@ def get_subsampled_values(
                 f, delim_whitespace=True, names=line1.replace("#", "").split()
             )
             if df.get(f"{prop}", None) is None:
-                return np.asarray([None]*len(indices))
+                return np.asarray([None] * len(indices))
             else:
                 return df[f"{prop}"].to_numpy()[indices]
 
