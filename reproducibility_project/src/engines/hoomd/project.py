@@ -98,17 +98,23 @@ def post_process(job):
 
     for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
         # Make a copy, just in case
-        copy(logfile, f"{logfile}.bkup")
+        backup = f"{logfile}.bkup"
+        if not os.path.exists(backup):
+            copy(logfile, backup)
 
         data = np.genfromtxt(logfile, names=True)
         data = clean_data(data)
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
         volume = data["volume"] * u.nm**3
-        density = (system_mass / volume).to("g/cm**3")
+        density = (system_moass / volume).to("g/cm**3")
+        kB = 0.00831446262  # kJ/(mol K)
+        pressure_factor = float((1 * u.kJ / u.mol / u.nm**3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
+        data["temperature"] *= kB
+        data["pressure"] *= pressure_factor
         data = rf.append_fields(
             data, "density", np.array(density), usemask=False
         )
