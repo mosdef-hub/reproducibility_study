@@ -231,7 +231,7 @@ def run_hoomd(job, method, restart=False):
 
         # update the neighborlist exclusions for rigid
         for f in forcefield:
-            f.nlist.exclusions += ["body"]
+            f.nlist.exclusions = f.nlist.exclusions + ["body"]
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:

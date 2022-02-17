@@ -53,6 +53,7 @@ def FinishedSPECalc(job):
 # with the mosdef-study38 conda env active
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
+@Project.post(OutputThermoData)
 @flow.with_job
 def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
@@ -110,6 +111,7 @@ def run_singleframe(job):
         init_snap=init_snap,
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
+    print("Snapshot created")
 
     # Adjust the snapshot rigid bodies
     if isrigid:
@@ -157,7 +159,7 @@ def run_singleframe(job):
 
         # update the neighborlist exclusions for rigid
         for f in forcefield:
-            f.nlist.exclusions += ["body"]
+            f.nlist.exclusions = f.nlist.exclusions + ["body"]
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
@@ -268,7 +270,27 @@ def FormatTextFile(job):
 
     See README.md for spe_subproject for formatting information.
     """
-    # __________________________________________________
+    import numpy as np
+    import unyt as u
+
+    raw_logfile = job.fn("log-spe-raw.txt")
+    logfile = job.fn("log-spe.txt")
+    data = np.genfromtxt(raw_logfile, names=True)
+
+    headers = [
+        "hoomd.md.pair.pair.LJ",
+        "hoomd.md.pair.pair.Ewald",
+        "hoomd.md.long_range.pppm.Coulomb",
+        "hoomd.md.special_pair.LJ",
+        "hoomd.md.special_pair.Coulomb",
+        "hoomd.md.bond.Harmonic",
+        "hoomd.md.angle.Harmonic",
+        "hoomd.md.dihedral.OPLS",
+        "kinetic_energy",
+        "potential_energy",
+    ]
+
+    # np.savetxt(logfile,data,header=" ".join(data.dtype.names))
 
 
 if __name__ == "__main__":
