@@ -62,10 +62,10 @@ def LoadSystemSnapShot(job):
     ff = load_ff(job.sp.forcefield_name)
     typed_box = ff.apply(parmed_structure)
     typed_box.save(
-        "box.top"
+        "box.top", overwrite=True
     )  # save to gromacs topology for later conversions in mdtraj
     typed_box.save(
-        "box.gro"
+        "box.gro", overwrite=True
     )  # save to gromacs topology for later conversions in mdtraj
     write_lammpsdata(
         typed_box,
@@ -85,6 +85,7 @@ def LoadSystemSnapShot(job):
 @Project.pre(CreatedEngineInput)
 @Project.post(OutputThermoData)
 @flow.with_job
+@flow.cmd
 def CalculateEnergy(job):
     """Load onto a cluster and output the point energy for the snapshot.
 
@@ -152,7 +153,21 @@ def FormatTextFile(job):
     df_out.columns = new_titles_list
     df_out.to_csv("log-spe.txt", header=True, index=False, sep=",")
 
+def modify_submit_scripts(filename, jobid, cores=8):
+    """Modify the submission scripts to include the job and simulation type in the header."""
+    with open("submit.pbs", "r") as f:
+        lines = f.readlines()
+        lines[1] = "#PBS -N {}\n".format(jobid)
+    with open("submit.pbs", "w") as f:
+        f.writelines(lines)
 
+def modify_engine_scripts(filename, msg, line):
+    """Modify the submission scripts to include the job and simulation type in the header."""
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        lines[line] = msg
+    with open(filename, "w") as f:
+        f.writelines(lines)
 
 if __name__ == "__main__":
     pr = Project()

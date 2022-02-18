@@ -9,7 +9,7 @@ pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut, add coul/lon
 bond_style  harmonic
 angle_style harmonic
 dihedral_style  opls
-read_restart equilibrated-npt.restart
+read_data box.lammps
 # Line 12 for fix pppm option with spce water
 pair_modify shift no tail yes
 # Line 14 for fix shake option with spce water
@@ -34,11 +34,11 @@ variable k equal ke
 variable bon equal ebond
 variable ang equal eangle
 variable dih equal edihed
-variable vdw equil evdwl
-variable cou equil ecoul
-variable tai equil etail
-variable lon equil elong
-variable pai equil epair
+variable vdw equal evdwl
+variable cou equal ecoul
+variable tai equal etail
+variable lon equal elong
+variable pai equal epair
 variable filename string "prlog-npt.txt"
 fix output_data all print 1 "${startstep} ${t} ${pressure} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" file ${filename} title "step temp press etotal pe evdwl ecoul ebond eangle edihed etail elong epair""
 dump traj1 all xtc 1 prod-npt.xtc
