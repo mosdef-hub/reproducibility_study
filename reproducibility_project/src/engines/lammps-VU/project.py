@@ -33,8 +33,12 @@ def lammps_created_box(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_copy_files(job):
     """Check if the submission scripts have been copied over for the job."""
-    return (job.isfile("submit.pbs") and job.isfile("in.minimize") 
-	    and job.isfile("in.equilibration") and job.isfile("in.production-npt"))
+    return (
+        job.isfile("submit.pbs")
+        and job.isfile("in.minimize")
+        and job.isfile("in.equilibration")
+        and job.isfile("in.production-npt")
+    )
 
 
 @Project.label
@@ -166,7 +170,7 @@ def lammps_cp_files(job):
 @flow.cmd
 def lammps_em_nvt(job):
     """Run energy minimization and nvt ensemble."""
-    in_script_name = 'submit.pbs'
+    in_script_name = "submit.pbs"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.minimize"
     r_cut = job.sp.r_cut * 10
@@ -176,10 +180,20 @@ def lammps_em_nvt(job):
     else:
         tstep = 2.0
 
-    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
-        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
-        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
+    if (
+        "SPCE" in job.sp.molecule or "ethanolAA" in job.sp.molecule
+    ):  # add charges for water and ethanol
+        modify_engine_scripts(
+            in_script_name, "pair_style lj/cut/coul/long ${rcut}\n", 7
+        )
+        modify_engine_scripts(
+            in_script_name,
+            "kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n",
+            12,
+        )
+    modify_engine_scripts(
+        in_script_name, " special_bonds lj/coul 0 0 0.5\n", 16
+    )
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
@@ -193,7 +207,7 @@ def lammps_em_nvt(job):
 @flow.cmd
 def lammps_equil_npt(job):
     """Run npt ensemble equilibration."""
-    in_script_name = 'submit.pbs'
+    in_script_name = "submit.pbs"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.equilibration"
     r_cut = job.sp.r_cut * 10
@@ -201,12 +215,26 @@ def lammps_equil_npt(job):
         tstep = 1.0
     else:
         tstep = 2.0
-    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
-        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
-        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-        if 'SPCE' in job.sp.molecule:
-            modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
-    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16)
+    if (
+        "SPCE" in job.sp.molecule or "ethanolAA" in job.sp.molecule
+    ):  # add charges for water and ethanol
+        modify_engine_scripts(
+            in_script_name, "pair_style lj/cut/coul/long ${rcut}\n", 7
+        )
+        modify_engine_scripts(
+            in_script_name,
+            "kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n",
+            12,
+        )
+        if "SPCE" in job.sp.molecule:
+            modify_engine_scripts(
+                in_script_name,
+                "fix rigbod all shake 0.00001 20 0 b 1 a 1\n",
+                14,
+            )
+    modify_engine_scripts(
+        in_script_name, " special_bonds lj/coul 0 0 0.5\n", 16
+    )
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
@@ -221,7 +249,7 @@ def lammps_equil_npt(job):
 @flow.cmd
 def lammps_prod_npt(job):
     """Run npt ensemble production."""
-    in_script_name = 'submit.pbs'
+    in_script_name = "submit.pbs"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.production-npt"
     r_cut = job.sp.r_cut * 10
@@ -230,14 +258,30 @@ def lammps_prod_npt(job):
     else:
         tstep = 2.0
 
-    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
-        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
-        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-        if 'SPCE' in job.sp.molecule: #add SHAKE for SPCE
-            modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
-    elif job.sp.molecule == 'benzeneUA': #run benzene twice as long to get enough equilibrated points
-        modify_engine_scripts(in_script_name, 'variable runtime equal 10e6/dt\n', 17)
-    modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0.5\n', 16)
+    if (
+        "SPCE" in job.sp.molecule or "ethanolAA" in job.sp.molecule
+    ):  # add charges for water and ethanol
+        modify_engine_scripts(
+            in_script_name, "pair_style lj/cut/coul/long ${rcut}\n", 7
+        )
+        modify_engine_scripts(
+            in_script_name,
+            "kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n",
+            12,
+        )
+        if "SPCE" in job.sp.molecule:  # add SHAKE for SPCE
+            modify_engine_scripts(
+                in_script_name,
+                "fix rigbod all shake 0.00001 20 0 b 1 a 1\n",
+                14,
+            )
+    elif (
+        job.sp.molecule == "benzeneUA"
+    ):  # run benzene twice as long to get enough equilibrated points
+        modify_engine_scripts(
+            in_script_name, "variable runtime equal 10e6/dt\n", 17
+        )
+    modify_engine_scripts(in_script_name, "special_bonds lj/coul 0 0 0.5\n", 16)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
@@ -288,7 +332,7 @@ def lammps_create_gsd(job):
     """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mdtraj as md
-    
+
     traj = md.load("prod-npt.xtc", top="box.gro")
     traj.save("trajectory-npt.gsd")
     """
@@ -307,6 +351,7 @@ def modify_submit_scripts(filename, jobid, cores=8):
         f.writelines(lines)
     return
 
+
 def modify_engine_scripts(filename, msg, line):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open(filename, "r") as f:
@@ -315,6 +360,7 @@ def modify_engine_scripts(filename, msg, line):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 if __name__ == "__main__":
     pr = Project()

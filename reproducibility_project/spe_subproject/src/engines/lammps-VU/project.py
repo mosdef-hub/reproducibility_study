@@ -18,11 +18,13 @@ class Project(flow.FlowProject):
 # ____________________________________________________________________________
 """Setting progress label"""
 
+
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def CreatedEngineInput(job):
     """Check if the .json molecule topology was converted to engine input"""
     return job.isfile("box.lammps")
+
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -30,13 +32,12 @@ def OutputThermoData(job):
     """Check if the engine loaded the input files and wrote out thermo data"""
     return job.isfile("prlog-npt.txt")
 
+
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def FinishedSPECalc(job):
     """Check if the log-spe.txt has been created."""
     return job.isfile("log-spe.txt")
-
-
 
 
 # _____________________________________________________________________
@@ -53,10 +54,13 @@ def LoadSystemSnapShot(job):
     from mbuild.formats.lammpsdata import write_lammpsdata
 
     from reproducibility_project.src.utils.forcefields import load_ff
+
     pr = Project()
-    snapshot_directory = pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
+    snapshot_directory = (
+        pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
+    )
     molecule = job.sp.molecule
-    molecule_filename = molecule + '.json'
+    molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
     parmed_structure = box.to_parmed()
     ff = load_ff(job.sp.forcefield_name)
@@ -78,8 +82,6 @@ def LoadSystemSnapShot(job):
     )  # write out a lammps topology
 
 
-
-
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(CreatedEngineInput)
@@ -96,7 +98,7 @@ def CalculateEnergy(job):
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     os.system(msg)
     """Run energy minimization and nvt ensemble."""
-    in_script_name = 'submit.pbs'
+    in_script_name = "submit.pbs"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.production-npt"
     r_cut = job.sp.r_cut * 10
@@ -105,14 +107,24 @@ def CalculateEnergy(job):
     else:
         tstep = 2.0
 
-    if 'waterSPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
-        modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
-        modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-    if "waterSPCE" == job.sp.molecule: #Fix SHAKE for spce water
+    if (
+        "waterSPCE" in job.sp.molecule or "ethanolAA" in job.sp.molecule
+    ):  # add charges for water and ethanol
+        modify_engine_scripts(
+            in_script_name, "pair_style lj/cut/coul/long ${rcut}\n", 7
+        )
+        modify_engine_scripts(
+            in_script_name,
+            "kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n",
+            12,
+        )
+    if "waterSPCE" == job.sp.molecule:  # Fix SHAKE for spce water
         modify_engine_scripts(
             in_script_name, "fix rigbod all shake 0.00001 20 0 b 1 a 1\n", 14
         )
-    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16) #use 1-4 combining rules for lammps
+    modify_engine_scripts(
+        in_script_name, " special_bonds lj/coul 0 0 0.5\n", 16
+    )  # use 1-4 combining rules for lammps
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
@@ -133,7 +145,17 @@ def FormatTextFile(job):
     import pandas as pd
 
     df_in = pd.read_csv(job.ws + "/prlog-npt.txt", delimiter=" ", header=0)
-    attr_list = ["pe", "evdwl", "ecoul", "epair", "ebond", "eangle", "edihed", "etail", "elong"]
+    attr_list = [
+        "pe",
+        "evdwl",
+        "ecoul",
+        "epair",
+        "ebond",
+        "eangle",
+        "edihed",
+        "etail",
+        "elong",
+    ]
     new_titles_list = [
         "potential_energy",
         "vdw_energy",
@@ -143,7 +165,7 @@ def FormatTextFile(job):
         "angles_energy",
         "dihedrals_energy",
         "tail_energy",
-        "kspace_energy"
+        "kspace_energy",
     ]
     # convert units
     KCAL_TO_KJ = 4.184  # kcal to kj
@@ -151,6 +173,7 @@ def FormatTextFile(job):
     df_out = df_in[attr_list]
     df_out.columns = new_titles_list
     df_out.to_csv("log-spe.txt", header=True, index=False, sep=",")
+
 
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
@@ -160,6 +183,7 @@ def modify_submit_scripts(filename, jobid, cores=8):
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
 
+
 def modify_engine_scripts(filename, msg, line):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open(filename, "r") as f:
@@ -167,6 +191,7 @@ def modify_engine_scripts(filename, msg, line):
         lines[line] = msg
     with open(filename, "w") as f:
         f.writelines(lines)
+
 
 if __name__ == "__main__":
     pr = Project()

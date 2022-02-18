@@ -331,7 +331,7 @@ def lammps_create_gsd(job):
     """Create an rdf from the gsd file using Freud analysis scripts."""
     # Create rdf data from the production run
     import mdtraj as md
-    
+
     traj = md.load("prod-npt.xtc", top="box.gro")
     traj.save("trajectory-npt.gsd")
     """
@@ -350,6 +350,7 @@ def modify_submit_scripts(filename, jobid, cores=8):
         f.writelines(lines)
     return
 
+
 def modify_engine_scripts(filename, msg, line):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open(filename, "r") as f:
@@ -358,6 +359,7 @@ def modify_engine_scripts(filename, msg, line):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 def modify_engine_scripts(filename, msg, line):
     """Modify the submission scripts to include the job and simulation type in the header."""
