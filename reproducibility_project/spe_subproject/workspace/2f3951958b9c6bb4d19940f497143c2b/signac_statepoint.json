@@ -1,0 +1,1 @@
+{"molecule": "methaneUA", "engine": "gomc", "replica": 0, "temperature": 140.0, "pressure": 1318.0, "ensemble": "NPT", "N_liquid": 900, "N_vap": null, "box_L_liq": 3.998, "box_L_vap": null, "init_liq_den": 0.375, "init_vap_den": null, "mass": 16.04, "forcefield_name": "trappe-ua", "cutoff_style": "hard", "long_range_correction": "energy_pressure", "r_cut": 1.4}
