@@ -1,5 +1,9 @@
 """Create summary data based on the aggregate values."""
+import pathlib
+
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 import signac
 
 
