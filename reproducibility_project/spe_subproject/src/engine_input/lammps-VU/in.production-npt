@@ -40,10 +40,10 @@ variable tai equal etail
 variable lon equal elong
 variable pai equal epair
 variable filename string "prlog-npt.txt"
-fix output_data all print 1 "${startstep} ${t} ${pressure} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" file ${filename} title "step temp press etotal pe evdwl ecoul ebond eangle edihed etail elong epair""
+fix output_data all print 1 "${startstep} ${t} ${pressure} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" file ${filename} title "step temp press etotal pe evdwl ecoul ebond eangle edihed etail elong epair"
 dump traj1 all xtc 1 prod-npt.xtc
 fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
-run ${runtime}
+run 1
 unfix integrator
 write_restart production-npt.restart
 undump traj1

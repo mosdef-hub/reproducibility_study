@@ -28,7 +28,7 @@ def CreatedEngineInput(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def OutputThermoData(job):
     """Check if the engine loaded the input files and wrote out thermo data"""
-    return job.isfile("pr-log.txt")
+    return job.isfile("prlog-npt.txt")
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
@@ -123,7 +123,6 @@ def CalculateEnergy(job):
 @Project.pre(OutputThermoData)
 @Project.post(FinishedSPECalc)
 @flow.with_job
-@flow.cmd
 def FormatTextFile(job):
     """Take data from thermo.txt and reformat to log.txt with correct units.
 
