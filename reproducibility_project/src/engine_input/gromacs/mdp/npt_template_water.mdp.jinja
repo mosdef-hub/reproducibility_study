@@ -22,7 +22,7 @@ coulombtype             = P3M-AD
 coulomb-modifier        = {{  cutoff_style  }}
 rcoulomb                = {{  r_cut }}
 fourierspacing      = 0.1
-ewald-rtol          = 10e-5
+ewald-rtol          = 0.00001
 
 tcoupl                   = nose-hoover
 tc-grps                  = System
@@ -36,5 +36,8 @@ tau-p                    = 10.0
 compressibility          = 4.5e-5
 ref-p                    = {{  refp  }}
 
-constraints         = h-angles
-constraint-algorithm = LINCS
+DispCorr            = {{  lrc  }}
+
+constraints         = all-angles
+constraint-algorithm = SHAKE
+shake-tol           = 0.00001
