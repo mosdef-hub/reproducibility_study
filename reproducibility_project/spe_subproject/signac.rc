@@ -1,0 +1,3 @@
+project = spe_subproject
+workspace_dir = workspace
+schema_version = 1
