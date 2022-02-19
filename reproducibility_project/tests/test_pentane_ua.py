@@ -94,7 +94,7 @@ class TestPentaneUA(BaseTest):
         assert np.all(
             np.isclose(
                 ch2_ch2_bond["k"],
-                param_struct.bond_types[0].k * (4.184 * 2 / (0.1**2)),
+                param_struct.bond_types[0].k * (4.184 * 2 / (0.1 ** 2)),
             )
         )
         assert np.all(
