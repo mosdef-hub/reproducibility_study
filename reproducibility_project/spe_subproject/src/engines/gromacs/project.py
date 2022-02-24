@@ -1,10 +1,16 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 import os
 import pathlib
+import sys
 
 import flow
-import numpy as np
-from flow import environments
+import pandas as pd
+import panedr
+import unyt as u
+from flow.environment import DefaultPBSEnvironment
+
+from reproducibility_project.src.analysis.equilibration import is_equilibrated
+from reproducibility_project.src.utils.forcefields import load_ff
 
 
 class Project(flow.FlowProject):
@@ -24,6 +30,10 @@ class Project(flow.FlowProject):
 def LoadSystemSnapShot(job):
     """Create initial configurations of the system statepoint."""
     import mbuild as mb
+
+    from reproducibility_project.spe_subproject.src.engine_input.gromacs import (
+        mdp,
+    )
 
     pr = Project()
     snapshot_directory = (
@@ -97,29 +107,108 @@ def LoadSystemSnapShot(job):
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(CreatedEngineInput)
-@Project.post(OutputThermoData)
+@Project.pre(lambda j: j.isfile("init.gro"))
+@Project.pre(lambda j: j.isfile("init.top"))
+@Project.pre(lambda j: j.isfile("nvt.mdp"))
+@Project.pre(lambda j: j.isfile("npt.mdp"))
+@Project.post(lambda j: j.isfile("nvt.edr"))
 @flow.with_job
+@flow.cmd
 def CalculateEnergy(job):
     """Load onto a cluster and output the point energy for the snapshot."""
     nvt_mdp_path = "nvt.mdp"
-    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c em.gro -p init.top --maxwarn 1"
+    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c init.gro -p init.top --maxwarn 1"
     mdrun = _mdrun_str("nvt")
     return f"{grompp} && {mdrun}"
 
 
 @Project.operation
-@Project.pre(lambda j: j.sp.engine == "MYENGINENAME")
-@Project.pre(OutputThermoData)
-@Project.post(FinishedSPECalc)
+@Project.pre(lambda j: j.sp.engine == "gromacs")
+@Project.pre(lambda j: j.isfile("nvt.edr"))
+@Project.post(lambda j: j.isfile("log-spe.txt"))
 @flow.with_job
-@flow.cmd
 def FormatTextFile(job):
     """Take the output from the simulation engine and convert it to log-spe.txt for data comparisons.
 
     See README.md for spe_subproject for formatting information.
     """
-    # __________________________________________________
+    import mdtraj
+    import panedr
+
+    p = pathlib.Path(job.workspace())
+    data = panedr.edr_to_df(f"{str(p.absolute())}/nvt.edr").loc[0.0]
+
+    to_drop = [
+        "Vir-XX",
+        "Vir-XY",
+        "Vir-XZ",
+        "Vir-YX",
+        "Vir-YY",
+        "Vir-YZ",
+        "Vir-ZX",
+        "Vir-ZY",
+        "Vir-ZZ",
+        "Pres-XX",
+        "Pres-XY",
+        "Pres-XZ",
+        "Pres-YX",
+        "Pres-YY",
+        "Pres-YZ",
+        "Pres-ZX",
+        "Pres-ZY",
+        "Pres-ZZ",
+        "#Surf*SurfTen",
+        "T-System",
+        "Conserved En.",
+        "Temperature",
+        "Pres. DC",
+        "Pressure",
+        "Total Energy",
+    ]
+    for key in to_drop:
+        data.pop(key)
+
+    spe = {
+        "potential_energy": data.get("Potential"),
+        "vdw_energy": data.get("LJ (SR)"),
+        "tail_energy": data.get("Disper. corr."),
+        "coul_energy": data.get("Coulomb (SR)"),
+        "kspace_energy": data.get("Coul. recip."),
+        "pair_energy": _get_gmx_energy_pair(dict(data)),
+        "bonds_energy": data.get("Bond"),
+        "angles_energy": data.get("Angle"),
+        "dihedrals_energy": _get_gmx_energy_torsion(dict(data)),
+    }
+    spe_df = pd.DataFrame(spe, index=[0])
+    spe_df.to_csv("log-spe.txt", header=True, index=False, sep=",")
+
+
+"""
+The below methods are adapted from
+https://github.com/openforcefield/openff-interchange/blob/main/openff/interchange/drivers/gromacs.py
+"""
+
+
+def _get_gmx_energy_pair(gmx_energies):
+    gmx_pairs = 0.0
+    for key in ["LJ-14", "Coulomb-14"]:
+        try:
+            gmx_pairs += gmx_energies[key]
+        except KeyError:
+            pass
+    return gmx_pairs
+
+
+def _get_gmx_energy_torsion(gmx_energies):
+    """Canonicalize torsion energies from a set of GROMACS energies."""
+    gmx_torsion = 0.0
+    for key in ["Torsion", "Ryckaert-Bell.", "Proper Dih."]:
+        try:
+            gmx_torsion += gmx_energies[key]
+        except KeyError:
+            pass
+
+    return gmx_torsion
 
 
 def _mdrun_str(op):
