@@ -1,12 +1,9 @@
 """GOMC's setup for signac, signac-flow, signac-dashboard for this study."""
 # project.py
-
 import os
 import subprocess
-
 import flow
 import matplotlib.pyplot as plt
-
 # from flow.environment import StandardEnvironment
 import mbuild as mb
 import mbuild.formats.charmm_writer as mf_charmm
@@ -16,88 +13,65 @@ import pandas as pd
 import pymbar
 import signac
 import unyt as u
-from flow import FlowProject
+from flow import FlowProject, aggregator
 from flow.environment import DefaultSlurmEnvironment
-
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.molecules.system_builder import (
     construct_system,
 )
 from reproducibility_project.src.utils.forcefields import get_ff_path
 from reproducibility_project.src.utils.plotting import plot_data_with_t0_line
-
-
 class Project(FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
-
     def __init__(self):
         super().__init__()
-
-
 class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
     """Subclass of DefaultSlurmEnvironment for WSU's Grid cluster."""
-
     hostname_pattern = r".*\.grid\.wayne\.edu"
     template = "grid.sh"
-
-
 # ******************************************************
 # users typical variables, but not all (start)
 # ******************************************************
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_9_25_21/bin"
-
+gomc_binary_path = "/wsu/home/go/go07/go0719/GOMC/bin"
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10**3
+    40 * 10 ** 3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10**3  # set value for paper = 120 * 10 ** 3
-
+MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
-
 # max number of equilibrium selected runs
 equilb_design_ensemble_max_number = 3
-
 # force field (FF) file for all simulations in that job
 # Note: do not add extensions
 ff_filename_str = "in_FF"
-
 # initial mosdef structure and coordinates
 # Note: do not add extensions
 mosdef_structure_box_0_name_str = "mosdef_box_0"
 mosdef_structure_box_1_name_str = "mosdef_box_1"
-
 # melt equilb simulation runs GOMC control file input and simulation outputs
 # Note: do not add extensions
 melt_equilb_NVT_control_file_name_str = "melt_NVT"
-
 # equilb simulation runs GOMC control file input and simulation outputs
 # Note: do not add extensions
 equilb_NVT_control_file_name_str = "equilb_NVT"
-
 # The equilb using the ensemble used for the simulation design, which
 # includes the simulation runs GOMC control file input and simulation outputs
 # Note: do not add extensions
 equilb_design_ensemble_control_file_name_str = "equilb_design_ensemble"
-
 # The production run using the ensemble used for the simulation design, which
 # includes the simulation runs GOMC control file input and simulation outputs
 # Note: do not add extensions
 production_control_file_name_str = "production_run"
-
-
 path_from_job_to_box_inputs = "../../"
-
 walltime_mosdef_hr = 4
 walltime_gomc_hr = 368
 memory_needed = 16
-
 use_pymbar = True  # True of False
-
 ff_info_dict = {
     "trappe-ua": {
         "ngpu": 0,
@@ -128,16 +102,12 @@ ff_info_dict = {
         "VDWGeometricSigma": True,
     },
 }
-
 # ******************************************************
 # users typical variables, but not all (end)
 # ******************************************************
-
-
 # ******************************************************
 # signac and GOMC-MOSDEF code (start)
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # create some initial variable to be store in each jobs
@@ -152,10 +122,7 @@ def part_1a_initial_data_input_to_json(job):
     data_written_bool = False
     if job.isfile(f"{'signac_job_document.json'}"):
         data_written_bool = True
-
     return data_written_bool
-
-
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_1a_initial_data_input_to_json)
 @Project.operation.with_directives(
@@ -179,10 +146,8 @@ def initial_parameters(job):
         raise ValueError(
             "CPU and GPU can not be deterimined as force field (FF) is not available in the selection."
         )
-
     # FF type to directory and path
     job.doc.forcefield_directory_name = get_ff_path(job.sp.forcefield_name)
-
     # reformat ensembles for input to GOMC
     if job.sp.ensemble in ["GEMC-NPT", "GEMC_NPT"]:
         job.doc.production_ensemble = "GEMC_NPT"
@@ -190,7 +155,6 @@ def initial_parameters(job):
         job.doc.production_ensemble = "GEMC_NVT"
     else:
         job.doc.production_ensemble = job.sp.ensemble
-
     # list replica seed numbers
     replica_no_to_seed_dict = {
         0: 0,
@@ -215,11 +179,9 @@ def initial_parameters(job):
         19: 19,
         20: 20,
     }
-
     job.doc.replica_number_int = replica_no_to_seed_dict.get(
         int(job.sp.replica)
     )
-
     # set rcut, ewalds
     job.doc.Ewald = ff_info_dict.get(job.sp.forcefield_name).get("Ewald")
     job.doc.ElectroStatic = ff_info_dict.get(job.sp.forcefield_name).get(
@@ -228,7 +190,6 @@ def initial_parameters(job):
     job.doc.VDWGeometricSigma = ff_info_dict.get(job.sp.forcefield_name).get(
         "VDWGeometricSigma"
     )
-
     # set the initial iteration number of the simulation
     job.doc.equilb_design_ensemble_dict = {}
     job.doc.equilb_design_ensemble_number = 0
@@ -237,9 +198,7 @@ def initial_parameters(job):
     )
     job.doc.equilb_design_ensemble_max_number_under_limit = True
     job.doc.stable_equilb_design_ensemble = False
-
     job.doc.production_run_ensemble_dict = {}
-
     if job.doc.production_ensemble in ["NVT", "NPT"]:
         job.doc.N_liquid = job.sp.N_liquid
         job.doc.N_vap = 0
@@ -255,10 +214,8 @@ def initial_parameters(job):
             "ERROR: The NVT ensemble is not currently available for this project.py "
             "script, as pymbar is done based on density, which will not work for NVT"
         )
-
     # select binary path and binary file
     job.doc.gomc_binary_path = gomc_binary_path
-
     if job.doc.production_ensemble in ["NPT", "NVT"]:
         job.doc.melt_NVT_gomc_binary_file = f"GOMC_{job.doc.cpu_or_gpu}_NVT"
         job.doc.equilb_NVT_gomc_binary_file = f"GOMC_{job.doc.cpu_or_gpu}_NVT"
@@ -281,7 +238,6 @@ def initial_parameters(job):
         raise ValueError(
             "ERROR: A wrong ensemble has been specified for the gomc binary file"
         )
-
     if job.doc.production_ensemble in ["NPT"]:
         job.doc.production_ensemble_gomc_binary_file = (
             f"GOMC_{job.doc.cpu_or_gpu}_NPT"
@@ -302,8 +258,6 @@ def initial_parameters(job):
         raise ValueError(
             "ERROR: A wrong ensemble has been specified for the gomc binary file"
         )
-
-
 # ******************************************************
 # ******************************************************
 # create some initial variable to be store in each jobs
@@ -311,14 +265,11 @@ def initial_parameters(job):
 # to see if they are written (end).
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # check if GOMC psf, pdb, and force field (FF) files were written (start)
 # ******************************************************
 # ******************************************************
-
-
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
 def part_1b_under_equilb_design_ensemble_run_limit(job):
@@ -330,13 +281,10 @@ def part_1b_under_equilb_design_ensemble_run_limit(job):
         ):
             job.doc.equilb_design_ensemble_max_number_under_limit = False
             return job.doc.equilb_design_ensemble_max_number_under_limit
-
         else:
             return True
     except:
         return False
-
-
 # check if GOMC-MOSDEF wrote the gomc files
 # @Project.pre(select_production_ensemble)
 @Project.label
@@ -345,7 +293,6 @@ def part_1b_under_equilb_design_ensemble_run_limit(job):
 def mosdef_input_written(job):
     """Check that the mosdef files (psf, pdb, and force field (FF) files) are written ."""
     file_written_bool = False
-
     if job.doc.production_ensemble in ["NPT", "NVT"]:
         if (
             job.isfile(f"{path_from_job_to_box_inputs}/{ff_filename_str}.inp")
@@ -375,14 +322,11 @@ def mosdef_input_written(job):
         ):
             file_written_bool = True
     return file_written_bool
-
-
 # ******************************************************
 # ******************************************************
 # check if GOMC psf, pdb, and FF files were written (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # check if GOMC control file was written (start)
@@ -393,7 +337,6 @@ def gomc_control_file_written(job, control_filename_str):
     """General check that the gomc control files are written."""
     file_written_bool = False
     control_file = f"{control_filename_str}.conf"
-
     if job.isfile(control_file):
         with open(f"{control_file}", "r") as fp:
             out_gomc = fp.readlines()
@@ -402,10 +345,7 @@ def gomc_control_file_written(job, control_filename_str):
                     split_move_line = line.split()
                     if split_move_line[0] == "OutputName":
                         file_written_bool = True
-
     return file_written_bool
-
-
 # checking if the GOMC control file is written for the melt equilb NVT run
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -413,8 +353,6 @@ def gomc_control_file_written(job, control_filename_str):
 def part_2a_melt_equilb_NVT_control_file_written(job):
     """General check that the melt_equilb_NVT_control (high temperature) gomc control file is written."""
     return gomc_control_file_written(job, melt_equilb_NVT_control_file_name_str)
-
-
 # checking if the GOMC control file is written for the equilb NVT run
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -422,8 +360,6 @@ def part_2a_melt_equilb_NVT_control_file_written(job):
 def part_2b_equilb_NVT_control_file_written(job):
     """General check that the equilb_NVT_control (run temperature) gomc control file is written."""
     return gomc_control_file_written(job, equilb_NVT_control_file_name_str)
-
-
 # checking if the GOMC control file is written for the equilb run with the selected ensemble
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -442,8 +378,6 @@ def part_2c_equilb_design_ensemble_control_file_written(job):
             return True
     except:
         return False
-
-
 # checking if the GOMC control file is written for the production run
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -462,14 +396,11 @@ def part_2d_production_control_file_written(job):
             return True
     except:
         return False
-
-
 # ******************************************************
 # ******************************************************
 # check if GOMC control file was written (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # check if GOMC simulations started (start)
@@ -483,10 +414,7 @@ def gomc_simulation_started(job, control_filename_str):
         "{}_merged.psf".format(control_filename_str)
     ):
         output_started_bool = True
-
     return output_started_bool
-
-
 # check if melt equilb_NVT GOMC run is started by seeing if the GOMC consol file and the merged psf exist
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -494,8 +422,6 @@ def gomc_simulation_started(job, control_filename_str):
 def part_3a_output_melt_equilb_NVT_started(job):
     """Check to see if the melt_equilb_NVT (high temperature) gomc simulation is started."""
     return gomc_simulation_started(job, melt_equilb_NVT_control_file_name_str)
-
-
 # check if equilb_NVT GOMC run is started by seeing if the GOMC consol file and the merged psf exist
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -503,8 +429,6 @@ def part_3a_output_melt_equilb_NVT_started(job):
 def part_3b_output_equilb_NVT_started(job):
     """Check to see if the equilb_NVT (set temperature) gomc simulation is started."""
     return gomc_simulation_started(job, equilb_NVT_control_file_name_str)
-
-
 # check if equilb_with design ensemble GOMC run is started by seeing if the GOMC consol file and the merged psf exist
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -531,6 +455,7 @@ def part_3c_output_equilb_design_ensemble_started(job):
                         ]["output_name_control_file_name"],
                     )
                 else:
+                    return False
                     return gomc_simulation_started(
                         job,
                         job.doc.equilb_design_ensemble_dict[
@@ -542,11 +467,8 @@ def part_3c_output_equilb_design_ensemble_started(job):
                 return False
         elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
             return True
-
     except:
         return False
-
-
 # check if production GOMC run is started by seeing if the GOMC consol file and the merged psf exist
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -556,47 +478,61 @@ def part_3d_output_production_run_started(job):
     try:
         return gomc_simulation_started(job, production_control_file_name_str)
 
+        if job.isfile(
+            "out_{}.dat".format(
+                job.doc.production_run_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_number)
+                ]["output_name_control_file_name"]
+            )
+        ):
+            if job.doc.equilb_design_ensemble_max_number_under_limit is True:
+                return gomc_simulation_started(
+                    job,
+                    job.doc.production_run_ensemble_dict[
+                        str(job.doc.equilb_design_ensemble_number)
+                    ]["output_name_control_file_name"],
+                )
+            else:
+                return False
+
+        else:
+            return False
     except:
         return False
-
 
 # ******************************************************
 # ******************************************************
 # check if GOMC simulations started (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # check if GOMC simulation are completed properly (start)
 # ******************************************************
 # ******************************************************
-
 # function for checking if GOMC simulations are completed properly
 def gomc_sim_completed_properly(job, control_filename_str):
     """General check to see if the gomc simulation was completed properly."""
-    job_run_properly_bool = False
-    output_log_file = "out_{}.dat".format(control_filename_str)
-    if job.isfile(output_log_file):
-        # with open(f"workspace/{job.id}/{output_log_file}", "r") as fp:
-        with open(f"{output_log_file}", "r") as fp:
-            out_gomc = fp.readlines()
-            for i, line in enumerate(out_gomc):
-                if "Move" in line:
-                    split_move_line = line.split()
-                    if (
-                        split_move_line[0] == "Move"
-                        and split_move_line[1] == "Type"
-                        and split_move_line[2] == "Mol."
-                        and split_move_line[3] == "Kind"
-                    ):
-                        job_run_properly_bool = True
-    else:
+    with(job):
         job_run_properly_bool = False
-
+        output_log_file = "out_{}.dat".format(control_filename_str)
+        if job.isfile(output_log_file):
+            # with open(f"workspace/{job.id}/{output_log_file}", "r") as fp:
+            with open(f"{output_log_file}", "r") as fp:
+                out_gomc = fp.readlines()
+                for i, line in enumerate(out_gomc):
+                    if "Move" in line:
+                        split_move_line = line.split()
+                        if (
+                            split_move_line[0] == "Move"
+                            and split_move_line[1] == "Type"
+                            and split_move_line[2] == "Mol."
+                            and split_move_line[3] == "Kind"
+                        ):
+                            job_run_properly_bool = True
+        else:
+            job_run_properly_bool = False
     return job_run_properly_bool
-
-
 # check if melt equilb NVT GOMC run completed by checking the end of the GOMC consol file
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -606,8 +542,6 @@ def part_4a_job_melt_equilb_NVT_completed_properly(job):
     return gomc_sim_completed_properly(
         job, melt_equilb_NVT_control_file_name_str
     )
-
-
 # check if equilb NVT GOMC run completed by checking the end of the GOMC consol file
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -615,8 +549,6 @@ def part_4a_job_melt_equilb_NVT_completed_properly(job):
 def part_4b_job_equilb_NVT_completed_properly(job):
     """Check to see if the equilb_NVT (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, equilb_NVT_control_file_name_str)
-
-
 # check if equilb selected ensemble GOMC run completed by checking the end of the GOMC consol file
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -631,6 +563,8 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
                     str(job.doc.equilb_design_ensemble_number)
                 ]["output_name_control_file_name"],
             )
+        elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
+            return True
         else:
             return gomc_sim_completed_properly(
                 job,
@@ -641,7 +575,6 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
     except:
         return False
 
-
 # check if production GOMC run completed by checking the end of the GOMC consol file
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -649,14 +582,11 @@ def part_4c_job_equilb_design_ensemble_completed_properly(job):
 def part_4d_job_production_run_completed_properly(job):
     """Check to see if the production run (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, production_control_file_name_str)
-
-
 # ******************************************************
 # ******************************************************
 # check if GOMC simulation are completed properly (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # build system, with option to write the force field (force field (FF)), pdb, psf files.
@@ -668,11 +598,9 @@ def build_charmm(job, write_files=True):
     print("#**********************")
     print("Started: GOMC Charmm Object")
     print("#**********************")
-
     print("Running: box packing")
     [box_0, box_1] = construct_system(job.sp)
     print("Completed: box packing")
-
     Bead_to_atom_name_dict = {
         "_CH4": "C",
         "_CH3": "C",
@@ -681,12 +609,10 @@ def build_charmm(job, write_files=True):
         "_HC": "C",
     }
     Molecule_ResName_List = [job.sp.molecule]
-
     if job.sp.molecule in ["waterSPCE"]:
         gomc_fix_bonds_angles_list = Molecule_ResName_List
     else:
         gomc_fix_bonds_angles_list = None
-
     if job.doc.production_ensemble in ["NVT", "NPT"]:
         charmm = mf_charmm.Charmm(
             box_0,
@@ -699,7 +625,6 @@ def build_charmm(job, write_files=True):
             bead_to_atom_name_dict=Bead_to_atom_name_dict,
             gomc_fix_bonds_angles=gomc_fix_bonds_angles_list,
         )
-
     elif job.doc.production_ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
         charmm = mf_charmm.Charmm(
             box_0,
@@ -712,27 +637,19 @@ def build_charmm(job, write_files=True):
             bead_to_atom_name_dict=Bead_to_atom_name_dict,
             gomc_fix_bonds_angles=gomc_fix_bonds_angles_list,
         )
-
     if write_files == True:
         charmm.write_inp()
-
         charmm.write_psf()
-
         charmm.write_pdb()
-
     print("#**********************")
     print("Completed: GOMC Charmm Object")
     print("#**********************")
-
     return charmm
-
-
 # ******************************************************
 # ******************************************************
 # build system, with option to write the force field (FF), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (end)
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # Creating GOMC files (pdb, psf, force field (FF), and gomc control files (start)
@@ -757,33 +674,24 @@ def build_charmm(job, write_files=True):
 def build_psf_pdb_ff_gomc_conf(job):
     """Build the Charmm object and write the pdb, psd, and force field (FF) files for all the simulations in the workspace."""
     charmm_object_with_files = build_charmm(job, write_files=True)
-
     # ******************************************************
     # melt_NVT - psf, pdb, force field (FF) file writing and GOMC control file writing  (start)
     # ******************************************************
     print("#**********************")
     print("Starting: melt_NVT GOMC control file writing")
     print("#**********************")
-
     Restart = False
-
     temperature = (1000 * u.K).to_value("K")
     pressure = (job.sp.pressure * u.kPa).to_value("bar")
-
     output_name_control_file_name = melt_equilb_NVT_control_file_name_str
     restart_control_file_name_str = None
-
     # replica unmber cycles
     MC_cycles = MC_cycles_melt_equilb_NVT
     # calc MC steps
-
     MC_steps = int(MC_cycles * job.doc.N_total)
     EqSteps = 1000
-
     seed_no = job.doc.replica_number_int
-
     production_ensemble = job.doc.production_ensemble
-
     Ewald = ff_info_dict.get(job.sp.forcefield_name).get("Ewald")
     ElectroStatic = ff_info_dict.get(job.sp.forcefield_name).get(
         "ElectroStatic"
@@ -793,7 +701,6 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
-
     if job.sp.cutoff_style == "hard":
         Potential = "VDW"
         try:
@@ -805,13 +712,11 @@ def build_psf_pdb_ff_gomc_conf(job):
                 raise ValueError("ERROR: Not a valid cutoff_style")
         except:
             LRC = False
-
     elif job.sp.cutoff_style == "shift":
         Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
-
     # output all data and calc frequecy
     output_true_list_input = [
         True,
@@ -821,36 +726,30 @@ def build_psf_pdb_ff_gomc_conf(job):
         False,
         int(output_data_every_X_MC_cycles * job.doc.N_total),
     ]
-
     if production_ensemble in ["NVT", "NPT"]:
         used_ensemble = "NVT"
-
         if job.sp.molecule in ["methaneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (1.00,)
             RotFreq = (None,)
             RegrowthFreq = (None,)
-
         elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
-
         elif job.sp.molecule in ["waterSPCE"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
             RotFreq = (0.5,)
             RegrowthFreq = (None,)
-
         else:
             raise ValueError(
                 "Moleules MC move rations not listed in the GOMC control file writer."
             )
-
         if Restart is True:
             Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                 output_name_control_file_name
@@ -864,47 +763,39 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                 output_name_control_file_name
             )
-
         elif Restart is False:
             Coordinates_box_0 = None
             Structure_box_0 = None
             binCoordinates_box_0 = None
             extendedSystem_box_0 = None
-
         Coordinates_box_1 = None
         Structure_box_1 = None
         binCoordinates_box_1 = None
         extendedSystem_box_1 = None
-
     elif job.doc.production_ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
         used_ensemble = job.doc.production_ensemble
-
         if job.sp.molecule in ["methaneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (1.00,)
             RotFreq = (None,)
             RegrowthFreq = (None,)
-
         elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
-
         elif job.sp.molecule in ["waterSPCE"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
             RotFreq = (0.5,)
             RegrowthFreq = (None,)
-
         else:
             raise ValueError(
                 "Moleules MC move rations not listed in the GOMC control file writer."
             )
-
         if Restart is True:
             Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                 output_name_control_file_name
@@ -918,7 +809,6 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                 output_name_control_file_name
             )
-
             Coordinates_box_1 = "{}_BOX_1_restart.pdb".format(
                 output_name_control_file_name
             )
@@ -931,18 +821,15 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_1 = "{}_BOX_1_restart.xsc".format(
                 output_name_control_file_name
             )
-
         elif Restart is False:
             Coordinates_box_0 = None
             Structure_box_0 = None
             binCoordinates_box_0 = None
             extendedSystem_box_0 = None
-
             Coordinates_box_1 = None
             Structure_box_1 = None
             binCoordinates_box_1 = None
             extendedSystem_box_1 = None
-
     gomc_control.write_gomc_control_file(
         charmm_object_with_files,
         output_name_control_file_name,
@@ -996,39 +883,30 @@ def build_psf_pdb_ff_gomc_conf(job):
             "CBMC_Dih": 50,
         },
     )
-
     print("#**********************")
     print("Completed: melt_NVT GOMC control file writing")
     print("#**********************")
     # ******************************************************
     # melt_NVT - psf, pdb, force field (FF) file writing and GOMC control file writing  (end)
     # ******************************************************
-
     # ******************************************************
     # equilb_NVT - GOMC control file writing  (start)
     # ******************************************************
     print("#**********************")
     print("Started: equilb_NVT GOMC control file writing")
     print("#**********************")
-
     Restart = True
-
     temperature = (job.sp.temperature * u.K).to_value("K")
     pressure = (job.sp.pressure * u.kPa).to_value("bar")
-
     output_name_control_file_name = equilb_NVT_control_file_name_str
     restart_control_file_name_str = melt_equilb_NVT_control_file_name_str
-
     # replica unmber cycles
     MC_cycles = MC_cycles_equilb_NVT
     # calc MC steps
     MC_steps = int(MC_cycles * job.doc.N_total)
     EqSteps = 1000
-
     seed_no = job.doc.replica_number_int
-
     production_ensemble = job.doc.production_ensemble
-
     Ewald = ff_info_dict.get(job.sp.forcefield_name).get("Ewald")
     ElectroStatic = ff_info_dict.get(job.sp.forcefield_name).get(
         "ElectroStatic"
@@ -1038,7 +916,6 @@ def build_psf_pdb_ff_gomc_conf(job):
     )
     Rcut = job.sp.r_cut * u.nm
     Rcut = Rcut.to_value("angstrom")
-
     if job.sp.cutoff_style == "hard":
         Potential = "VDW"
         try:
@@ -1050,13 +927,11 @@ def build_psf_pdb_ff_gomc_conf(job):
                 raise ValueError("ERROR: Not a valid cutoff_style")
         except:
             LRC = False
-
     elif job.sp.cutoff_style == "shift":
         Potential = "SHIFT"
         LRC = False
     else:
         raise ValueError("ERROR: Not a valid cutoff_style")
-
     # output all data and calc frequecy
     output_true_list_input = [
         True,
@@ -1066,36 +941,30 @@ def build_psf_pdb_ff_gomc_conf(job):
         False,
         int(output_data_every_X_MC_cycles * job.doc.N_total),
     ]
-
     if production_ensemble in ["NVT", "NPT"]:
         used_ensemble = "NVT"
-
         if job.sp.molecule in ["methaneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (1.00,)
             RotFreq = (None,)
             RegrowthFreq = (None,)
-
         elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
-
         elif job.sp.molecule in ["waterSPCE"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
             RotFreq = (0.5,)
             RegrowthFreq = (None,)
-
         else:
             raise ValueError(
                 "Moleules MC move rations not listed in the GOMC control file writer."
             )
-
         if Restart is True:
             Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                 restart_control_file_name_str
@@ -1109,47 +978,39 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                 restart_control_file_name_str
             )
-
         elif Restart is False:
             Coordinates_box_0 = None
             Structure_box_0 = None
             binCoordinates_box_0 = None
             extendedSystem_box_0 = None
-
         Coordinates_box_1 = None
         Structure_box_1 = None
         binCoordinates_box_1 = None
         extendedSystem_box_1 = None
-
     elif job.doc.production_ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
         used_ensemble = job.doc.production_ensemble
-
         if job.sp.molecule in ["methaneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (1.00,)
             RotFreq = (None,)
             RegrowthFreq = (None,)
-
         elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
-
         elif job.sp.molecule in ["waterSPCE"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
             RotFreq = (0.5,)
             RegrowthFreq = (None,)
-
         else:
             raise ValueError(
                 "Moleules MC move rations not listed in the GOMC control file writer."
             )
-
         if Restart is True:
             Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                 restart_control_file_name_str
@@ -1163,7 +1024,6 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                 restart_control_file_name_str
             )
-
             Coordinates_box_1 = "{}_BOX_1_restart.pdb".format(
                 restart_control_file_name_str
             )
@@ -1176,18 +1036,15 @@ def build_psf_pdb_ff_gomc_conf(job):
             extendedSystem_box_1 = "{}_BOX_1_restart.xsc".format(
                 restart_control_file_name_str
             )
-
         elif Restart is False:
             Coordinates_box_0 = None
             Structure_box_0 = None
             binCoordinates_box_0 = None
             extendedSystem_box_0 = None
-
             Coordinates_box_1 = None
             Structure_box_1 = None
             binCoordinates_box_1 = None
             extendedSystem_box_1 = None
-
     gomc_control.write_gomc_control_file(
         charmm_object_with_files,
         output_name_control_file_name,
@@ -1241,14 +1098,12 @@ def build_psf_pdb_ff_gomc_conf(job):
             "CBMC_Dih": 50,
         },
     )
-
     print("#**********************")
     print("Completed: equilb_NVT GOMC control file writing")
     print("#**********************")
     # ******************************************************
     # equilb_NVT - GOMC control file writing  (end)
     # ******************************************************
-
     # ******************************************************
     # equilb selected_ensemble, if NVT -> NPT - GOMC control file writing  (start)
     # Note: the control files are written for the max number of equilb_design_ensemble runs
@@ -1257,25 +1112,20 @@ def build_psf_pdb_ff_gomc_conf(job):
     print("#**********************")
     print("Started: equilb NPT or GEMC-NVT GOMC control file writing")
     print("#**********************")
-
     for number_sims_i in range(0, job.doc.equilb_design_ensemble_max_number):
         Restart = True
-
         temperature = (job.sp.temperature * u.K).to_value("K")
         pressure = (job.sp.pressure * u.kPa).to_value("bar")
-
         if number_sims_i == 0:
             restart_control_file_name_str = equilb_NVT_control_file_name_str
             output_name_control_file_name = "{}_number_{}".format(
                 equilb_design_ensemble_control_file_name_str, number_sims_i
             )
-
         elif number_sims_i <= job.doc.equilb_design_ensemble_max_number:
             restart_control_file_name_str = "{}_number_{}".format(
                 equilb_design_ensemble_control_file_name_str,
                 int(number_sims_i - 1),
             )
-
             output_name_control_file_name = "{}_number_{}".format(
                 equilb_design_ensemble_control_file_name_str, number_sims_i
             )
@@ -1287,18 +1137,13 @@ def build_psf_pdb_ff_gomc_conf(job):
                 }
             }
         )
-
         # replica unmber cycles
         MC_cycles = MC_cycles_equilb_design_ensemble
-
         # calc MC steps
         MC_steps = int(MC_cycles * job.doc.N_total)
         EqSteps = 1000
-
         seed_no = job.doc.replica_number_int
-
         production_ensemble = job.doc.production_ensemble
-
         Ewald = ff_info_dict.get(job.sp.forcefield_name).get("Ewald")
         ElectroStatic = ff_info_dict.get(job.sp.forcefield_name).get(
             "ElectroStatic"
@@ -1308,7 +1153,6 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
-
         if job.sp.cutoff_style == "hard":
             Potential = "VDW"
             try:
@@ -1320,13 +1164,11 @@ def build_psf_pdb_ff_gomc_conf(job):
                     raise ValueError("ERROR: Not a valid cutoff_style")
             except:
                 LRC = False
-
         elif job.sp.cutoff_style == "shift":
             Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
-
         # output all data and calc frequecy
         output_true_list_input = [
             True,
@@ -1336,36 +1178,30 @@ def build_psf_pdb_ff_gomc_conf(job):
             False,
             int(output_data_every_X_MC_cycles * job.doc.N_total),
         ]
-
         if production_ensemble in ["NVT", "NPT"]:
             used_ensemble = "NPT"
-
             if job.sp.molecule in ["methaneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.99,)
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
-
             elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.33,)
                 RotFreq = (0.33,)
                 RegrowthFreq = (0.33,)
-
             elif job.sp.molecule in ["waterSPCE"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.49,)
                 RotFreq = (0.5,)
                 RegrowthFreq = (None,)
-
             else:
                 raise ValueError(
                     "Moleules MC move ratios not listed in the GOMC control file writer."
                 )
-
             if Restart is True:
                 Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                     restart_control_file_name_str
@@ -1379,47 +1215,39 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
             elif Restart is False:
                 Coordinates_box_0 = None
                 Structure_box_0 = None
                 binCoordinates_box_0 = None
                 extendedSystem_box_0 = None
-
             Coordinates_box_1 = None
             Structure_box_1 = None
             binCoordinates_box_1 = None
             extendedSystem_box_1 = None
-
         elif job.doc.production_ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
             used_ensemble = job.doc.production_ensemble
-
             if job.sp.molecule in ["methaneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.29,)
                 DisFreq = (0.70,)
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
-
             elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.27,)
                 RotFreq = (0.26,)
                 RegrowthFreq = (0.26,)
-
             elif job.sp.molecule in ["waterSPCE"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.40,)
                 RotFreq = (0.39,)
                 RegrowthFreq = (None,)
-
             else:
                 raise ValueError(
                     "Moleules MC move ratios not listed in the GOMC control file writer."
                 )
-
             if Restart is True:
                 Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                     restart_control_file_name_str
@@ -1433,7 +1261,6 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
                 Coordinates_box_1 = "{}_BOX_1_restart.pdb".format(
                     restart_control_file_name_str
                 )
@@ -1446,18 +1273,15 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_1 = "{}_BOX_1_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
             elif Restart is False:
                 Coordinates_box_0 = None
                 Structure_box_0 = None
                 binCoordinates_box_0 = None
                 extendedSystem_box_0 = None
-
                 Coordinates_box_1 = None
                 Structure_box_1 = None
                 binCoordinates_box_1 = None
                 extendedSystem_box_1 = None
-
         gomc_control.write_gomc_control_file(
             charmm_object_with_files,
             output_name_control_file_name,
@@ -1514,26 +1338,20 @@ def build_psf_pdb_ff_gomc_conf(job):
         print("#**********************")
         print("Completed: equilb NPT or GEMC-NVT GOMC control file writing")
         print("#**********************")
-
         # ******************************************************
         # equilb selected_ensemble, if NVT -> NPT - GOMC control file writing  (end)
         # Note: the control files are written for the max number of equilb_design_ensemble runs
         # so the Charmm object only needs created 1 time.
         # ******************************************************
-
         # ******************************************************
         # production NPT or GEMC-NVT - GOMC control file writing  (start)
         # ******************************************************
-
         print("#**********************")
         print("Started: production NPT or GEMC-NVT GOMC control file writing")
         print("#**********************")
-
         Restart = True
-
         temperature = (job.sp.temperature * u.K).to_value("K")
         pressure = (job.sp.pressure * u.kPa).to_value("bar")
-
         input_name_control_file_name = "{}_number_{}".format(
             production_control_file_name_str, number_sims_i
         )
@@ -1550,18 +1368,13 @@ def build_psf_pdb_ff_gomc_conf(job):
                 }
             }
         )
-
         # replica unmber cycles
         MC_cycles = MC_cycles_production
-
         # calc MC steps
         MC_steps = int(MC_cycles * job.doc.N_total)
         EqSteps = 1000
-
         seed_no = job.doc.replica_number_int
-
         production_ensemble = job.doc.production_ensemble
-
         Ewald = ff_info_dict.get(job.sp.forcefield_name).get("Ewald")
         ElectroStatic = ff_info_dict.get(job.sp.forcefield_name).get(
             "ElectroStatic"
@@ -1571,7 +1384,6 @@ def build_psf_pdb_ff_gomc_conf(job):
         )
         Rcut = job.sp.r_cut * u.nm
         Rcut = Rcut.to_value("angstrom")
-
         if job.sp.cutoff_style == "hard":
             Potential = "VDW"
             try:
@@ -1583,13 +1395,11 @@ def build_psf_pdb_ff_gomc_conf(job):
                     raise ValueError("ERROR: Not a valid cutoff_style")
             except:
                 LRC = False
-
         elif job.sp.cutoff_style == "shift":
             Potential = "SHIFT"
             LRC = False
         else:
             raise ValueError("ERROR: Not a valid cutoff_style")
-
         # output all data and calc frequecy
         output_true_list_input = [
             True,
@@ -1599,36 +1409,30 @@ def build_psf_pdb_ff_gomc_conf(job):
             False,
             int(output_data_every_X_MC_cycles * job.doc.N_total),
         ]
-
         if production_ensemble in ["NVT", "NPT"]:
             used_ensemble = "NPT"
-
             if job.sp.molecule in ["methaneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.99,)
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
-
             elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.33,)
                 RotFreq = (0.33,)
                 RegrowthFreq = (0.33,)
-
             elif job.sp.molecule in ["waterSPCE"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.49,)
                 RotFreq = (0.5,)
                 RegrowthFreq = (None,)
-
             else:
                 raise ValueError(
                     "Moleules MC move rations not listed in the GOMC control file writer."
                 )
-
             if Restart is True:
                 Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                     restart_control_file_name_str
@@ -1642,47 +1446,39 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
             elif Restart is False:
                 Coordinates_box_0 = None
                 Structure_box_0 = None
                 binCoordinates_box_0 = None
                 extendedSystem_box_0 = None
-
             Coordinates_box_1 = None
             Structure_box_1 = None
             binCoordinates_box_1 = None
             extendedSystem_box_1 = None
-
         elif job.doc.production_ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
             used_ensemble = job.doc.production_ensemble
-
             if job.sp.molecule in ["methaneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.29,)
                 DisFreq = (0.70,)
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
-
             elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.27,)
                 RotFreq = (0.26,)
                 RegrowthFreq = (0.26,)
-
             elif job.sp.molecule in ["waterSPCE"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.40,)
                 RotFreq = (0.39,)
                 RegrowthFreq = (None,)
-
             else:
                 raise ValueError(
                     "Moleules MC move rations not listed in the GOMC control file writer."
                 )
-
             if Restart is True:
                 Coordinates_box_0 = "{}_BOX_0_restart.pdb".format(
                     restart_control_file_name_str
@@ -1696,7 +1492,6 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_0 = "{}_BOX_0_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
                 Coordinates_box_1 = "{}_BOX_1_restart.pdb".format(
                     restart_control_file_name_str
                 )
@@ -1709,18 +1504,15 @@ def build_psf_pdb_ff_gomc_conf(job):
                 extendedSystem_box_1 = "{}_BOX_1_restart.xsc".format(
                     restart_control_file_name_str
                 )
-
             elif Restart is False:
                 Coordinates_box_0 = None
                 Structure_box_0 = None
                 binCoordinates_box_0 = None
                 extendedSystem_box_0 = None
-
                 Coordinates_box_1 = None
                 Structure_box_1 = None
                 binCoordinates_box_1 = None
                 extendedSystem_box_1 = None
-
         gomc_control.write_gomc_control_file(
             charmm_object_with_files,
             input_name_control_file_name,
@@ -1774,21 +1566,17 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "CBMC_Dih": 50,
             },
         )
-
         print("#**********************")
         print("Completed: production NPT or GEMC-NVT GOMC control file writing")
         print("#**********************")
         # ******************************************************
         # production NPT or GEMC-NVT - GOMC control file writing  (end)
         # ******************************************************
-
-
 # ******************************************************
 # ******************************************************
 # Creating GOMC files (pdb, psf, force field (FF), and gomc control files (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # melt_NVT -starting the GOMC simulation (start)
@@ -1817,9 +1605,7 @@ def run_melt_equilb_NVT_gomc_command(job):
     print("#**********************")
     print("# Started the run_melt_NVT_gomc_command.")
     print("#**********************")
-
     control_file_name_str = melt_equilb_NVT_control_file_name_str
-
     print(f"Running simulation job id {job}")
     run_command = "{}/{} +p{} {}.conf > out_{}.dat".format(
         str(job.doc.gomc_binary_path),
@@ -1828,16 +1614,12 @@ def run_melt_equilb_NVT_gomc_command(job):
         str(control_file_name_str),
         str(control_file_name_str),
     )
-
     return run_command
-
-
 # ******************************************************
 # ******************************************************
 # melt_NVT - including GOMC control file writing and starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # equilb_NVT - starting the GOMC simulation (start)
@@ -1865,9 +1647,7 @@ def run_equilb_NVT_gomc_command(job):
     print("#**********************")
     print("# Started the run_NVT_gomc_command.")
     print("#**********************")
-
     control_file_name_str = equilb_NVT_control_file_name_str
-
     print(f"Running simulation job id {job}")
     run_command = "{}/{} +p{} {}.conf > out_{}.dat".format(
         str(job.doc.gomc_binary_path),
@@ -1876,16 +1656,12 @@ def run_equilb_NVT_gomc_command(job):
         str(control_file_name_str),
         str(control_file_name_str),
     )
-
     return run_command
-
-
 # ******************************************************
 # ******************************************************
 # equilb_NVT - starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # Use pymbar to evaluate if the system came to equilibrium based on
@@ -1897,11 +1673,9 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     print("#**********************")
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble")
     print("#**********************")
-
     fraction_data_required_for_equilbrium = 0.25  # 0.25 # float
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
-
     if use_pymbar is True and job.doc.stable_equilb_design_ensemble is False:
         if gomc_sim_completed_properly(
             job,
@@ -1909,14 +1683,12 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 str(job.doc.equilb_design_ensemble_number)
             ]["output_name_control_file_name"],
         ):
-
             box_0_filename = "Blk_{}_BOX_0.dat".format(
                 job.doc.equilb_design_ensemble_dict[
                     str(job.doc.equilb_design_ensemble_number)
                 ]["output_name_control_file_name"]
             )
             box_0_directory_filename = f"{box_0_filename}"
-
             read_csv_box_0_data = pd.read_csv(
                 box_0_directory_filename,
                 sep="\s+",
@@ -1930,7 +1702,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
             read_csv_total_energy_box_0_np_array = np.array(
                 read_csv_box_0_data.loc[:, "TOT_EN"]
             )
-
             [
                 equib_box_0_density_bool,
                 t_box_0_density,
@@ -1951,7 +1722,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 fraction_data_required_for_equilbrium,
                 data_points_to_skip_for_equilbrium,
             )
-
             # needs to be merged before able to use plotting
             plot_data_with_t0_line(
                 "{}_box_0_density".format(equilb_plot_base_name),
@@ -1968,7 +1738,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 "".format(output_data_every_X_MC_cycles),
                 overwrite=True,
             )
-
             if job.doc.production_ensemble in ["GEMC_NPT", "GEMC_NVT"]:
                 box_1_filename = "Blk_{}_BOX_1.dat".format(
                     job.doc.equilb_design_ensemble_dict[
@@ -1977,7 +1746,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 )
                 # box_1_directory_filename = f"workspace/{job.id}/{box_1_filename}"
                 box_1_directory_filename = f"{box_1_filename}"
-
                 read_csv_box_1_data = pd.read_csv(
                     box_1_directory_filename,
                     sep="\s+",
@@ -1995,7 +1763,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     read_csv_total_energy_box_0_np_array
                     + read_csv_total_energy_box_1_np_array
                 )
-
                 [
                     equib_box_1_density_bool,
                     t_box_1_density,
@@ -2027,7 +1794,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     data_points_to_skip_for_equilbrium,
                 )
                 # needs to be merged before able to use plotting
-
                 plot_data_with_t0_line(
                     "{}_box_1_density".format(equilb_plot_base_name),
                     read_csv_density_box_1_np_array,
@@ -2051,14 +1817,12 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     "".format(output_data_every_X_MC_cycles),
                     overwrite=True,
                 )
-
             if job.doc.production_ensemble in ["GCMC", "NVT", "NPT"]:
                 if (
                     equib_box_0_density_bool is True
                     and equib_box_0_total_energy_bool is True
                 ):
                     job.doc.stable_equilb_design_ensemble = True
-
             elif job.doc.production_ensemble in ["GEMC_NPT", "GEMC_NVT"]:
                 if (
                     equib_box_0_density_bool is True
@@ -2068,15 +1832,11 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                     and equib_box_0_and_1_total_energy_bool is True
                 ):
                     job.doc.stable_equilb_design_ensemble = True
-
     elif use_pymbar is False:
         job.doc.stable_equilb_design_ensemble = True
-
     print("#**********************")
     print("# Completed the test_pymbar_stabilized_equilb_design_ensemble.")
     print("#**********************")
-
-
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_4c_job_equilb_design_ensemble_completed_properly)
@@ -2088,17 +1848,13 @@ def pymbar_stabilized_equilb_design_ensemble(job):
         "# Running test if the pymbar_stabilized_equilb_design_ensemble is stable."
     )
     print("#**********************")
-
     return job.doc.stable_equilb_design_ensemble
-
-
 # ******************************************************
 # ******************************************************
 # Use pymbar to evaluate if the system came to equilibrium based on
 # the density (NPT or NVT -> box 0 density, GEMC or GCMC box 1 density) (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # equilb NPT or GEMC-NVT - starting the GOMC simulation (start)
@@ -2130,14 +1886,12 @@ def run_equilb_ensemble_gomc_command(job):
         job.doc.equilb_design_ensemble_max_number_under_limit = False
         # after the equilb_design_ensemble_max_number just accept as stable
         job.doc.stable_equilb_design_ensemble = True
-
     for run_equilb_ensemble_i in range(
         job.doc.equilb_design_ensemble_number, equilb_design_ensemble_max_number
     ):
         print("#**********************")
         print("# Started the run_equilb_ensemble_gomc_command function.")
         print("#**********************")
-
         if (
             job.doc.equilb_design_ensemble_number
             >= equilb_design_ensemble_max_number
@@ -2145,16 +1899,13 @@ def run_equilb_ensemble_gomc_command(job):
             job.doc.equilb_design_ensemble_max_number_under_limit = False
             # after the equilb_design_ensemble_max_number just accept as stable
             job.doc.stable_equilb_design_ensemble = True
-
         elif (
             job.doc.stable_equilb_design_ensemble is False
             and job.doc.equilb_design_ensemble_max_number_under_limit is True
         ):
-
             control_file_name_str = job.doc.equilb_design_ensemble_dict[
                 str(job.doc.equilb_design_ensemble_number)
             ]["output_name_control_file_name"]
-
             print(f"Running simulation job id {job}")
             run_command = "{}/{} +p{} {}.conf > out_{}.dat" "".format(
                 str(job.doc.gomc_binary_path),
@@ -2163,32 +1914,25 @@ def run_equilb_ensemble_gomc_command(job):
                 str(control_file_name_str),
                 str(control_file_name_str),
             )
-
             exec_run_command = subprocess.Popen(
                 run_command, shell=True, stderr=subprocess.STDOUT
             )
             os.waitpid(exec_run_command.pid, 0)  # os.WSTOPPED) # 0)
-
             test_pymbar_stabilized_equilb_design_ensemble(job)
-
             if job.doc.stable_equilb_design_ensemble is False:
                 # need to add equilb_design_ensemble_number by 1 so it is fixed to run the correct job
                 # so it is rerun if restarted
                 job.doc.equilb_design_ensemble_number += 1
-
                 if (
                     job.doc.equilb_design_ensemble_number
                     >= job.doc.equilb_design_ensemble_max_number
                 ):
                     job.doc.stable_equilb_design_ensemble = True
-
-
 # ******************************************************
 # ******************************************************
 # equilb NPT or GEMC-NVT - starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
-
 # ******************************************************
 # ******************************************************
 # production run - starting the GOMC simulation (start)
@@ -2216,25 +1960,20 @@ def run_production_run_gomc_command(job):
     print("#**********************")
     print("# Started the run_production_run_gomc_command function.")
     print("#**********************")
-
     if job.doc.equilb_design_ensemble_max_number_under_limit is True:
         control_file_name_str = job.doc.production_run_ensemble_dict[
             str(job.doc.equilb_design_ensemble_number)
         ]["input_name_control_file_name"]
-
         output_file_name_str = job.doc.production_run_ensemble_dict[
             str(job.doc.equilb_design_ensemble_number)
         ]["output_name_control_file_name"]
-
     elif job.doc.equilb_design_ensemble_max_number_under_limit is False:
         control_file_name_str = job.doc.production_run_ensemble_dict[
             str(int(job.doc.equilb_design_ensemble_number - 1))
         ]["input_name_control_file_name"]
-
         output_file_name_str = job.doc.production_run_ensemble_dict[
             str(int(job.doc.equilb_design_ensemble_number - 1))
         ]["output_name_control_file_name"]
-
     print(f"Running simulation job id {job}")
     run_command = "{}/{} +p{} {}.conf > out_{}.dat".format(
         str(job.doc.gomc_binary_path),
@@ -2243,15 +1982,392 @@ def run_production_run_gomc_command(job):
         str(control_file_name_str),
         str(output_file_name_str),
     )
-
     return run_command
-
-
 # ******************************************************
 # ******************************************************
 # production run - starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
+
+#       analysis
+#       analysis
+#       analysis
+#       analysis
+#
+
+def statepoint_minus_replica(job):
+    #print(job.sp.keys())
+    #print("___________________________________________________________________________________")
+    
+    keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
+    #print("hello world")
+    return [str(job.sp[k]) for k in keys]
+
+
+@aggregator.groupby(key=statepoint_minus_replica)
+@Project.operation.with_directives(
+    {
+        "np": 1,
+        "ngpu": 0,
+        "memory": memory_needed,
+        "walltime": walltime_gomc_hr,
+    }
+)
+@FlowProject.pre(lambda *jobs: all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs))#beware of string issue: if u have an old version cast the long range correction as str(long_range_correction)
+@FlowProject.post.isfile("log-npt.txt")
+def jobJustin(*jobs):
+
+    if not all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs):
+        print("Not all jobs are complete! Proceed cautiously, statisticians beware.")
+
+    for job in jobs:
+        #moreDateHere = open("averagesWithinReplicates.txt","w")
+        #make new folder
+            #make folder inside with 1 statepoint.
+                #run this method ONLY without signac inside this folder.
+                    #take out job.isfile   
+                        #run 2 testcase 1 for NPT, 1 for GEMC.
+        with(job):
+            dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_0.dat")
+
+            MCstep = np.loadtxt(dataFileName_1)[:, 0]
+            energy = np.loadtxt(dataFileName_1)[:, 1]
+            #energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+            #energy = np.multiply(energy,(8.3144626181532/1000))
+            pressure = np.loadtxt(dataFileName_1)[:, 10]
+            pressure = np.multiply(pressure, 100)
+            density = np.loadtxt(dataFileName_1)[:, 12]
+            density = np.multiply(density,(1/1000))
+            Z = np.loadtxt(dataFileName_1)[:, 13]
+
+            if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+                dataJustin = open("log-liquid.txt","w")
+                dataJustin2 = open("log-vapor.txt","w")
+
+                dataFileName_2 = str("Blk_"+production_control_file_name_str+"_BOX_1.dat")
+
+                MCstep2 = np.loadtxt(dataFileName_2)[:, 0]
+                energy2 = np.loadtxt(dataFileName_2)[:, 1]
+                #energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                #energy2 = np.multiply(energy2,(8.3144626181532/1000))
+                pressure2 = np.loadtxt(dataFileName_2)[:, 10]
+                pressure2 = np.multiply(pressure2, 100)
+                density2 = np.loadtxt(dataFileName_2)[:, 12]
+                density2 = np.multiply(density2,(1/1000))
+                Z2 = np.loadtxt(dataFileName_2)[:, 13]
+
+                dataJustin2.write(f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n")
+                for i in range(len(MCstep2)):
+                    dataJustin2.write(f"{MCstep2[i]:<22} {energy2[i]:<22} {np.double(0.0):<22} {pressure2[i]:<22} {np.double(job.sp.temperature):<22} {density2[i]:<22} \n")
+                dataJustin2.close()
+
+            else:
+                dataJustin = open("log-npt.txt","w")
+
+            
+            dataJustin.write(f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n")
+            for i in range(len(MCstep)):
+                dataJustin.write(f"{MCstep[i]:<22} {energy[i]:<22} {np.double(0.0):<22} {pressure[i]:<22} {np.double(job.sp.temperature):<22} {density[i]:<22} \n")
+            dataJustin.close()
+
+###################################################################
+
+#@aggregator.groupby(key=statepoint_minus_replica)#possibly just run @aggregator()   edited 2/3/2022
+
+
+
+
+@aggregator.groupby(key=statepoint_minus_replica)
+@Project.operation.with_directives(
+    {
+        "np": 1,
+        "ngpu": 0,
+        "memory": memory_needed,
+        "walltime": walltime_gomc_hr,
+    }
+)
+@FlowProject.pre(lambda *jobs: all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs))#part_4c_job_equilb_design_ensemble_completed_properly     for passing things that are close to production
+@FlowProject.post.isfile("setAverages.txt") # part_2d_production_control_file_written(job)      for passing things that built
+def analysis(*jobs):
+    if not all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs):      #for passing things properly
+        print("Not all jobs are complete! Proceed cautiously, statisticians beware.")
+
+    #print("___________________________________________")
+    #print(jobs)
+    #print("___________________________________________")
+
+    '''THIS CAN BE USEFUL DON"T DELETE 
+    moreDataHereName = ""
+    
+    for job in jobs:
+        keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
+        for k in keys: 
+            moreDataHereName = moreDataHereName + str(job.sp[k])
+    moreDataHereName = "averagesWithinReplicates" + moreDataHereName + ".txt" # this is a very fast way to find the status of the sims
+    moreDateHere = open(moreDataHereName,"w")
+    if not all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs):
+        moreDateHere.write("Not all jobs are complete! Proceed cautiously, statisticians beware. \n") #the usefull bit ending '''
+    
+    
+    '''if "moreDataHereHeader" not in globals():
+        global moreDataHereHeader
+        moreDataHereHeader = True
+    else:
+        #global moreDataHereHeader
+        moreDataHereHeader = False
+    
+    
+    if "dataHereHeader" not in globals():
+        global dataHereHeader
+        dataHereHeader = True
+    else:
+        #global dataHereHeader
+        dataHereHeader = False'''
+    #moreDataHereHeader = str("{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")  
+    #dataHereHeader = str("{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
+    
+    moreDateHere = open("averagesWithinReplicatez.txt","w")#open("averagesWithinReplicatez.txt","a+")
+    #if ('mean_energy' not in moreDateHere.read()):
+    #    moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
+
+
+    dataHere = open("setAverages.txt","w")#open("setAverages.txt","w")
+    #if ('mean_energy' not in dataHere.read()):
+    #    dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
+  
+  
+    allTheJobs = np.double(len(list(pr.groupby())))#{"replica"}))))
+    replicaCount = allTheJobs/np.double(len(pr.find_jobs({"replica":1})))
+    uniqueJobs = np.double(allTheJobs) / replicaCount
+
+    allTheJobs = int(allTheJobs)
+    replicaCount = int(replicaCount)
+    uniqueJobs = int(uniqueJobs)
+
+    replicateAverageEnergy = []
+    replicateAveragePressure = []
+    replicateAverageDensity = []
+    replicateAverageZ = []
+    replicateAverageT = []
+    replicateAverageMolecule = []
+    replicateAverageJob = []
+    replicateAverageName = []
+    replicateAverageReplicate = []
+    replicateAverageOptions = []
+
+    replicateAverageEnergy2 = []
+    replicateAveragePressure2 = []
+    replicateAverageDensity2 = []
+    replicateAverageZ2 = []
+    replicateAverageT2 = []
+    replicateAverageMolecule2 = []
+    replicateAverageJob2 = []
+    replicateAverageName2 = []
+    replicateAverageReplicate2 = []
+    replicateAverageOptions2 = []
+
+    for job in jobs:
+        #moreDateHere = open("averagesWithinReplicates.txt","w")
+        with(job):
+            #print(job.sp)
+            dataFileName_1 = str("Blk_"+production_control_file_name_str+"_BOX_0.dat")
+
+            MCstep = np.loadtxt(dataFileName_1)[:, 0]
+            energy = np.loadtxt(dataFileName_1)[:, 1]
+            #energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+            #energy = np.multiply(energy,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
+            #note to convert to K try /N(molecules)*0.008314
+            pressure = np.loadtxt(dataFileName_1)[:, 10]
+            pressure = np.multiply(pressure, 100)
+            density = np.loadtxt(dataFileName_1)[:, 12]
+            density = np.multiply(density,(1/1000))
+            Z = np.loadtxt(dataFileName_1)[:, 13]
+
+            replicateAverageEnergy.append(np.double(np.mean(energy)))
+            replicateAveragePressure.append(np.double(np.mean(pressure)))
+            replicateAverageDensity.append(np.double(np.mean(density)))
+            replicateAverageZ.append(np.double(np.mean(Z)))
+            replicateAverageT.append(job.sp.temperature)
+            replicateAverageMolecule.append(job.sp.molecule)
+            replicateAverageJob.append(str(job))
+            
+            nameHolder = ""
+    
+            keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
+            for k in keys: 
+                nameHolder = nameHolder + str(job.sp[k])
+
+            replicateAverageName.append(str(nameHolder+"Box0"))
+            replicateAverageReplicate.append(job.sp.replica)
+            options = str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.cutoff_style) + str(job.sp.long_range_correction) + "Box0"
+            replicateAverageOptions.append(options)
+
+            if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+                dataFileName_2 = str("Blk_"+production_control_file_name_str+"_BOX_1.dat")
+                    
+                energy2 = np.loadtxt(dataFileName_2)[:, 1]
+                #energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                #energy2 = np.multiply(energy2,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
+                #note to convert to K try /N(molecules)*0.008314
+                pressure2 = np.loadtxt(dataFileName_2)[:, 10]
+                pressure2 = np.multiply(pressure2, 100)
+                density2 = np.loadtxt(dataFileName_2)[:, 12]
+                density2 = np.multiply(density2,(1/1000))
+                Z2 = np.loadtxt(dataFileName_2)[:, 13]
+
+                replicateAverageName2.append(str(nameHolder+"Box1"))
+                replicateAverageReplicate2.append(job.sp.replica)
+                options2 = str(job.sp.engine) + str(job.sp.ensemble) + str(job.sp.cutoff_style) + str(job.sp.long_range_correction) + "Box1"
+                replicateAverageOptions2.append(options2)
+
+                replicateAverageEnergy2.append(np.double(np.mean(energy2)))
+                replicateAveragePressure2.append(np.double(np.mean(pressure2)))
+                replicateAverageDensity2.append(np.double(np.mean(density2)))
+                replicateAverageZ2.append(np.double(np.mean(Z2)))
+                replicateAverageT2.append(job.sp.temperature)
+                replicateAverageMolecule2.append(job.sp.molecule)
+                replicateAverageJob2.append(str(job))
+
+                moreDateHere.write(f"{replicateAverageEnergy2[-1]:<22} {replicateAverageDensity2[-1]:<22} {replicateAverageZ2[-1]:<22} {replicateAverageT2[-1]:<22} {replicateAveragePressure2[-1]:<22} {replicateAverageMolecule2[-1]:<22} {replicateAverageJob2[-1]:2<22} {replicateAverageOptions2[-1]:<22} \n")
+
+
+        moreDateHere.write(f"{replicateAverageEnergy[-1]:<22} {replicateAverageDensity[-1]:<22} {replicateAverageZ[-1]:<22} {replicateAverageT[-1]:<22} {replicateAveragePressure[-1]:<22} {replicateAverageMolecule[-1]:<22} {replicateAverageJob[-1]:2<22} {replicateAverageOptions[-1]:<22} \n")
+
+    
+    setMeanEnergy = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanPressure = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanDensity = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanZ = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanTemperature = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanMolecule = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setMeanOptions = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    
+    setStdEnergy = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setStdPressure = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setStdDensity = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+    setStdZ = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName))
+
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        setMeanEnergy2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanPressure2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanDensity2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanZ2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanTemperature2= pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanMolecule2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setMeanOptions2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        
+        setStdEnergy2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setStdPressure2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setStdDensity2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+        setStdZ2 = pd.DataFrame(index=range(1),columns=np.unique(replicateAverageName2))
+
+    for i in np.unique(replicateAverageName):
+        setMeanEnergy[i] = 0
+        setMeanPressure[i] = 0
+        setMeanDensity[i] = 0
+        setMeanZ[i] = 0
+        setMeanTemperature[i] = 0
+        setMeanMolecule[i] = ""
+        setMeanOptions[i] = ""
+    
+        setStdEnergy[i] = 0
+        setStdPressure[i] = 0
+        setStdDensity[i] = 0
+        setStdZ[i] = 0
+
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        for i in np.unique(replicateAverageName2):
+            setMeanEnergy2[i] = 0
+            setMeanPressure2[i] = 0
+            setMeanDensity2[i] = 0
+            setMeanZ2[i] = 0
+            setMeanTemperature2[i] = 0
+            setMeanMolecule2[i] = ""
+            setMeanOptions2[i] = ""
+        
+            setStdEnergy2[i] = 0
+            setStdPressure2[i] = 0
+            setStdDensity2[i] = 0
+            setStdZ2[i] = 0
+
+    for i in range(len(replicateAverageEnergy)):
+        setMeanEnergy[replicateAverageName[i]] = setMeanEnergy[replicateAverageName[i]] + replicateAverageEnergy[i]
+        setMeanPressure[replicateAverageName[i]] = setMeanPressure[replicateAverageName[i]] + replicateAveragePressure[i]
+        setMeanDensity[replicateAverageName[i]] = setMeanDensity[replicateAverageName[i]] + replicateAverageDensity[i]
+        setMeanZ[replicateAverageName[i]] = setMeanZ[replicateAverageName[i]] + replicateAverageZ[i]
+        setMeanTemperature[replicateAverageName[i]] = replicateAverageT[i]
+        setMeanMolecule[replicateAverageName[i]] = replicateAverageMolecule[i]
+        setMeanOptions[replicateAverageName[i]] = replicateAverageOptions[i]
+
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        for i in range(len(replicateAverageEnergy2)):
+            setMeanEnergy2[replicateAverageName2[i]] = setMeanEnergy2[replicateAverageName2[i]] + replicateAverageEnergy2[i]
+            setMeanPressure2[replicateAverageName2[i]] = setMeanPressure2[replicateAverageName2[i]] + replicateAveragePressure2[i]
+            setMeanDensity2[replicateAverageName2[i]] = setMeanDensity2[replicateAverageName2[i]] + replicateAverageDensity2[i]
+            setMeanZ2[replicateAverageName2[i]] = setMeanZ2[replicateAverageName2[i]] + replicateAverageZ2[i]
+            setMeanTemperature2[replicateAverageName2[i]] = replicateAverageT2[i]
+            setMeanMolecule2[replicateAverageName2[i]] = replicateAverageMolecule2[i]
+            setMeanOptions2[replicateAverageName2[i]] = replicateAverageOptions2[i]
+        
+    for i in np.unique(replicateAverageName):
+        setMeanEnergy[i] /= replicaCount
+        setMeanPressure[i] /= replicaCount
+        setMeanDensity[i] /= replicaCount
+        setMeanZ[i] /= replicaCount
+
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        for i in np.unique(replicateAverageName2):
+            setMeanEnergy2[i] /= replicaCount
+            setMeanPressure2[i] /= replicaCount
+            setMeanDensity2[i] /= replicaCount
+            setMeanZ2[i] /= replicaCount
+
+    for i in range(len(replicateAverageEnergy)):
+
+        setStdEnergy[replicateAverageName[i]] += (replicateAverageEnergy[i] - setMeanEnergy[replicateAverageName[i]])**2
+        setStdPressure[replicateAverageName[i]] += (replicateAveragePressure[i] - setMeanPressure[replicateAverageName[i]])**2
+        setStdDensity[replicateAverageName[i]] += (replicateAverageDensity[i] - setMeanDensity[replicateAverageName[i]])**2
+        setStdZ[replicateAverageName[i]] += (replicateAverageZ[i] - setMeanZ[replicateAverageName[i]])**2
+    
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        for i in range(len(replicateAverageEnergy2)):
+
+            setStdEnergy2[replicateAverageName2[i]] += (replicateAverageEnergy2[i] - setMeanEnergy2[replicateAverageName2[i]])**2
+            setStdPressure2[replicateAverageName2[i]] += (replicateAveragePressure2[i] - setMeanPressure2[replicateAverageName2[i]])**2
+            setStdDensity2[replicateAverageName2[i]] += (replicateAverageDensity2[i] - setMeanDensity2[replicateAverageName2[i]])**2
+            setStdZ2[replicateAverageName2[i]] += (replicateAverageZ2[i] - setMeanZ2[replicateAverageName2[i]])**2
+
+    for i in np.unique(replicateAverageName):
+
+        setStdEnergy[i] = (setStdEnergy[i]/(replicaCount-1))**0.5
+        setStdPressure[i] = (setStdPressure[i]/(replicaCount-1))**0.5
+        setStdDensity[i] = (setStdDensity[i]/(replicaCount-1))**0.5
+        setStdZ[i] = (setStdZ[i]/(replicaCount-1))**0.5
+
+        #print(setMeanEnergy.loc[0,i])
+
+        dataHere.write(f"{setMeanEnergy.loc[0,i]:<22} {setStdEnergy.loc[0,i]:<22} {setMeanPressure.loc[0,i]:<22} {setStdPressure.loc[0,i]:<22} {setMeanDensity.loc[0,i]:<22} {setStdDensity.loc[0,i]:<22} {setMeanZ.loc[0,i]:<22} {setStdZ.loc[0,i]:<22} {setMeanTemperature.loc[0,i]:<22} {setMeanMolecule.loc[0,i]:<22} {setMeanOptions.loc[0,i]:<22} \n")
+    
+
+    if job.isfile(str("Blk_"+production_control_file_name_str+"_BOX_1.dat")):
+        for i in np.unique(replicateAverageName2):
+            setStdEnergy2[i] = (setStdEnergy2[i]/(replicaCount-1))**0.5
+            setStdPressure2[i] = (setStdPressure2[i]/(replicaCount-1))**0.5
+            setStdDensity2[i] = (setStdDensity2[i]/(replicaCount-1))**0.5
+            setStdZ2[i] = (setStdZ2[i]/(replicaCount-1))**0.5
+
+            dataHere.write(f"{setMeanEnergy2.loc[0,i]:<22} {setStdEnergy2.loc[0,i]:<22} {setMeanPressure2.loc[0,i]:<22} {setStdPressure2.loc[0,i]:<22} {setMeanDensity2.loc[0,i]:<22} {setStdDensity2.loc[0,i]:<22} {setMeanZ2.loc[0,i]:<22} {setStdZ2.loc[0,i]:<22} {setMeanTemperature2.loc[0,i]:<22} {setMeanMolecule2.loc[0,i]:<22} {setMeanOptions2.loc[0,i]:<22} \n")
+
+    #dataHere.write(f"{str(replicateAverageName2):<22} \n")
+    
+    #moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
+    #dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
+
+    dataHere.close()
+    moreDateHere.close()
+    
+
+
 
 # ******************************************************
 # ******************************************************
