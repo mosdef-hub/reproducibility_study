@@ -245,10 +245,11 @@ def run_singleframe(job):
     labels = []
     values = []
     for force in forcefield:
-        labels.append(str(type(force)).split("'")[1])
+        label = "_".join(str(type(force)).split("'")[1].split(".")[-2:])
+        labels.append(label)
         values.append(f"{force.energy:.15g}")
         if isinstance(force, hoomd.md.pair.LJ):
-            labels.append(str(type(force)).split("'")[1] + "_tail")
+            labels.append(label + "_tail")
             values.append(f"{force.additional_energy:.15g}")
 
     labels.append("potential_energy")
