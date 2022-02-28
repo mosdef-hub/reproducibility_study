@@ -307,6 +307,7 @@ def FormatTextFile(job):
     coulomb = data_dict["pppm_Coulomb"] + data_dict["special_pair_Coulomb"]
 
     new_data_dict = {
+        "Potential_energy": data_dict["potential_energy"],
         "LJ_energy": lj,
         "Tail_energy": tail,
         "Short_range_electrostatics": ewald,
