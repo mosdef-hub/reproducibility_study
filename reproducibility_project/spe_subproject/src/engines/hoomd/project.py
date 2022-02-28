@@ -158,8 +158,8 @@ def run_singleframe(job):
             forcefield.remove(f)
 
         # update the neighborlist exclusions for rigid
-        for f in forcefield:
-            f.nlist.exclusions = f.nlist.exclusions + ["body"]
+        # forcefield[0] is LJ pair force and all nlist objects are connected
+        forcefield[0].nlist.exclusions = ["body"]
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
@@ -247,15 +247,12 @@ def run_singleframe(job):
     for force in forcefield:
         labels.append(str(type(force)).split("'")[1])
         values.append(f"{force.energy:.15g}")
-        if isinstance(force, hoomd.md.pair.LJ) or isinstance(
-            force, hoomd.md.long_range.pppm.Coulomb
-        ):
+        if isinstance(force, hoomd.md.pair.LJ):
             labels.append(str(type(force)).split("'")[1] + "_tail")
             values.append(f"{force.additional_energy:.15g}")
 
-    for val in ["kinetic_energy", "potential_energy"]:
-        labels.append(val)
-        values.append(f"{getattr(thermo_props,val):.15g}")
+    labels.append("potential_energy")
+    values.append(f"{thermo_props.potential_energy:.15g}")
 
     with open(job.fn("log-spe-raw.txt"), "w") as f:
         f.write(f"{'   '.join(labels)}\n")
