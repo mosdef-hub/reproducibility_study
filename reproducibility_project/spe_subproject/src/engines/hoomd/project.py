@@ -281,19 +281,52 @@ def FormatTextFile(job):
     data = np.genfromtxt(raw_logfile, names=True)
 
     headers = [
-        "hoomd.md.pair.pair.LJ",
-        "hoomd.md.pair.pair.Ewald",
-        "hoomd.md.long_range.pppm.Coulomb",
-        "hoomd.md.special_pair.LJ",
-        "hoomd.md.special_pair.Coulomb",
-        "hoomd.md.bond.Harmonic",
-        "hoomd.md.angle.Harmonic",
-        "hoomd.md.dihedral.OPLS",
-        "kinetic_energy",
+        "pair_LJ",
+        "pair_LJ_tail",
+        "pair_Ewald",
+        "pppm_Coulomb",
+        "special_pair_LJ",
+        "special_pair_Coulomb",
+        "bond_Harmonic",
+        "angle_Harmonic",
+        "dihedral_OPLS",
         "potential_energy",
     ]
 
-    # np.savetxt(logfile,data,header=" ".join(data.dtype.names))
+    data_dict = {}
+    for key in headers:
+        try:
+            val = data[key]
+        except ValueError:
+            val = 0
+        data_dict[key] = float(val)
+
+    lj = data_dict["pair_LJ"] + data_dict["special_pair_LJ"]
+    tail = data_dict["pair_LJ_tail"]
+    ewald = data_dict["pair_Ewald"]
+    coulomb = data_dict["pppm_Coulomb"] + data_dict["special_pair_Coulomb"]
+
+    new_data_dict = {
+        "LJ_energy": lj,
+        "Tail_energy": tail,
+        "Short_range_electrostatics": ewald,
+        "Long_range_electrostatics": coulomb,
+        "Pair_energy": lj + ewald + coulomb,
+        "Bond_energy": data_dict["bond_Harmonic"],
+        "Angle_energy": data_dict["angle_Harmonic"],
+        "Dihedral_energy": data_dict["dihedral_OPLS"],
+        "Intramolecular_LJ": 0,
+        "Intermolecular_LJ": 0,
+        "Total_electrostatic": ewald + coulomb,
+        "Short_range_LJ": lj - tail,
+    }
+
+    # dicts are ordered in python3.6+
+    with open(logfile, "w") as f:
+        f.write("   ".join(new_data_dict.keys()) + "\n")
+        f.write("   ".join([f"{i:.15g}" for i in new_data_dict.values()]))
+
+    print("Finished", flush=True)
 
 
 if __name__ == "__main__":
