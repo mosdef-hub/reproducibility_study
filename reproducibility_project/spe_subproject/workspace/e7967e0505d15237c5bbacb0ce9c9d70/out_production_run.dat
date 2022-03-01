@@ -1,0 +1,271 @@
+Info: GOMC Version 2.70
+Info: Start Time: Tue Mar  1 12:56:38 2022
+
+Info: GOMC COMPILED TO RUN ISOBARIC-ISOTHERMAL ENSEMBLE.
+Info: Number of threads                  1 
+
+Reading Input File:                      production_run.conf
+Info: Restart simulation                 Active 
+Warning: Unknown input RestartCheckpoint!
+Info: Expert Mode                        Inactive 
+Info: Constant seed                      Active 
+Info: PARAMETER file                     CHARMM format! 
+Info: Input Temperature                  300.0000 K
+Info: Input Pressure                     1.0132 bar
+Info: Volume change using constant ratio.
+Info: Non-truncated potential            Active 
+Info: Long Range Correction              Active 
+Info: Cutoff                             10.0000 A
+Info: Short Range Cutoff                 1.0000 A
+Info: Exclude                            ONE-THREE 
+Info: Geometric mean to combine LJ sigma Active A
+Info: Ewald Summation                    Active 
+Info: Cache Ewald Fourier                Inactive 
+Info: Ewald Summation Tolerance          1.000E-05 
+Info: Pressure calculation frequency     1 
+Info: Total number of steps              2 
+Info: Number of equilibration steps      1 
+Info: Move adjustment frequency          1 
+Info: Displacement move frequency        0.3300 
+Info: Rotation move frequency            0.3300 
+Info: Intra-Swap move frequency          0.0000 
+Warning: Unknown input SwapFreq!
+Info: Regrowth move frequency            0.3300 
+Info: Crank-Shaft move frequency         0.0000 
+Info: Volume move frequency              0.0100 
+Info: Multi-Particle move frequency      0.0000 
+Warning: Unknown input MEMC-1Freq!
+Warning: Unknown input MEMC-2Freq!
+Warning: Unknown input MEMC-3Freq!
+Info: CBMC First atom trials             12   
+Info: CBMC Secondary atom trials         10   
+Info: CBMC Angle trials                  50   
+Info: CBMC Dihedral trials               50   
+Info: Output name                        production_run 
+Info: Restart frequency                  1 
+Warning: Unknown input CheckpointFreq!
+Info: Printing coordinate                Inactive 
+Info: DCD frequency                      1 
+Info: Console output frequency           1 
+Info: Average output frequency           1 
+Warning: Unknown input HistogramFreq!
+Warning: Unknown input DistName!
+Warning: Unknown input HistName!
+Warning: Unknown input RunNumber!
+Warning: Unknown input RunLetter!
+Warning: Unknown input SampleFreq!
+Default: Multi-Particle Brownian move frequency 0.0000 
+Default: Intra-MEMC move frequency       0.0000 
+Default: Targeted-Swap move frequency    0.0000 
+Default: Box  0  CutoffCoulomb           10.0000 A
+Warning: Cell dimension set, but will be ignored in restart mode.
+Finished Reading Input File:             production_run.conf
+
+Reading from CHARMM-Style parameter file:  	in_FF.inp
+Reading BONDS parameters.
+Reading ANGLES parameters.
+Reading DIHEDRALS parameters.
+Reading NONBONDED parameters.
+Reading from system PDB coordinate file:  	mosdef_gomc_zero_point_energy_box_0.pdb
+Finished reading:                       	mosdef_gomc_zero_point_energy_box_0.pdb
+Random number seed: 0
+
+Molecules in PSF:
+Molecule Kind: etha
+Idx	name	type	charge	mass
+0	C1	A	-0.18	12.01
+1	C2	E	0.145	12.01
+2	O1	C	-0.683	16
+3	H1	D	0.418	1.008
+4	H2	B	0.06	1.008
+5	H3	B	0.06	1.008
+6	H4	B	0.06	1.008
+7	H5	B	0.06	1.008
+8	H6	B	0.06	1.008
+
+Bonds:
+[2 3] [1 2] [1 4] [1 5] [0 1] [0 6] [0 7] [0 8] 
+
+Angles:
+[0 1 2] [0 1 4] [0 1 5] [1 0 6] [1 0 7] [1 0 8] [1 2 3] 
+[2 1 4] [2 1 5] [4 1 5] [6 0 7] [6 0 8] [7 0 8] 
+
+Dihedrals:
+[0 1 2 3] [2 1 0 6] [2 1 0 7] [2 1 0 8] [3 2 1 4] 
+[3 2 1 5] [4 1 0 6] [4 1 0 7] [4 1 0 8] [5 1 0 6] 
+[5 1 0 7] [5 1 0 8] 
+
+Impropers:
+
+Bonds parameter:
+Atom Types                             Kb(K)           b0(A) 
+C	D	                 278280.4382           0.9450 
+E	C	                 161030.2717           1.4100 
+E	B	                 171094.6637           1.0900 
+A	E	                 134862.8525           1.5290 
+A	B	                 171094.6637           1.0900 
+
+Angles parameter:
+Atom Types                         Ktheta(K)         theta0(degree) 
+A	E	C	          25160.9799         109.5000 
+A	E	B	          18870.7350         110.7000 
+E	A	B	          18870.7350         110.7000 
+E	C	D	          27677.0779         108.5000 
+C	E	B	          17612.6860         109.5000 
+B	E	B	          16606.2468         107.8000 
+B	A	B	          16606.2468         107.8000 
+
+Dihedrals parameter:
+Atom Types                           Kchi(K)    n    delta(degree) 
+A	E	C	D	    -19.1234    0     90.0000 
+A	E	C	D	     89.5746    1    180.0000 
+A	E	C	D	     43.7796    2      0.0000 
+A	E	C	D	   -123.7920    3    180.0000 
+A	E	C	D	      0.0000    4      0.0000 
+A	E	C	D	      0.0000    5    180.0000 
+C	E	A	B	    235.5068    0     90.0000 
+C	E	A	B	     -0.0005    1    180.0000 
+C	E	A	B	      0.0000    2      0.0000 
+C	E	A	B	   -117.7534    3    180.0000 
+C	E	A	B	      0.0000    4      0.0000 
+C	E	A	B	      0.0000    5    180.0000 
+D	C	E	B	    226.4488    0     90.0000 
+D	C	E	B	      0.0000    1    180.0000 
+D	C	E	B	      0.0000    2      0.0000 
+D	C	E	B	   -113.2244    3    180.0000 
+D	C	E	B	      0.0000    4      0.0000 
+D	C	E	B	      0.0000    5    180.0000 
+B	E	A	B	    150.9659    0     90.0000 
+B	E	A	B	      0.0000    1    180.0000 
+B	E	A	B	      0.0000    2      0.0000 
+B	E	A	B	    -75.4829    3    180.0000 
+B	E	A	B	      0.0000    4      0.0000 
+B	E	A	B	      0.0000    5    180.0000 
+
+NonBonded 1-4 parameters:
+Type1  Type2             Epsilon(K)    Sigma(A)       N 
+A      A                    16.6062      3.5000   12.00 
+A      E                    16.6062      3.5000   12.00 
+A      C                    26.6516      3.3045   12.00 
+A      D                     0.0000      5.9161   12.00 
+A      B                    11.1959      2.9580   12.00 
+E      E                    16.6062      3.5000   12.00 
+E      C                    26.6516      3.3045   12.00 
+E      D                     0.0000      5.9161   12.00 
+E      B                    11.1959      2.9580   12.00 
+C      C                    42.7737      3.1200   12.00 
+C      D                     0.0000      5.5857   12.00 
+C      B                    17.9685      2.7928   12.00 
+D      D                     0.0000     10.0000   12.00 
+D      B                     0.0000      5.0000   12.00 
+B      B                     7.5483      2.5000   12.00 
+
+NonBonded parameters:
+Type1  Type2             Epsilon(K)    Sigma(A)       N 
+A      A                    33.2125      3.5000   12.00 
+A      E                    33.2125      3.5000   12.00 
+A      C                    53.3033      3.3045   12.00 
+A      D                     0.0000      5.9161   12.00 
+A      B                    22.3919      2.9580   12.00 
+E      E                    33.2125      3.5000   12.00 
+E      C                    53.3033      3.3045   12.00 
+E      D                     0.0000      5.9161   12.00 
+E      B                    22.3919      2.9580   12.00 
+C      C                    85.5473      3.1200   12.00 
+C      D                     0.0000      5.5857   12.00 
+C      B                    35.9371      2.7928   12.00 
+D      D                     0.0000     10.0000   12.00 
+D      B                     0.0000      5.0000   12.00 
+B      B                    15.0966      2.5000   12.00 
+
+Info: Reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/ethanolAA/mosdef_gomc_zero_point_energy_box_0_restart.xsc 
+
+Info: Finished reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/ethanolAA/mosdef_gomc_zero_point_energy_box_0_restart.xsc 
+
+Info: Reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/ethanolAA/mosdef_gomc_zero_point_energy_box_0_restart.coor
+
+Info: Finished reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/ethanolAA/mosdef_gomc_zero_point_energy_box_0_restart.coor
+
+Info: Box  0:  Periodic Cell Basis 1     36.460   0.000   0.000 
+Info: Box  0:  Periodic Cell Basis 2      0.000  36.460   0.000 
+Info: Box  0:  Periodic Cell Basis 3      0.000   0.000  36.460 
+
+Minimum coordinates in box 0: x =    1.979, y =    1.900, z =    1.975
+Maximum coordinates in box 0: x =   34.508, y =   34.487, z =   34.486
+Wrapping molecules inside the simulation box 0:
+Box: 0, RecipVectors:   4969, kmax: 14
+
+################################################################################
+########################## INITIAL SIMULATION ENERGY ###########################
+
+ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+
+ENER_0:        0  3.77770202e+06  1.01340192e+06  3.66101590e+05  2.37920634e+06 -5.02589074e+04  6.92510739e+04  5.34700145e+04  3.24409004e+05 -1.13983419e+07  1.10897139e+07  6.23079874e+04
+
+STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+
+STAT_0:        0      4.8467e+04      7.7231e+04      1.8075e+02      5.1366e+02             500      7.8917e+02
+
+################################################################################
+############################# STARTING SIMULATION ##############################
+
+MTITLE:     STEP          DISTRY       DISACCEPT      DISACCEPT%          DISMAX          ROTATE       ROTACCEPT      ROTACCEPT%          ROTMAX        REGROWTH    REGROWACCEPT   REGROWACCEPT%          VOLUME       VOLACCEPT      VOLACCEPT%          VOLMAX
+
+ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+
+STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+
+Opening DCD coordinate file: production_run_BOX_0.dcd 
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
+MOVE_0:        1               0               0      0.0000e+00      1.0000e-10               1               0      0.0000e+00      7.8540e-01               0               0      0.0000e+00               0               0      0.0000e+00      5.0000e+02
+
+ENER_0:        1  3.77770202e+06  1.01340192e+06  3.66101590e+05  2.37920634e+06 -5.02589074e+04  6.92510739e+04  5.34700145e+04  3.24409004e+05 -1.13983419e+07  1.10897139e+07  6.23079874e+04
+
+STAT_0:        1      4.8467e+04      7.7231e+04      1.8075e+02      5.1366e+02             500      7.8917e+02
+
+PRES_0:        1      7.6637e+04      8.1550e+04      7.3083e+04
+
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1 
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1 
+Printed combined psf to file production_run_merged.psf
+Writing checkpoint to file production_run_restart.chk at step 1
+Checkpoint saved to production_run_restart.chk
+MOVE_0:        2               0               0      0.0000e+00      1.0000e-10               2               0      0.0000e+00      3.9270e-01               0               0      0.0000e+00               0               0      0.0000e+00      5.0000e+02
+
+ENER_0:        2  3.77770202e+06  1.01340192e+06  3.66101590e+05  2.37920634e+06 -5.02589074e+04  6.92510739e+04  5.34700145e+04  3.24409004e+05 -1.13983419e+07  1.10897139e+07  6.23079874e+04
+
+STAT_0:        2      4.8467e+04      7.7231e+04      1.8075e+02      5.1366e+02             500      7.8917e+02
+
+PRES_0:        2      7.6637e+04      8.1550e+04      7.3083e+04
+
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 2 
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 2 
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2 
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2 
+Writing checkpoint to file production_run_restart.chk at step 2
+Checkpoint saved to production_run_restart.chk
+Simulation Time (total): 8.4296e-01 sec.
+
+Move Type                Mol. Kind      BOX_0      
+% Accepted Displacement        etha     0.00000 
+% Accepted Rotation            etha     0.00000 
+% Accepted Regrowth            etha     0.00000 
+% Accepted Volume-Transfer              0.00000 
+
+Displacement:                            0.0000    sec.
+Rotation:                                0.0074    sec.
+MultiParticle:                           0.0000    sec.
+Brownian-like MultiParticle:             0.0000    sec.
+Intra Molecule Transfer:                 0.0000    sec.
+Regrowth:                                0.0000    sec.
+Intra Molecule Exchange:                 0.0000    sec.
+Crankshaft:                              0.0000    sec.
+Intra Targeted Transfer:                 0.0000    sec.
+Volume Transfer:                         0.0000    sec.
+
+Info: GOMC Version 2.70
+Info: Completed at: Tue Mar  1 12:56:42 2022
+Info: On hostname: Info: Hostname Unavailable
