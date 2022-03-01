@@ -16,7 +16,7 @@
 
 * masses
 
-!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)  
+!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)
 *  A		14.027000	! CH2_sp3_pentaneUA
 *  B		15.035000	! CH3_sp3_pentaneUA
 
@@ -39,7 +39,7 @@ ANGLES * harmonic
 !Ktheta: kcal/mole/rad**2
 !Theta0: degrees
 !
-! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.		
+! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.
 !
 !atom_types 		Ktheta		Theta0			  atoms_types_per_utilized_FF
 A	A	B	62.10013026		113.99969		! CH2_sp3_pentaneUA	CH2_sp3_pentaneUA	CH3_sp3_pentaneUA

@@ -47,7 +47,9 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = "/Users/brad/Programs/GOMC/GOMC_dev_zero_point_energy_2_28_22/bin"
+gomc_binary_path = (
+    "/Users/brad/Programs/GOMC/GOMC_dev_zero_point_energy_2_28_22/bin"
+)
 
 # force field (FF) file for all simulations in that job
 # Note: do not add extensions
@@ -224,7 +226,7 @@ def initial_parameters(job):
 
     job.doc.production_run_ensemble_dict = {
         "input_name_control_file_name": production_control_file_name_str,
-        "output_name_control_file_name" : production_control_file_name_str
+        "output_name_control_file_name": production_control_file_name_str,
     }
 
     if job.doc.production_ensemble in ["NPT"]:
@@ -333,7 +335,6 @@ def gomc_control_file_written(job, control_filename_str):
     return file_written_bool
 
 
-
 # checking if the GOMC control file is written for the production run
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -344,7 +345,6 @@ def part_2a_production_control_file_written(job):
         return gomc_control_file_written(job, production_control_file_name_str)
     except:
         return False
-
 
 
 # ******************************************************
@@ -441,16 +441,17 @@ def part_4a_job_production_run_completed_properly(job):
 # ******************************************************
 # ******************************************************
 
+
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @flow.with_job
 def part_5a_job_production_energy_analysis_written(job):
     """Check that the production energy analysis is written  ."""
     file_written_bool = False
-    #if (job.isfile(f"{path_from_job_to_box_inputs}/log-spe.txt")):
+    # if (job.isfile(f"{path_from_job_to_box_inputs}/log-spe.txt")):
     #    file_written_bool = True
 
-    if (job.isfile("log-spe.txt")):
+    if job.isfile("log-spe.txt"):
         file_written_bool = True
 
     return file_written_bool
@@ -573,8 +574,12 @@ def build_psf_pdb_ff_gomc_conf(job):
     temperature = (job.sp.temperature * u.K).to_value("K")
     pressure = (job.sp.pressure * u.kPa).to_value("bar")
 
-    input_name_control_file_name = job.doc.production_run_ensemble_dict["input_name_control_file_name"]
-    output_name_control_file_name = job.doc.production_run_ensemble_dict["output_name_control_file_name"]
+    input_name_control_file_name = job.doc.production_run_ensemble_dict[
+        "input_name_control_file_name"
+    ]
+    output_name_control_file_name = job.doc.production_run_ensemble_dict[
+        "output_name_control_file_name"
+    ]
 
     MC_steps = 2  # set value for paper = 1
 
@@ -652,18 +657,26 @@ def build_psf_pdb_ff_gomc_conf(job):
                 "Moleules MC move rations not listed in the GOMC control file writer."
             )
 
-        restart_rel_dir = "../../src/system_snapshots/gomc_NPT_percise_coordinates"
+        restart_rel_dir = (
+            "../../src/system_snapshots/gomc_NPT_percise_coordinates"
+        )
         if Restart is True:
             Coordinates_box_0 = "mosdef_gomc_zero_point_energy_box_0.pdb"
             Structure_box_0 = "mosdef_gomc_zero_point_energy_box_0.psf"
-            binCoordinates_box_0 = f"{restart_rel_dir}/{job.sp.molecule}" \
-                                   f"/mosdef_gomc_zero_point_energy_box_0_restart.coor"
-            extendedSystem_box_0 = f"{restart_rel_dir}/{job.sp.molecule}" \
-                                   f"/mosdef_gomc_zero_point_energy_box_0_restart.xsc"
+            binCoordinates_box_0 = (
+                f"{restart_rel_dir}/{job.sp.molecule}"
+                f"/mosdef_gomc_zero_point_energy_box_0_restart.coor"
+            )
+            extendedSystem_box_0 = (
+                f"{restart_rel_dir}/{job.sp.molecule}"
+                f"/mosdef_gomc_zero_point_energy_box_0_restart.xsc"
+            )
 
         elif Restart is False:
-            raise ValueError("ERROR: GOMC zero point energies need to be calculated using a "
-                             "restart coor and xsc files where were manually created in VMD.")
+            raise ValueError(
+                "ERROR: GOMC zero point energies need to be calculated using a "
+                "restart coor and xsc files where were manually created in VMD."
+            )
 
         Coordinates_box_1 = None
         Structure_box_1 = None
@@ -671,8 +684,9 @@ def build_psf_pdb_ff_gomc_conf(job):
         extendedSystem_box_1 = None
 
     elif job.sp.ensemble in ["GCMC", "GEMC_NVT", "GEMC_NPT"]:
-            raise ValueError("ERROR: GOMC zero point energies need to be calculated using and NPT ensemble.")
-
+        raise ValueError(
+            "ERROR: GOMC zero point energies need to be calculated using and NPT ensemble."
+        )
 
     gomc_control.write_gomc_control_file(
         charmm_object_with_files,
@@ -769,9 +783,13 @@ def run_production_run_gomc_command(job):
     print("#**********************")
     print("# Started the run_production_run_gomc_command function.")
     print("#**********************")
-    control_file_name_str = job.doc.production_run_ensemble_dict["input_name_control_file_name"]
+    control_file_name_str = job.doc.production_run_ensemble_dict[
+        "input_name_control_file_name"
+    ]
 
-    output_file_name_str = job.doc.production_run_ensemble_dict["output_name_control_file_name"]
+    output_file_name_str = job.doc.production_run_ensemble_dict[
+        "output_name_control_file_name"
+    ]
 
     print(f"Running simulation job id {job}")
     run_command = "{}/{} +p{} {}.conf > out_{}.dat".format(
@@ -783,6 +801,7 @@ def run_production_run_gomc_command(job):
     )
 
     return run_command
+
 
 # ******************************************************
 # ******************************************************
@@ -828,8 +847,12 @@ def run_production_energy_analysis(job):
                     tail_energy = float(split_line[6])
                     total_electrostatics = None
                     # vdw_energy = INTRA(B) + INTRA(NB) + INTER(LJ) +  LRC
-                    vdw_energy = float(split_line[3]) + float(split_line[4]) + \
-                                 float(split_line[5]) + float(split_line[6])
+                    vdw_energy = (
+                        float(split_line[3])
+                        + float(split_line[4])
+                        + float(split_line[5])
+                        + float(split_line[6])
+                    )
 
                     coul_energy = None
                     pair_energy = None
@@ -842,51 +865,57 @@ def run_production_energy_analysis(job):
                     intra_non_bonded = float(split_line[4])
                     inter_LJ = float(split_line[5])
 
-    energy_titles = ["total_energy",
-                     "potential_energy",
-                     "total_electrostatics",
-                     "vdw_energy",
-                     "coul_energy",
-                     "pair_energy",
-                     "bonds_energy",
-                     "angles_energy",
-                     "dihedrals_energy",
-                     "tail_energy",
-                     "kspace_energy",
-                     "intra_bonded",
-                     "intra_non_bonded",
-                     "inter_LJ",
-                     ]
+    energy_titles = [
+        "total_energy",
+        "potential_energy",
+        "total_electrostatics",
+        "vdw_energy",
+        "coul_energy",
+        "pair_energy",
+        "bonds_energy",
+        "angles_energy",
+        "dihedrals_energy",
+        "tail_energy",
+        "kspace_energy",
+        "intra_bonded",
+        "intra_non_bonded",
+        "inter_LJ",
+    ]
 
-    energy_K = [total_energy,
-                potential_energy,
-                total_electrostatics,
-                vdw_energy,
-                coul_energy,
-                pair_energy,
-                bonds_energy,
-                angles_energy,
-                dihedrals_energy,
-                tail_energy,
-                kspace_energy,
-                intra_bonded,
-                intra_non_bonded,
-                inter_LJ,
-                ]
+    energy_K = [
+        total_energy,
+        potential_energy,
+        total_electrostatics,
+        vdw_energy,
+        coul_energy,
+        pair_energy,
+        bonds_energy,
+        angles_energy,
+        dihedrals_energy,
+        tail_energy,
+        kspace_energy,
+        intra_bonded,
+        intra_non_bonded,
+        inter_LJ,
+    ]
 
     energy_kJ_per_mol = []
     for energy_iter in energy_K:
         if isinstance(energy_iter, float):
-            energy_value_iter = u.unyt_quantity(float(energy_iter), 'K')
-            energy_value_iter = energy_value_iter.to_equivalent('kJ/mol', 'thermal')
-            energy_value_iter = energy_value_iter.to_value('kJ/mol')
+            energy_value_iter = u.unyt_quantity(float(energy_iter), "K")
+            energy_value_iter = energy_value_iter.to_equivalent(
+                "kJ/mol", "thermal"
+            )
+            energy_value_iter = energy_value_iter.to_value("kJ/mol")
             energy_kJ_per_mol.append(energy_value_iter)
 
         else:
             energy_kJ_per_mol.append(energy_iter)
 
     energy_kJ_per_mol_df = pd.DataFrame(np.column_stack(energy_kJ_per_mol))
-    energy_kJ_per_mol_df.to_csv('log-spe.txt', sep=",", index=False, header=energy_titles)
+    energy_kJ_per_mol_df.to_csv(
+        "log-spe.txt", sep=",", index=False, header=energy_titles
+    )
 
 
 # ******************************************************
