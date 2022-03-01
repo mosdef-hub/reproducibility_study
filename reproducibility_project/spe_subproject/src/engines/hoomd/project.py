@@ -57,6 +57,7 @@ def FinishedSPECalc(job):
 @flow.with_job
 def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
+    import foyer
     import hoomd
     import hoomd.md
     import mbuild as mb
@@ -112,6 +113,11 @@ def run_singleframe(job):
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
     print("Snapshot created")
+
+    # update the neighborlist exclusions for pentane and benzene
+    # these wont be set automatically because their scaling is 0
+    # forcefield[0] is LJ pair force and all nlist objects are connected
+    forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
 
     # Adjust the snapshot rigid bodies
     if isrigid:
@@ -240,6 +246,10 @@ def run_singleframe(job):
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
 
+    print(job.sp.molecule)
+    print("foyer version: ", foyer.__version__)
+    print("nlist exclusions: ", forcefield[0].nlist.exclusions)
+
     sim.run(0)
 
     labels = []
@@ -256,8 +266,8 @@ def run_singleframe(job):
     values.append(f"{thermo_props.potential_energy:.15g}")
 
     with open(job.fn("log-spe-raw.txt"), "w") as f:
-        f.write(f"{'   '.join(labels)}\n")
-        f.write(f"{'   '.join(values)}")
+        f.write(f"{' '.join(labels)}\n")
+        f.write(f"{' '.join(values)}")
 
     print("Finished", flush=True)
 
@@ -324,8 +334,8 @@ def FormatTextFile(job):
 
     # dicts are ordered in python3.6+
     with open(logfile, "w") as f:
-        f.write("   ".join(new_data_dict.keys()) + "\n")
-        f.write("   ".join([f"{i:.15g}" for i in new_data_dict.values()]))
+        f.write(" ".join(new_data_dict.keys()) + "\n")
+        f.write(" ".join([f"{i:.15g}" for i in new_data_dict.values()]))
 
     print("Finished", flush=True)
 
