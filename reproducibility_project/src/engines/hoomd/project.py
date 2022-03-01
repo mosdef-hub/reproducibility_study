@@ -185,6 +185,14 @@ def run_hoomd(job, method, restart=False):
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
 
+    # update the neighborlist exclusions for pentane and benzene
+    # these wont be set automatically because their scaling is 0
+    # forcefield[0] is LJ pair force and all nlist objects are connected
+    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    if job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
+
     # Adjust the snapshot rigid bodies
     if isrigid:
         # number of particles per molecule
@@ -230,8 +238,7 @@ def run_hoomd(job, method, restart=False):
             forcefield.remove(f)
 
         # update the neighborlist exclusions for rigid
-        for f in forcefield:
-            f.nlist.exclusions = f.nlist.exclusions + ["body"]
+        forcefield[0].nlist.exclusions = ["body"]
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
