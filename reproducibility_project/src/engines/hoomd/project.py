@@ -113,7 +113,7 @@ def post_process(job):
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
-        data["temperature"] *= kB
+        data["temperature"] /= kB
         data["pressure"] *= pressure_factor
         data = rf.append_fields(
             data, "density", np.array(density), usemask=False
