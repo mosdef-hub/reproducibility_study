@@ -26,7 +26,6 @@ kspace_energy = elong </br>
 This can be done by using the `None` value for the entries in that pandas dataframe. To write out your data, use:
 ```python
 df.to_csv('log-spe.txt', header=True, index=False, sep=",")
->>>>>>> 3eb1c5611ed0d6ea6024942149e49b074c0942d5
 ```
 
 ## How to use from scratch
