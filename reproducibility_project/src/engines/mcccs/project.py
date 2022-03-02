@@ -347,15 +347,11 @@ def sanitize_gemc_log(step, job):
     arrays_box1[:, 4] = arrays_box1[:, 4]  # Pressure kPa to kPa
     density_array = arrays_box1[:, 5] / (arrays_box1[:, 0]) ** 3
     density_array = density_array.reshape(density_array.shape[0], 1)
-
-    timestep = np.copy(density_array)
-    for i in range(timestep.shape[0]):
-        timestep[i] = i
+    timestep = np.arange(stop=density_array.shape[0])
     volume = arrays_box1[:, 0] * arrays_box1[:, 1] * arrays_box1[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
     density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
-    temperature = 0 * np.copy(volume)
-
+    temperature = np.zeros_like(volume)
     arrays_box1 = np.append(
         arrays_box1, density_array, axis=1
     )  # density molcules/nm3
@@ -757,12 +753,12 @@ def replace_keyword_fort_files_gemc(job):
     pressure = job.sp.pressure / 1000  # kPa to MPa
     rcut = job.sp.r_cut * 10
     nchaintot = nchain1 + nchain2
-    inix1 = 1 + math.ceil(nchain1**0.33)
-    iniy1 = 1 + math.ceil(nchain1**0.33)
-    iniz1 = 1 + math.ceil(nchain1**0.33)
-    inix2 = 1 + math.ceil(nchain2**0.33)
-    iniy2 = 1 + math.ceil(nchain2**0.33)
-    iniz2 = 1 + math.ceil(nchain2**0.33)
+    inix1 = 1 + math.ceil(nchain1 ** 0.33)
+    iniy1 = 1 + math.ceil(nchain1 ** 0.33)
+    iniz1 = 1 + math.ceil(nchain1 ** 0.33)
+    inix2 = 1 + math.ceil(nchain2 ** 0.33)
+    iniy2 = 1 + math.ceil(nchain2 ** 0.33)
+    iniz2 = 1 + math.ceil(nchain2 ** 0.33)
     variables = [
         nchain1,
         length1,
