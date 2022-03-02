@@ -45,14 +45,14 @@
 
 
  &mc_volume
-     tavol=  0.5
+     tavol=  0.4
      iratv=  500
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.003
+     pmvol=  0.005
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
      rmvolume=  1.000000000000000E-003
@@ -111,8 +111,8 @@
      armtra=  1.000000000000000E-002
      rmtra=  0.300000000000000
      rmrot=  0.400000000000000
-     tatra=  0.5
-     tarot=  0.5
+     tatra=  0.4
+     tarot=  0.4
      pmtra=  0.67
      pmtrmt=   1.00000000000000
      pmromt=   1.00000000000000
@@ -144,41 +144,9 @@ END SIMULATION_BOX
 
 MOLECULE_TYPE
 ! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lsetup lq14scale qscale iurot isolute
-9 9 9 9 9 0  T  F  F  F  F  T 0.5 0 100000
+9 9 9 9 9 0  T  F  F  F  F  F 1.0 0 100000
 ! unit ntype leaderq
 1 1 1
-! stretching
-2
-2 1003
-4 1004
-! bending
-3
-2 5 2004
-2 6 2004
-2 3 2002
-! torsion
-3
-2 3 7 3001
-2 3 8 3001
-2 3 9 3001
-! unit ntype leaderq
-2 2 2
-! stretching
-4
-1 1003
-5 1002
-3 1001
-6 1002
-! bending
-4
-1 4 2005
-3 7 2001
-3 8 2001
-3 9 2001
-! torsion
-0
-! unit ntype leaderq
-3 3 3
 ! stretching
 4
 2 1001
@@ -187,25 +155,57 @@ MOLECULE_TYPE
 9 1002
 ! bending
 3
-2 1 2002
+2 3 2002
 2 5 2001
 2 6 2001
 ! torsion
 1
-2 1 4 3003
+2 3 4 3003
+! unit ntype leaderq
+2 2 2
+! stretching
+4
+3 1003
+5 1002
+1 1001
+6 1002
+! bending
+4
+3 4 2005
+1 7 2001
+1 8 2001
+1 9 2001
+! torsion
+0
+! unit ntype leaderq
+3 3 3
+! stretching
+2
+2 1003
+4 1004
+! bending
+3
+2 5 2004
+2 6 2004
+2 1 2002
+! torsion
+3
+2 1 7 3001
+2 1 8 3001
+2 1 9 3001
 ! unit ntype leaderq
 4 4 4
 ! stretching
 1
-1 1004
+3 1004
 ! bending
 1
-1 2 2005
+3 2 2005
 ! torsion
 3
-1 2 3 3003
-1 2 5 3004
-1 2 6 3004
+3 2 1 3003
+3 2 5 3004
+3 2 6 3004
 ! unit ntype leaderq
 5 5 5
 ! stretching
@@ -213,15 +213,15 @@ MOLECULE_TYPE
 2 1002
 ! bending
 3
-2 1 2004
+2 3 2004
 2 6 2003
-2 3 2001
+2 1 2001
 ! torsion
 4
-2 1 4 3004
-2 3 7 3002
-2 3 8 3002
-2 3 9 3002
+2 3 4 3004
+2 1 7 3002
+2 1 8 3002
+2 1 9 3002
 ! unit ntype leaderq
 6 6 6
 ! stretching
@@ -229,60 +229,60 @@ MOLECULE_TYPE
 2 1002
 ! bending
 3
-2 1 2004
+2 3 2004
 2 5 2003
-2 3 2001
+2 1 2001
 ! torsion
 4
-2 1 4 3004
-2 3 7 3002
-2 3 8 3002
-2 3 9 3002
+2 3 4 3004
+2 1 7 3002
+2 1 8 3002
+2 1 9 3002
 ! unit ntype leaderq
 7 7 7
 ! stretching
 1
-3 1002
+1 1002
 ! bending
 3
-3 8 2003
-3 9 2003
-3 2 2001
+1 8 2003
+1 9 2003
+1 2 2001
 ! torsion
 3
-3 2 1 3001
-3 2 5 3002
-3 2 6 3002
+1 2 3 3001
+1 2 5 3002
+1 2 6 3002
 ! unit ntype leaderq
 8 8 8
 ! stretching
 1
-3 1002
+1 1002
 ! bending
 3
-3 7 2003
-3 9 2003
-3 2 2001
+1 7 2003
+1 9 2003
+1 2 2001
 ! torsion
 3
-3 2 1 3001
-3 2 5 3002
-3 2 6 3002
+1 2 3 3001
+1 2 5 3002
+1 2 6 3002
 ! unit ntype leaderq
 9 9 9
 ! stretching
 1
-3 1002
+1 1002
 ! bending
 3
-3 8 2003
-3 7 2003
-3 2 2001
+1 8 2003
+1 7 2003
+1 2 2001
 ! torsion
 3
-3 2 1 3001
-3 2 5 3002
-3 2 6 3002
+1 2 3 3001
+1 2 5 3002
+1 2 6 3002
 END MOLECULE_TYPE
 
 
@@ -319,6 +319,18 @@ END INTERMOLECULAR_EXCLUSION
 
 INTRAMOLECULAR_SPECIAL
 ! inclmol inclbead_1 inclbead_2 inclsign ofscale ofscale2
+1 7 3 +1 0.5 0.5
+1 8 3 +1 0.5 0.5
+1 9 3 +1 0.5 0.5
+1 7 6 +1 0.5 0.5
+1 7 5 +1 0.5 0.5
+1 8 6 +1 0.5 0.5
+1 8 5 +1 0.5 0.5
+1 9 6 +1 0.5 0.5
+1 9 5 +1 0.5 0.5
+1 1 4 +1 0.5 0.5
+1 5 4 +1 0.5 0.5
+1 6 4 +1 0.5 0.5
 END INTRAMOLECULAR_SPECIAL
 
 

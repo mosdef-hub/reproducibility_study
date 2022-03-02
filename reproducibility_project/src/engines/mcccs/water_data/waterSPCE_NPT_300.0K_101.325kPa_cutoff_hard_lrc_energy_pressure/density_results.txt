@@ -1,0 +1,12 @@
+The average density from run files is 0.997897078125 g/ml with SEM 0.00030445448759858733 from 16 samples
+The average cp from run files is 58.555924865625 J/Kmol with SEM 0.9212362382513091 from 16 samples
+The average energy from run files is -6179056.81265625 K with SEM 806.7206130009093 from 16 samples
+The average energy from run files is -51375.211854157824 kJ/mol with SEM 6.707405945054134 from 16 samples
+The average press from run files is 396.28234375 kPa with SEM 82.07468669580344 from 16 samples
+The average len from run files is 3.20679375 nm with SEM 0.00032528157874175034 from 16 samples
+The average box length from fort12 files is 3.2067949929166666 nm with SEM 0.00032651309338731287 from 16 samples
+The average box pressure from fort12 files is 397.1346062911719 kPa with SEM 82.20633335373543 from 16 samples
+The average box energy from fort12 files is -51375.21556922955 kJ/mol with SEM 6.708326199496825 from 16 samples
+The average trans max disp is 0.31904363899237553  with SEM 0.00033772143243114273 from 16 samples
+The average rot  max disp is 0.4017762085108597  with SEM 0.00039108030931893427 from 16 samples
+The average vol max disp is 303.68663307821714  with SEM 3.0869198381121365 from 16 samples
