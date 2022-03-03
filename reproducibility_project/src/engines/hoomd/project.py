@@ -406,12 +406,13 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             steps = 1e6
             print(
-                f"Running {steps} with tau: {integrator.tau} and tauS: {integrator.tauS}"
+                f"""Running {steps} with tau: {integrator.methods[0].tau} and
+                tauS: {integrator.methods[0].tauS}"""
             )
             sim.run(steps)
             print("Done")
-        integrator.tauS = 1000 * dt
-        integrator.tau = 100 * dt
+        integrator.methods[0].tauS = 1000 * dt
+        integrator.methods[0].tau = 100 * dt
     else:
         # Shrink and NVT both use NVT method
         if method == "shrink":
@@ -442,21 +443,24 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
-            print(f"Running {shrink_steps} with tau: {integrator.tau}")
+            print(
+                f"Running shrink {shrink_steps} with tau: {integrator.methods[0].tau}"
+            )
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
-            integrator.tau = 100 * dt
+            integrator.methods[0].tau = 100 * dt
 
     if method != "shrink":
         steps = 5e6
         if method == "npt":
             print(
-                f"Running {steps} with tau: {integrator.tau} and tauS: {integrator.tauS}"
+                f"""Running {steps} with tau: {integrator.methods[0].tau} and
+                tauS: {integrator.methods[0].tauS}"""
             )
         else:
-            print(f"Running {steps} with tau: {integrator.tau}")
+            print(f"Running {steps} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
