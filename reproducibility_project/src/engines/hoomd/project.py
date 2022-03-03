@@ -413,25 +413,25 @@ def run_hoomd(job, method, restart=False):
         integrator.tauS = 1000 * dt
         integrator.tau = 100 * dt
     else:
+        # Shrink and NVT both use NVT method
         if method == "shrink":
             # shrink to the desired box length
             L = job.sp.box_L_liq
             shrink_steps = 1e5
         else:
-            # the target volume should be the average volume from NPT
+            # The target volume should be the average volume from NPT
             target_volume = job.doc.avg_volume
             L = target_volume ** (1 / 3)
             shrink_steps = 2e4
 
         if not restart:
-            # shrink and nvt methods both use shrink step
+            # Shrink and nvt methods both use shrink step
             # Shrink step follows this example
             # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
             # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
             ramp = hoomd.variant.Ramp(
                 A=0, B=1, t_start=sim.timestep, t_ramp=int(shrink_steps)
             )
-            # the target volume should be the average volume from NPT
             initial_box = sim.state.box
             final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
             box_resize_trigger = hoomd.trigger.Periodic(10)
