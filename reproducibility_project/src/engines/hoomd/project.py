@@ -377,6 +377,7 @@ def run_hoomd(job, method, restart=False):
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
 
+    # start with high tau and tauS
     tau = 1000 * dt
     tauS = 5000 * dt
 
@@ -403,8 +404,14 @@ def run_hoomd(job, method, restart=False):
     if method == "npt":
         # only run with high tauS if we are starting from scratch
         if not restart:
-            sim.run(1e6)
-        integrator.tauS = tauS / 10
+            steps = 1e6
+            print(
+                f"Running {steps} with tau: {integrator.tau} and tauS: {integrator.tauS}"
+            )
+            sim.run(steps)
+            print("Done")
+        integrator.tauS = 1000 * dt
+        integrator.tau = 100 * dt
     else:
         if method == "shrink":
             # shrink to the desired box length
@@ -435,12 +442,22 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
+            print(f"Running {shrink_steps} with tau: {integrator.tau}")
             sim.run(shrink_steps + 1)
+            print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
+            integrator.tau = 100 * dt
 
     if method != "shrink":
-        sim.run(5e6)
+        steps = 5e6
+        if method == "npt":
+            print(
+                f"Running {steps} with tau: {integrator.tau} and tauS: {integrator.tauS}"
+            )
+        else:
+            print(f"Running {steps} with tau: {integrator.tau}")
+        sim.run(steps)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
