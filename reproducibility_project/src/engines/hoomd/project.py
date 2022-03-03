@@ -139,6 +139,7 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
+    print(job.sp.molecule)
     if method not in ["npt", "nvt", "shrink"]:
         raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 
