@@ -42,7 +42,7 @@ def LoadSystemSnapShot(job):
     molecule = job.sp.molecule
     molecule_filename = molecule + ".json"
     box = mb.load(str(snapshot_directory / molecule_filename))
-    box.save(filename="init.gro", overwrite=True)
+    box.save(filename="init.gro", precision=8, overwrite=True)
     # Apply forcefield and write out engine input files
     # __________________________________________________
     ff = load_ff(job.sp.forcefield_name)
