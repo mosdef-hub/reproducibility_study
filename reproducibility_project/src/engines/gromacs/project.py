@@ -53,7 +53,7 @@ def init_job(job):
 
     # Create a Compound and save to gro and top files
     system = construct_system(job.sp)
-    system[0].save(filename="init.gro", overwrite=True)
+    system[0].save(filename="init.gro", precision=8, overwrite=True)
     ff = load_ff(job.sp.forcefield_name)
     param_system = ff.apply(system[0])
     param_system.save(
