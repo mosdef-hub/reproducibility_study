@@ -8,7 +8,7 @@ import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-rigid_molecules = ["waterSPCE"]
+rigid_molecules = ["waterSPCE", "benzeneUA"]
 
 
 class Project(FlowProject):
