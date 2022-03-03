@@ -15,7 +15,14 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = ["methaneUA", "pentaneUA-flexible_bonds", "pentaneUA-constrain_bonds", "benzeneUA", "waterSPCE", "ethanolAA"]
+molecules = [
+    "methaneUA",
+    "pentaneUA-flexible_bonds",
+    "pentaneUA-constrain_bonds",
+    "benzeneUA",
+    "waterSPCE",
+    "ethanolAA",
+]
 replicas = range(16)
 simulation_engines = [
     "cassandra",
@@ -230,12 +237,17 @@ for i, sp in enumerate(total_statepoints):
 
     if sp["ensemble"] is None:
         indices_to_remove.add(i)
-    
-    if sp["engine"] in mc_engines and sp["molecule"] == "pentaneUA-flexible_bonds":
+
+    if (
+        sp["engine"] in mc_engines
+        and sp["molecule"] == "pentaneUA-flexible_bonds"
+    ):
         indices_to_remove.add(i)
-    if "lammps" in sp["engine"] and sp["molecule"] == "pentaneUA-constrain_bonds":
+    if (
+        "lammps" in sp["engine"]
+        and sp["molecule"] == "pentaneUA-constrain_bonds"
+    ):
         indices_to_remove.add(i)
-        
 
 
 # now reverse sort the set and remove from inital list
