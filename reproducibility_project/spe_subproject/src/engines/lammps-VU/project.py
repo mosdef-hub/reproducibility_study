@@ -104,15 +104,16 @@ def CalculateEnergy(job):
         tstep = 1.0
     else:
         tstep = 2.0
-
-    if 'waterSPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
+    if 'SPCE' in job.sp.molecule or 'ethanolAA' in job.sp.molecule: # add charges for water and ethanol
         modify_engine_scripts(in_script_name, 'pair_style lj/cut/coul/long ${rcut}\n', 7)
         modify_engine_scripts(in_script_name, 'kspace_style pppm 1.0e-5 #PPPM Ewald, relative error in forces\n', 12)
-    if "waterSPCE" == job.sp.molecule: #Fix SHAKE for spce water
-        modify_engine_scripts(
-            in_script_name, "fix rigbod all shake 0.00001 20 0 b 1 a 1\n", 14
-        )
-    modify_engine_scripts(in_script_name, ' special_bonds lj/coul 0 0 0.5\n', 16) #use 1-4 combining rules for lammps
+        modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0.5\n', 16)
+        modify_engine_scripts(in_script_name, 'pair_modify mix geometric\n', 20)
+        if 'SPCE' in job.sp.molecule:
+            modify_engine_scripts(in_script_name, 'fix rigbod all shake 0.00001 20 0 b 1 a 1\n', 14)
+    elif 'UA' in job.sp.molecule:
+        modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0\n', 16)
+        modify_engine_scripts(in_script_name, 'pair_modify mix arithmetic\n', 20)
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
