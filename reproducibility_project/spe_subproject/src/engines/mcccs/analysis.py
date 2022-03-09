@@ -129,9 +129,6 @@ def main():
 
             print(output_string)
             os.chdir(base_dir)
-            with open("spe_results.txt", "w") as text_file:
-                text_file.write(output_string)
-            text_file.close()
             energies = 0.00831441001625545 * np.array(
                 [
                     [
