@@ -148,6 +148,7 @@ def run_hoomd(job, method, restart=False):
     # Only the number matters at this point--all other attributes of the
     # snapshot will be adjusted later.
     if job.sp["molecule"] in rigid_molecules:
+        print("Rigid body")
         isrigid = True
         init_snap = hoomd.Snapshot()
         init_snap.particles.types = ["R"]
@@ -197,6 +198,7 @@ def run_hoomd(job, method, restart=False):
     # If the molecule is constrained, add distance constraints to
     # bonded particles in snapshot
     if "constrain" in job.sp.molecule:
+        print("Constrained bonds")
         snapshot.constraints.N = snapshot.bonds.N
         snapshot.constraints.group[:] = snapshot.bonds.group[:]
         constraint_vals = np.ones(snapshot.bonds.N) * 0.154
