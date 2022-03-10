@@ -1,0 +1,2 @@
+total_energy,potential_energy,total_electrostatics,vdw_energy,coul_energy,pair_energy,bonds_energy,angles_energy,dihedrals_energy,tail_energy,kspace_energy,intra_bonded,intra_non_bonded,inter_LJ
+,537737.3919505653,,537737.3915320745,,,,,,-181.10781695713783,,0.010051079991481537,-122.1003235547879,538040.5896215064
