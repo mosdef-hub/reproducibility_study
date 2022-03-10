@@ -109,7 +109,7 @@ def post_process(job):
         volume = data["volume"] * u.nm ** 3
         density = (system_mass / volume).to("g/cm**3")
         kB = 0.00831446262  # kJ/(mol K)
-        pressure_factor = float((1 * u.kJ / u.mol / u.nm**3).to("kPa"))
+        pressure_factor = float((1 * u.kJ / u.mol / u.nm ** 3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
@@ -189,7 +189,7 @@ def run_hoomd(job, method, restart=False):
     # update the neighborlist exclusions for pentane and benzene
     # these wont be set automatically because their scaling is 0
     # forcefield[0] is LJ pair force and all nlist objects are connected
-    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
+    if job.sp.molecule == "benzeneUA" or job.sp.molecule.startswith("pentane"):
         forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
     if job.sp.molecule == "methaneUA":
         forcefield[0].nlist.exclusions = []
