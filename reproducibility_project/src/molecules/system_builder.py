@@ -131,6 +131,8 @@ def get_molecule(sp):
     """
     molecule_dict = {
         "methaneUA": MethaneUA(),
+        "pentaneUA-flexible_bonds": PentaneUA(),
+        "pentaneUA-constrain_bonds": PentaneUA(),
         "pentaneUA": PentaneUA(),
         "benzeneUA": BenzeneUA(),
         "waterSPCE": WaterSPC(),
