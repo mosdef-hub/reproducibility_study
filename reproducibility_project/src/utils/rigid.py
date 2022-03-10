@@ -27,7 +27,7 @@ def moit(points, masses, center=np.zeros(3)):
     x = points[:, 0]
     y = points[:, 1]
     z = points[:, 2]
-    I_xx = np.sum((y**2 + z**2) * masses)
-    I_yy = np.sum((x**2 + z**2) * masses)
-    I_zz = np.sum((x**2 + y**2) * masses)
+    I_xx = np.sum((y ** 2 + z ** 2) * masses)
+    I_yy = np.sum((x ** 2 + z ** 2) * masses)
+    I_zz = np.sum((x ** 2 + y ** 2) * masses)
     return np.array((I_xx, I_yy, I_zz))
