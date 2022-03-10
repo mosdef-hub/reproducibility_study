@@ -52,7 +52,7 @@
 
 
 ATOMS
-1002  1   50.5  3.695  0.0  13.000  _CH  # CH, TraPPE website
+1002  1   50.5  3.695  0.0  13.019  _CH  # CH, TraPPE website
 END ATOMS
 
 NONBOND

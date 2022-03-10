@@ -29,7 +29,7 @@ def load_ff(
     elif name == "benzene-ua":
         from reproducibility_project.src import xmls
 
-        ff_name = "benzene_trappe-ua_like.xml"
+        ff_name = "benzene_trappe-ua.xml"
         ff_path = (
             str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/" + ff_name
         )
@@ -65,7 +65,7 @@ def get_ff_path(
     elif name == "benzene-ua":
         from reproducibility_project.src import xmls
 
-        ff_name = "benzene_trappe-ua_like.xml"
+        ff_name = "benzene_trappe-ua.xml"
         ff_path = (
             str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/" + ff_name
         )

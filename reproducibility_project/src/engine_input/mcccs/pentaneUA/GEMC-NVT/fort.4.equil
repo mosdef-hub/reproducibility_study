@@ -151,16 +151,17 @@ MOLECULE_TYPE
 ! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lrplc lsetup lq14scale qscale iurot isolute eta
 5 5 5 5 5 5                                    F      F      F     F              F      F        0.5   0     1000000
 ! unit ntype leaderq
-1 4 1
+1 5 1
 ! stretching
-1
+2
 2 1
+4 1
 ! bending
 1
 2 3 1
 ! torsion
 1
-2 3 4 1
+2 3 5 1
 ! unit ntype leaderq
 2 5 2
 ! stretching
@@ -168,47 +169,47 @@ MOLECULE_TYPE
 1 1
 3 1
 ! bending
-1
-3 4 1
+2
+3 5 1
+1 4 1
 ! torsion
-1
-3 4 5 1
+0
 ! unit ntype leaderq
 3 5 3
 ! stretching
 2
 2 1
-4 1
-! bending
-2
-2 1 1
-4 5 1
-! torsion
-0
-! unit ntype leaderq
-4 5 4
-! stretching
-2
-3 1
 5 1
+! bending
+1
+2 1 1
+! torsion
+1
+2 1 4 1
+! unit ntype leaderq
+4 4 4
+! stretching
+1
+1 1
+! bending
+1
+1 2 1
+! torsion
+1
+1 2 3 1
+! unit ntype leaderq
+5 4 5
+! stretching
+1
+3 1
 ! bending
 1
 3 2 1
 ! torsion
 1
 3 2 1 1
-! unit ntype leaderq
-5 4 5
-! stretching
-1
-4 1
-! bending
-1
-4 3 1
-! torsion
-1
-4 3 2 1
 END MOLECULE_TYPE
+
 
 MC_SWATCH
 ! moltyp1<->moltyp2 nsampos 2xncut

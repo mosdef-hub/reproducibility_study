@@ -1,0 +1,1 @@
+{"molecule": "benzeneUA", "engine": "cassandra", "replica": 0, "temperature": 450.0, "pressure": 2260.0, "ensemble": "NPT", "N_liquid": 400, "N_vap": null, "box_L_liq": 4.217, "box_L_vap": null, "init_liq_den": 0.692, "init_vap_den": null, "mass": 78.112, "forcefield_name": "benzene-ua", "cutoff_style": "hard", "long_range_correction": "energy_pressure", "r_cut": 1.4}
