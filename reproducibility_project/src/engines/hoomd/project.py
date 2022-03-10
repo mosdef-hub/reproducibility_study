@@ -104,7 +104,7 @@ def post_process(job):
         data = clean_data(data)
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
-        volume = data["volume"] * u.nm**3
+        volume = data["volume"] * u.nm ** 3
         density = (system_mass / volume).to("g/cm**3")
 
         data = rf.drop_fields(data, ["time_remaining"])
