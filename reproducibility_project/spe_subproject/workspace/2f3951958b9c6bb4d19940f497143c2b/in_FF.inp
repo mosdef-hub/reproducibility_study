@@ -1,0 +1,26 @@
+*  mosdef_gomc_zero_point_energy_box_0 - created by mBuild using the on 2022-03-01 12:56:33.047155
+*  parameters from the {'methaneUA': 'trappe-ua'} force field(s) via MoSDef
+*  1-4 coulombic scaling = {'methaneUA': 0.0}, and 1-4 LJ scaling = {'methaneUA': 0.0}
+
+*  900 atoms
+*  0 bonds
+*  0 angles
+*  0 dihedrals
+*  0 impropers
+
+*  1 atom types
+
+
+* masses
+
+!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)
+*  A		16.043000	! CH4_methaneUA
+
+NONBONDED
+!
+!V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+!
+!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  atom_type_per_utilized_FF
+A	0.00	-0.294106119	2.09339172010	0.00	-0.000000000	2.09339172010		! CH4_methaneUA	CH4_methaneUA
+
+END
