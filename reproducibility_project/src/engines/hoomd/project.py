@@ -194,6 +194,22 @@ def run_hoomd(job, method, restart=False):
     if job.sp.molecule == "methaneUA":
         forcefield[0].nlist.exclusions = []
 
+    # If the molecule is constrained, add distance constraints to
+    # bonded particles in snapshot
+    if "constrain" in job.sp.molecule:
+        snapshot.constraints.N = snapshot.bonds.N
+        snapshot.constraints.group[:] = snapshot.bonds.group[:]
+        constraint_vals = np.ones(snapshot.bonds.N) * 0.154
+        snapshot.constraints.value[:] = constraint_vals
+
+        # I also checked that the starting positions on each bond were
+        # close enough to the constraint value:
+        # bond_pos = snapshot.particles.position[snapshot.bonds.group]
+        # bond_dists = np.linalg.norm(bond_pos[:,0] - bond_pos[:,1], axis=1)
+        # np.allclose(constraint_vals, bond_dists)
+
+        constrain_dist = hoomd.md.constrain.Distance()
+
     # Adjust the snapshot rigid bodies
     if isrigid:
         # number of particles per molecule
@@ -373,6 +389,8 @@ def run_hoomd(job, method, restart=False):
         integrator.rigid = rigid
     else:
         integrator = hoomd.md.Integrator(dt=dt)
+    if "constrain" in job.sp.molecule:
+        integrator.constraints = [constrain_dist]
     integrator.forces = forcefield
 
     # convert temp in K to kJ/mol
