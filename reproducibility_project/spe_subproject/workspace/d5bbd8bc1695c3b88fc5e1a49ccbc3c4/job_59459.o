@@ -1,0 +1,14 @@
+Processing LJ and QQ
+Processing harmonic bonds
+Processing harmonic angles
+Snapshot created
+<hoomd.md.pair.pair.LJ object at 0x7f2094af5820> tail_correction set to True
+Running HOOMD version 3.0.0-beta.13
+HOOMD is running on GPU
+GPU api version 10.2
+waterSPCE
+foyer version:  0.11.0
+nlist exclusions:  _HOOMDList['body']
+notice(2): charge.pppm: RMS error: 0.000144204
+notice(2): PPPM: calculating rigid body correction (N^2)
+Finished

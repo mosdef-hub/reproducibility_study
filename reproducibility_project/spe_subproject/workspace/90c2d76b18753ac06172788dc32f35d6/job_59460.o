@@ -1,0 +1,15 @@
+Processing LJ and QQ
+Processing 1-4 interactions, adjusting neighborlist exclusions
+Processing harmonic bonds
+Processing harmonic angles
+Processing RB torsions
+Snapshot created
+<hoomd.md.pair.pair.LJ object at 0x7fedc7db1b20> tail_correction set to True
+Running HOOMD version 3.0.0-beta.13
+HOOMD is running on GPU
+GPU api version 10.2
+ethanolAA
+foyer version:  0.11.0
+nlist exclusions:  _HOOMDList['bond', '1-3', '1-4']
+notice(2): charge.pppm: RMS error: 3.80391e-05
+Finished

@@ -1,0 +1,2 @@
+pair_LJ pair_LJ_tail potential_energy
+536843.837757928 -119.076260244455 536843.837757928
