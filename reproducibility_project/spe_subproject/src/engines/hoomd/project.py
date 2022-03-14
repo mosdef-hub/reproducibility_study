@@ -320,19 +320,16 @@ def FormatTextFile(job):
     coulomb = data_dict["pppm_Coulomb"] + data_dict["special_pair_Coulomb"]
 
     new_data_dict = {
-        "Potential_energy": data_dict["potential_energy"],
-        "LJ_energy": lj,
-        "Tail_energy": tail,
-        "Short_range_electrostatics": ewald,
-        "Long_range_electrostatics": coulomb,
-        "Pair_energy": lj + ewald + coulomb,
-        "Bond_energy": data_dict["bond_Harmonic"],
-        "Angle_energy": data_dict["angle_Harmonic"],
-        "Dihedral_energy": data_dict["dihedral_OPLS"],
-        "Intramolecular_LJ": 0,
-        "Intermolecular_LJ": 0,
-        "Total_electrostatic": ewald + coulomb,
-        "Short_range_LJ": lj - tail,
+        "potential_energy": data_dict["potential_energy"],
+        "vdw_energy": lj,
+        "tail_energy": tail,
+        "short_range_electrostatics": ewald,
+        "long_range_electrostatics": coulomb,
+        "pair_energy": lj + ewald + coulomb,
+        "bonds_energy": data_dict["bond_Harmonic"],
+        "angles_energy": data_dict["angle_Harmonic"],
+        "dihedrals_energy": data_dict["dihedral_OPLS"],
+        "total_electrostatic": ewald + coulomb,
     }
 
     # dicts are ordered in python3.6+
