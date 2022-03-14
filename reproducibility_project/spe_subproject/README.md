@@ -28,7 +28,7 @@ The following energy definitions are calculated using the [lammps thermo](https:
 * tot_bonded_energy = emol </br>
 * intramolecular_energy = emol + intramolecular ecoul + intramolecular evdw </br>
 * intermolecular_energy = intermolecular ecoul + interolecular evdw + intermolecular elong </br>
-``` 
+```
 </br>
 **NOTE: Please log a blank column of data for any energies that are not output or calculated by your simulation engine**
 This can be done by using the `None` value for the entries in that pandas dataframe. To write out your data, use:
