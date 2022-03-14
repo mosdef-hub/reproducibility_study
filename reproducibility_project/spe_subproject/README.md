@@ -9,7 +9,7 @@ Single point energies are calculated from the snapshots found in `src/system_sna
 The energy calculations will all be output to `log-spe.txt` and located in the job workspace directories. All energy units will be reported in **extensive** (no division by number of moleules) energies of kJ/mol.
 
 The energy will be logged as "comma" separated columns with the first row containing headers. They will be as follows:
-potential_energy, tot_vdw_energy, tail_energy, tot_electrostatics, short_range_electrostatcs, long_range_electrostatics, tot_pair_energy, bonds_energy, angles_energy, dihedrals_energy, tot_bonded_energy,
+potential_energy, tot_vdw_energy, tail_energy, tot_electrostatics, short_range_electrostatics, long_range_electrostatics, tot_pair_energy, bonds_energy, angles_energy, dihedrals_energy, tot_bonded_energy,
 intramolecular_energy, intermolecular_energy.
 
 ## Reported Energy Definitions
