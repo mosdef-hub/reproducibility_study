@@ -311,7 +311,7 @@ def FormatTextFile(job):
         try:
             val = data[key]
         except ValueError:
-            val = None
+            val = 0
         data_dict[key] = float(val)
 
     lj = data_dict["pair_LJ"] + data_dict["special_pair_LJ"]
@@ -333,8 +333,8 @@ def FormatTextFile(job):
         + data_dict["angle_Harmonic"]
         + data_dict["dihedral_OPLS"],
         "tot_electrostatics": ewald + coulomb,
-        "intramolecular_energy": None,
-        "intermolecular_energy": None,
+        "intramolecular_energy": 0,
+        "intermolecular_energy": 0,
     }
 
     # dicts are ordered in python3.6+
