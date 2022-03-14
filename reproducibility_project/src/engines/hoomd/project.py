@@ -399,8 +399,12 @@ def run_hoomd(job, method, restart=False):
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
 
     # start with high tau and tauS
-    tau = 1000 * dt
-    tauS = 5000 * dt
+    if job.sp.molecule == "ethanolAA":
+        tau = 100 * dt
+        tauS = 5000 * dt
+    else:
+        tau = 1000 * dt
+        tauS = 5000 * dt
 
     if method == "npt":
         # convert pressure to unit system
@@ -427,13 +431,17 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             steps = 1e6
             print(
-                f"""Running {steps} with tau: {integrator.methods[0].tau} and
-                tauS: {integrator.methods[0].tauS}"""
+                f"Running {steps} with tau: {integrator.methods[0].tau} and "
+                f"tauS: {integrator.methods[0].tauS}"
             )
             sim.run(steps)
             print("Done")
-        integrator.methods[0].tauS = 1000 * dt
-        integrator.methods[0].tau = 100 * dt
+        if job.sp.molecule == "ethanolAA":
+            integrator.methods[0].tauS = 1000 * dt
+            integrator.methods[0].tau = 50 * dt
+        else:
+            integrator.methods[0].tauS = 1000 * dt
+            integrator.methods[0].tau = 100 * dt
     else:
         # Shrink and NVT both use NVT method
         if method == "shrink":
@@ -465,20 +473,25 @@ def run_hoomd(job, method, restart=False):
             )
             sim.operations.updaters.append(box_resize)
             print(
-                f"Running shrink {shrink_steps} with tau: {integrator.methods[0].tau}"
+                f"Running shrink {shrink_steps} with tau: "
+                f"{integrator.methods[0].tau}"
             )
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
-            integrator.methods[0].tau = 100 * dt
+
+            if job.sp.molecule == "ethanolAA":
+                integrator.methods[0].tau = 50 * dt
+            else:
+                integrator.methods[0].tau = 100 * dt
 
     if method != "shrink":
         steps = 5e6
         if method == "npt":
             print(
-                f"""Running {steps} with tau: {integrator.methods[0].tau} and
-                tauS: {integrator.methods[0].tauS}"""
+                f"Running {steps} with tau: {integrator.methods[0].tau} and "
+                f"tauS: {integrator.methods[0].tauS}"
             )
         else:
             print(f"Running {steps} with tau: {integrator.methods[0].tau}")
