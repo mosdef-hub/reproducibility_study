@@ -104,7 +104,8 @@ def main():
                 csv_coulomb_energy = float("NaN")
                 csv_kspace_energy = float("NaN")
                 # csv_kspace_energy = 0
-                csv_pair_energy = csv_lj_energy + csv_coulomb_energy
+                csv_total_coulombic = coulomb_energy
+                csv_pair_energy = csv_lj_energy + csv_total_coulombic
                 csv_bond_energy = bond_energy
                 csv_angle_energy = angle_energy
                 csv_dihedral_energy = dihedral_energy
@@ -114,7 +115,6 @@ def main():
 
                 # csv_intermolecular_energy = lj_inter_energy
                 # csv_intramolecular_energy = lj_intra_energy
-                csv_total_coulombic = coulomb_energy
                 # csv_short_range = lj_inter_energy + lj_intra_energy
 
                 output_string = ""
