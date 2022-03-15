@@ -10,7 +10,7 @@
 signac_project_document.json
 signac_statepoints.json
 workspace*
-
+water_*
 # MacOS/finder file
 .DS_Store
 
