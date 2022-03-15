@@ -51,12 +51,12 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/home/brad/Programs/GOMC/GOMC_dev_2_22_22/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10 ** 3
+    40 * 10**3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 120 * 10**3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
