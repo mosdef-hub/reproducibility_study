@@ -131,7 +131,7 @@ def CalculateEnergy(job):
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("nvt_ewald.edr"))
 @Project.pre(lambda j: j.isfile("nvt_p3m.edr"))
-@Project.post(lambda j: j.isfile("log-spe.txt"))
+@Project.post(lambda j: j.isfile("log-spe1.txt"))
 @Project.post(lambda j: j.isfile("log-spe-ewald.txt"))
 @Project.post(lambda j: j.isfile("log-spe-p3m.txt"))
 @flow.with_job
@@ -184,13 +184,19 @@ def FormatTextFile(job):
         + data_ewald.get("Disper. corr.", 0)
         + data_ewald.get("LJ-14", 0),
         "tail_energy": data_ewald.get("Disper. corr.", 0),
+        "lj14": data_ewald.get("LJ-14", 0),
         "tot_electrostatics": data_ewald.get("Coulomb (SR)", 0)
         + data_ewald.get("Coul. recip.", 0)
         + data_ewald.get("Coulomb-14", 0),
-        "short_range_electrostatics": data_ewald.get("Coulomb-14", 0),
+        "short_range_electrostatics": data_ewald.get("Coulomb (SR)", 0),
         "long_range_electrostatics": data_ewald.get("Coul. recip."),
-        "tot_pair_energy": data_ewald.get("Coulomb-14", 0)
-        + data_ewald.get("LJ-14", 0),
+        "coulomb14": data_ewald.get("Coulomb-14", 0),
+        "tot_pair_energy": data_ewald.get("LJ (SR)", 0)
+        + data_ewald.get("Disper. corr.", 0)
+        + data_ewald.get("LJ-14", 0)
+        + data_ewald.get("Coulomb (SR)", 0)
+        + data_ewald.get("Coul. recip.", 0)
+        + data_ewald.get("Coulomb-14", 0),
         "bonds_energy": data_ewald.get("Bond", 0),
         "angles_energy": data_ewald.get("Angle", 0),
         "dihedrals_energy": data_ewald.get("Ryckaert-Bell.", 0)
@@ -208,13 +214,19 @@ def FormatTextFile(job):
         + data_p3m.get("Disper. corr.", 0)
         + data_p3m.get("LJ-14", 0),
         "tail_energy": data_p3m.get("Disper. corr.", 0),
+        "lj14": data_p3m.get("LJ-14", 0),
         "tot_electrostatics": data_p3m.get("Coulomb (SR)", 0)
         + data_p3m.get("Coul. recip.", 0)
         + data_p3m.get("Coulomb-14", 0),
         "short_range_electrostatics": data_p3m.get("Coulomb-14", 0),
         "long_range_electrostatics": data_p3m.get("Coul. recip."),
-        "tot_pair_energy": data_p3m.get("Coulomb-14", 0)
-        + data_p3m.get("LJ-14", 0),
+        "coulomb14": data_p3m.get("Coulomb-14", 0),
+        "tot_pair_energy": data_p3m.get("LJ (SR)", 0)
+        + data_p3m.get("Disper. corr.", 0)
+        + data_p3m.get("LJ-14", 0)
+        + data_p3m.get("Coulomb (SR)", 0)
+        + data_p3m.get("Coul. recip.", 0)
+        + data_p3m.get("Coulomb-14", 0),
         "bonds_energy": data_p3m.get("Bond", 0),
         "angles_energy": data_p3m.get("Angle", 0),
         "dihedrals_energy": data_p3m.get("Ryckaert-Bell.", 0)

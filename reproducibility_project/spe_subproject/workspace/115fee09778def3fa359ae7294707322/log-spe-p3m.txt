@@ -1,2 +1,2 @@
-potential_energy,tot_vdw_energy,tail_energy,tot_electrostatics,short_range_electrostatics,long_range_electrostatics,tot_pair_energy,bonds_energy,angles_energy,dihedrals_energy,tot_bonded_energy,intramolecular_energy,intermolecular_energy
-59770.703125,76796.35110473633,-249.56295776367188,-17025.650390625,0,6637.34375,0,0,0,0,0,,
+potential_energy,tot_vdw_energy,tail_energy,lj14,tot_electrostatics,short_range_electrostatics,long_range_electrostatics,coulomb14,tot_pair_energy,bonds_energy,angles_energy,dihedrals_energy,tot_bonded_energy,intramolecular_energy,intermolecular_energy
+59770.703125,76796.35110473633,-249.56295776367188,0,-17025.650390625,0,6637.34375,0,59770.70071411133,0,0,0,0,,
