@@ -45,7 +45,7 @@ class TestBenzeneUA(BaseTest):
         assert np.isclose(nonbonded["charge"], param_struct.atoms[0].charge)
 
         assert np.isclose(
-            bond["k"], param_struct.bond_types[0].k * (4.184 * 2 / (0.1 ** 2))
+            bond["k"], param_struct.bond_types[0].k * (4.184 * 2 / (0.1**2))
         )
         assert np.isclose(bond["length"], param_struct.bond_types[0].req / 10)
 
