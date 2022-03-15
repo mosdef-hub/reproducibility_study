@@ -24,8 +24,8 @@ class Project(flow.FlowProject):
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.post(lambda j: j.isfile("init.gro"))
 @Project.post(lambda j: j.isfile("init.top"))
-@Project.post(lambda j: j.isfile("nvt.mdp"))
-@Project.post(lambda j: j.isfile("npt.mdp"))
+@Project.post(lambda j: j.isfile("nvt_ewald.mdp"))
+@Project.post(lambda j: j.isfile("nvt_p3m.mdp"))
 @flow.with_job
 def LoadSystemSnapShot(job):
     """Create initial configurations of the system statepoint."""
@@ -59,12 +59,12 @@ def LoadSystemSnapShot(job):
     pressure = job.sp.pressure * u.kPa
     mdp_abs_path = os.path.dirname(os.path.abspath(mdp.__file__))
     mdps = {
-        "npt": {
-            "fname": "npt.mdp",
-            "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/npt_template_water.mdp.jinja",
+        "nvt-ewald": {
+            "fname": "nvt_ewald.mdp",
+            "template": f"{mdp_abs_path}/nvt_template_ewald.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/nvt_template_water_ewald.mdp.jinja",
             "data": {
-                "nsteps": 1,
+                "nsteps": 0,
                 "dt": 0.001,
                 "temp": job.sp.temperature,
                 "refp": pressure.to_value("bar"),
@@ -73,12 +73,12 @@ def LoadSystemSnapShot(job):
                 "lrc": lrcs[job.sp.long_range_correction],
             },
         },
-        "nvt": {
-            "fname": "nvt.mdp",
-            "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
+        "nvt-p3m": {
+            "fname": "nvt_p3m.mdp",
+            "template": f"{mdp_abs_path}/nvt_template_p3m.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/nvt_template_water_p3m.mdp.jinja",
             "data": {
-                "nsteps": 1,
+                "nsteps": 0,
                 "dt": 0.001,
                 "temp": job.sp.temperature,
                 "r_cut": job.sp.r_cut,
@@ -109,23 +109,31 @@ def LoadSystemSnapShot(job):
 @Project.pre(lambda j: j.sp.engine == "gromacs")
 @Project.pre(lambda j: j.isfile("init.gro"))
 @Project.pre(lambda j: j.isfile("init.top"))
-@Project.pre(lambda j: j.isfile("nvt.mdp"))
-@Project.pre(lambda j: j.isfile("npt.mdp"))
-@Project.post(lambda j: j.isfile("nvt.edr"))
+@Project.pre(lambda j: j.isfile("nvt_ewald.mdp"))
+@Project.pre(lambda j: j.isfile("nvt_p3m.mdp"))
+@Project.post(lambda j: j.isfile("nvt_ewald.edr"))
+@Project.post(lambda j: j.isfile("nvt_p3m.edr"))
 @flow.with_job
 @flow.cmd
 def CalculateEnergy(job):
     """Load onto a cluster and output the point energy for the snapshot."""
-    nvt_mdp_path = "nvt.mdp"
-    grompp = f"gmx grompp -f {nvt_mdp_path} -o nvt.tpr -c init.gro -p init.top --maxwarn 1"
-    mdrun = _mdrun_str("nvt")
-    return f"{grompp} && {mdrun}"
+    nvt_ewald_mdp_path = "nvt_ewald.mdp"
+    nvt_p3m_mdp_path = "nvt_p3m.mdp"
+    grompp1 = f"gmx grompp -f {nvt_ewald_mdp_path} -o nvt_ewald.tpr -c init.gro -p init.top --maxwarn 1"
+    mdrun1 = _mdrun_str("nvt_ewald")
+    grompp2 = f"gmx grompp -f {nvt_p3m_mdp_path} -o nvt_p3m.tpr -c init.gro -p init.top --maxwarn 1"
+    mdrun2 = _mdrun_str("nvt_p3m")
+
+    return f"{grompp1} && {mdrun1} && {grompp2} && {mdrun2}"
 
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "gromacs")
-@Project.pre(lambda j: j.isfile("nvt.edr"))
+@Project.pre(lambda j: j.isfile("nvt_ewald.edr"))
+@Project.pre(lambda j: j.isfile("nvt_p3m.edr"))
 @Project.post(lambda j: j.isfile("log-spe.txt"))
+@Project.post(lambda j: j.isfile("log-spe-ewald.txt"))
+@Project.post(lambda j: j.isfile("log-spe-p3m.txt"))
 @flow.with_job
 def FormatTextFile(job):
     """Take the output from the simulation engine and convert it to log-spe.txt for data comparisons.
@@ -136,7 +144,8 @@ def FormatTextFile(job):
     import panedr
 
     p = pathlib.Path(job.workspace())
-    data = panedr.edr_to_df(f"{str(p.absolute())}/nvt.edr").loc[0.0]
+    data_ewald = panedr.edr_to_df(f"{str(p.absolute())}/nvt_ewald.edr").loc[0.0]
+    data_p3m = panedr.edr_to_df(f"{str(p.absolute())}/nvt_p3m.edr").loc[0.0]
 
     to_drop = [
         "Vir-XX",
@@ -166,21 +175,64 @@ def FormatTextFile(job):
         "Total Energy",
     ]
     for key in to_drop:
-        data.pop(key)
+        data_ewald.pop(key)
+        data_p3m.pop(key)
 
-    spe = {
-        "potential_energy": data.get("Potential"),
-        "vdw_energy": data.get("LJ (SR)"),
-        "tail_energy": data.get("Disper. corr."),
-        "coul_energy": data.get("Coulomb (SR)"),
-        "kspace_energy": data.get("Coul. recip."),
-        "pair_energy": _get_gmx_energy_pair(dict(data)),
-        "bonds_energy": data.get("Bond"),
-        "angles_energy": data.get("Angle"),
-        "dihedrals_energy": _get_gmx_energy_torsion(dict(data)),
+    spe_ewald = {
+        "potential_energy": data_ewald.get("Potential", 0),
+        "tot_vdw_energy": data_ewald.get("LJ (SR)", 0)
+        + data_ewald.get("Disper. corr.", 0)
+        + data_ewald.get("LJ-14", 0),
+        "tail_energy": data_ewald.get("Disper. corr.", 0),
+        "tot_electrostatics": data_ewald.get("Coulomb (SR)", 0)
+        + data_ewald.get("Coul. recip.", 0)
+        + data_ewald.get("Coulomb-14", 0),
+        "short_range_electrostatics": data_ewald.get("Coulomb-14", 0),
+        "long_range_electrostatics": data_ewald.get("Coul. recip."),
+        "tot_pair_energy": data_ewald.get("Coulomb-14", 0)
+        + data_ewald.get("LJ-14", 0),
+        "bonds_energy": data_ewald.get("Bond", 0),
+        "angles_energy": data_ewald.get("Angle", 0),
+        "dihedrals_energy": data_ewald.get("Ryckaert-Bell.", 0)
+        + data_ewald.get("Diehdral", 0),
+        "tot_bonded_energy": data_ewald.get("Bond", 0)
+        + data_ewald.get("Angle", 0)
+        + data_ewald.get("Ryckaert-Bell.", 0)
+        + data_ewald.get("Dihedral", 0),
+        "intramolecular_energy": None,
+        "intermolecular_energy": None,
     }
-    spe_df = pd.DataFrame(spe, index=[0])
-    spe_df.to_csv("log-spe.txt", header=True, index=False, sep=",")
+    spe_p3m = {
+        "potential_energy": data_p3m.get("Potential", 0),
+        "tot_vdw_energy": data_p3m.get("LJ (SR)", 0)
+        + data_p3m.get("Disper. corr.", 0)
+        + data_p3m.get("LJ-14", 0),
+        "tail_energy": data_p3m.get("Disper. corr.", 0),
+        "tot_electrostatics": data_p3m.get("Coulomb (SR)", 0)
+        + data_p3m.get("Coul. recip.", 0)
+        + data_p3m.get("Coulomb-14", 0),
+        "short_range_electrostatics": data_p3m.get("Coulomb-14", 0),
+        "long_range_electrostatics": data_p3m.get("Coul. recip."),
+        "tot_pair_energy": data_p3m.get("Coulomb-14", 0)
+        + data_p3m.get("LJ-14", 0),
+        "bonds_energy": data_p3m.get("Bond", 0),
+        "angles_energy": data_p3m.get("Angle", 0),
+        "dihedrals_energy": data_p3m.get("Ryckaert-Bell.", 0)
+        + data_p3m.get("Diehdral", 0),
+        "tot_bonded_energy": data_p3m.get("Bond", 0)
+        + data_p3m.get("Angle", 0)
+        + data_p3m.get("Ryckaert-Bell.", 0)
+        + data_p3m.get("Dihedral", 0),
+        "intramolecular_energy": None,
+        "intermolecular_energy": None,
+    }
+
+    spe_ewald_df = pd.DataFrame(spe_ewald, index=[0])
+    spe_p3m_df = pd.DataFrame(spe_p3m, index=[0])
+    spe_ewald_df.to_csv("log-spe-ewald.txt", header=True, index=False, sep=",")
+    spe_p3m_df.to_csv("log-spe-p3m.txt", header=True, index=False, sep=",")
+
+    spe_ewald_df.to_csv("log-spe.txt", header=True, index=False, sep=",")
 
 
 """

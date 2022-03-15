@@ -1,0 +1,34 @@
+integrator          = md
+nsteps              = 0
+dt                  = 0.001
+
+comm-mode           = Linear
+
+nstxout             = 10000
+nstvout             = 10000
+nstenergy           = 1000
+nstlog              = 1000
+
+cutoff-scheme       = Verlet
+ns_type             = grid
+nstlist             = 10
+pbc                 = xyz
+
+vdwtype         = Cut-off
+vdw-modifier    = None
+rvdw            = 1.4
+
+coulombtype             = Ewald
+coulomb-modifier        = None
+rcoulomb                = 1.4
+fourierspacing      = 0.1
+ewald-rtol          = 10e-5
+
+tcoupl              = nose-hoover
+tc-grps             = System
+tau_t               = 1
+ref_t               = 140.0
+
+pcoupl              = no
+
+DispCorr            = EnerPres

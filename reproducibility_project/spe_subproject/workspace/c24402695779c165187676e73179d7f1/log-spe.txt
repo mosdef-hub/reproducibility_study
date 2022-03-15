@@ -1,0 +1,2 @@
+potential_energy,tot_vdw_energy,tail_energy,tot_electrostatics,short_range_electrostatics,long_range_electrostatics,tot_pair_energy,bonds_energy,angles_energy,dihedrals_energy,tot_bonded_energy,intramolecular_energy,intermolecular_energy
+31533.037109375,19556.9801902771,-382.8470458984375,3550.171142578125,-14791.642578125,1394.251220703125,-14747.321201324463,6.286924326559529e-05,7233.26513671875,1192.620361328125,8425.885560916118,,
