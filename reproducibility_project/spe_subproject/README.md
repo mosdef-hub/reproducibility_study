@@ -9,26 +9,34 @@ Single point energies are calculated from the snapshots found in `src/system_sna
 The energy calculations will all be output to `log-spe.txt` and located in the job workspace directories. All energy units will be reported in **extensive** (no division by number of moleules) energies of kJ/mol.
 
 The energy will be logged as "comma" separated columns with the first row containing headers. They will be as follows:
-total_energy, potential_energy, vdw_energy, coul_energy, pair_energy, bonds_energy, angles_energy, dihedrals_energy, tail_energy, kspace_energy,
+potential_energy, tot_vdw_energy, tail_energy, tot_electrostatics, short_range_electrostatics, long_range_electrostatics, tot_pair_energy, bonds_energy, angles_energy, dihedrals_energy, tot_bonded_energy,
+intramolecular_energy, intermolecular_energy.
 
-The following energy definitions are calculated using the [lammps thermo](https://docs.lammps.org/thermo_style.html) calculation methods.
-total_energy = etotal </br>
-potential_energy = pe </br>
-vdw_energy = evdwl </br>
-coul_energy = ecoul </br>
-pair_energy = epair </br>
-bonds_energy = ebond </br>
-angles_energy = eangle </br>
-dihedrals_energy = edihed </br>
-tail_energy = etail </br>
-kspace_energy = elong </br>
+## Reported Energy Definitions
+The following energy definitions are calculated using the [lammps thermo](https://docs.lammps.org/thermo_style.html) calculation methods. </br>
+```
+* potential_energy = pe </br>
+* tot_vdw_energy = evdwl </br>
+* tail_energy = etail </br>
+* tot_electrostatics = elong </br>
+* short_range_electrostatics = ecoul </br>
+* long_range_electrostatics = elong </br>
+* tot_pair_energy = epair </br>
+* bonds_energy = ebond </br>
+* angles_energy = eangle </br>
+* dihedrals_energy = edihed </br>
+* tot_bonded_energy = emol </br>
+* intramolecular_energy = emol + intramolecular ecoul + intramolecular evdw </br>
+* intermolecular_energy = intermolecular ecoul + interolecular evdw + intermolecular elong </br>
+```
+</br>
 **NOTE: Please log a blank column of data for any energies that are not output or calculated by your simulation engine**
 This can be done by using the `None` value for the entries in that pandas dataframe. To write out your data, use:
 ```python
 df.to_csv('log-spe.txt', header=True, index=False, sep=",")
 ```
 
-## How to use from scratch
+## How to generate this project data from scratch
 
 **IMPORTANT: All the following commands are intended to be run from this location with the `mosdef-study38` environment active.**
 
