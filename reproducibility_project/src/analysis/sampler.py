@@ -79,7 +79,12 @@ def sample_job(
             "Neff": Neff,
         }
     else:
-        warn(f"JOB_ID: {job.id}\nProperty {variable} is not equilibrated.")
+        msg = f"""
+        Property {variable} is not equilibrated.
+        Additional information:
+        JOB_ID: {job.id}\tPROPERTY: {variable}\tMOLECULE: {job.sp.molecule}\tENGINE: {job.sp.engine}\tTEMP: {job.sp.temperature}\tPRESS: {job.sp.pressure}
+        """
+        warn(msg)
 
 
 def get_subsampled_values(

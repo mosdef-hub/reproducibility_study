@@ -540,10 +540,11 @@ for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
             prop=prop,
             simulation_type="mc",
         )
-'''
+
+
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.pre(lambda job: False)
+@Project.post(lambda job: job.isfile("density-npt.png"))
 @flow.with_job
 def plot_npt_prod_data_with_t0(job):
     """Generate plots for production data with t0 as a vertical line."""
@@ -556,9 +557,12 @@ def plot_npt_prod_data_with_t0(job):
     ensemble = "npt"
 
     # plot t0
-    with open(job.fn("log-npt.txt", 'r') as f:
+    with open(job.fn("log-npt.txt"), "r") as f:
         line1 = f.readline()
-        df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
+        df = pd.read_csv(
+            f, delim_whitespace=True, names=line1.replace("#", "").split()
+        )
+    """
     for prop in df.columns:
         data_plt_kwarg = {"label": prop}
         fname = str(prop) + "-" + ensemble + ".png"
@@ -575,8 +579,25 @@ def plot_npt_prod_data_with_t0(job):
             vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )
+    """
+    data_plt_kwarg = {"label": "density"}
+    fname = "density" + "-" + ensemble + ".png"
+    plot_job_property_with_t0(
+        job,
+        filename=fname,
+        property_name="density",
+        log_filename="log-npt.txt",
+        title="Density",
+        overwrite=True,
+        threshold_fraction=0.0,
+        threshold_neff=1,
+        strict=False,
+        vline_scale=1.1,
+        data_plt_kwargs=data_plt_kwarg,
+    )
 
 
+'''
 @Project.operation
 # @Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
