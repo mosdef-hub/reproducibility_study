@@ -1,6 +1,6 @@
 integrator          = steep
-nsteps              = 200000
-emstep              = 0.01
+nsteps              = 500000
+emstep              = 0.002
 emtol               = 10
 dt                  = 0.002
 
@@ -17,11 +17,9 @@ vdwtype         = Cut-off
 vdw-modifier    = {{  cutoff_style  }}
 rvdw            = {{  r_cut  }}
 
-coulombtype             = P3M-AD
+coulombtype             = Cut-off
 coulomb-modifier        = {{  cutoff_style  }}
 rcoulomb                = {{  r_cut }}
-fourierspacing      = 0.1
-ewald-rtol          = 0.00001
 
 gen_vel             = yes
 gen-temp            = {{  temp  }}
