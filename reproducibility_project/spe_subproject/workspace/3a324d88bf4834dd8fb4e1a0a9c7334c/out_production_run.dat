@@ -1,0 +1,207 @@
+Info: GOMC Version 2.70
+Info: Start Time: Tue Mar  1 12:56:45 2022
+
+Info: GOMC COMPILED TO RUN ISOBARIC-ISOTHERMAL ENSEMBLE.
+Info: Number of threads                  1
+
+Reading Input File:                      production_run.conf
+Info: Restart simulation                 Active
+Warning: Unknown input RestartCheckpoint!
+Info: Expert Mode                        Inactive
+Info: Constant seed                      Active
+Info: PARAMETER file                     CHARMM format!
+Info: Input Temperature                  450.0000 K
+Info: Input Pressure                     22.6000 bar
+Info: Volume change using constant ratio.
+Info: Non-truncated potential            Active
+Info: Long Range Correction              Active
+Info: Cutoff                             14.0000 A
+Info: Short Range Cutoff                 1.0000 A
+Info: Exclude                            ONE-THREE
+Info: Cache Ewald Fourier                Inactive
+Info: Ewald Summation Tolerance          1.000E-05
+Info: Pressure calculation frequency     1
+Info: Total number of steps              2
+Info: Number of equilibration steps      1
+Info: Move adjustment frequency          1
+Info: Displacement move frequency        0.3300
+Info: Rotation move frequency            0.3300
+Info: Intra-Swap move frequency          0.0000
+Warning: Unknown input SwapFreq!
+Info: Regrowth move frequency            0.3300
+Info: Crank-Shaft move frequency         0.0000
+Info: Volume move frequency              0.0100
+Info: Multi-Particle move frequency      0.0000
+Warning: Unknown input MEMC-1Freq!
+Warning: Unknown input MEMC-2Freq!
+Warning: Unknown input MEMC-3Freq!
+Info: CBMC First atom trials             12
+Info: CBMC Secondary atom trials         10
+Info: CBMC Angle trials                  50
+Info: CBMC Dihedral trials               50
+Info: Output name                        production_run
+Info: Restart frequency                  1
+Warning: Unknown input CheckpointFreq!
+Info: Printing coordinate                Inactive
+Info: DCD frequency                      1
+Info: Console output frequency           1
+Info: Average output frequency           1
+Warning: Unknown input HistogramFreq!
+Warning: Unknown input DistName!
+Warning: Unknown input HistName!
+Warning: Unknown input RunNumber!
+Warning: Unknown input RunLetter!
+Warning: Unknown input SampleFreq!
+Default: Multi-Particle Brownian move frequency 0.0000
+Default: Intra-MEMC move frequency       0.0000
+Default: Targeted-Swap move frequency    0.0000
+Warning: 1-4 Electrostatic scaling set, but will be ignored.
+Warning: Cell dimension set, but will be ignored in restart mode.
+Finished Reading Input File:             production_run.conf
+
+Reading from CHARMM-Style parameter file:  	in_FF.inp
+Reading BONDS parameters.
+Reading ANGLES parameters.
+Reading DIHEDRALS parameters.
+Reading NONBONDED parameters.
+Reading from system PDB coordinate file:  	mosdef_gomc_zero_point_energy_box_0.pdb
+Finished reading:                       	mosdef_gomc_zero_point_energy_box_0.pdb
+Random number seed: 0
+
+Molecules in PSF:
+Molecule Kind: benz
+Idx	name	type	charge	mass
+0	C1	A	0	13.02
+1	C2	A	0	13.02
+2	C3	A	0	13.02
+3	C4	A	0	13.02
+4	C5	A	0	13.02
+5	C6	A	0	13.02
+
+Bonds:
+[4 5] [3 4] [2 3] [1 2] [0 1] [0 5]
+
+Angles:
+[0 1 2] [0 5 4] [1 0 5] [1 2 3] [2 3 4] [3 4 5]
+
+Dihedrals:
+[0 1 2 3] [0 5 4 3] [1 0 5 4] [1 2 3 4] [2 1 0 5]
+[2 3 4 5]
+
+Impropers:
+
+Bonds parameter:
+Atom Types                             Kb(K)           b0(A)
+A	A	                 236009.9919           1.4000
+
+Angles parameter:
+Atom Types                         Ktheta(K)         theta0(degree)
+A	A	A	          31702.5041         120.0000
+
+Dihedrals parameter:
+Atom Types                           Kchi(K)    n    delta(degree)
+A	A	A	A	   3648.3205    0     90.0000
+A	A	A	A	      0.0000    1    180.0000
+A	A	A	A	  -1824.1605    2      0.0000
+A	A	A	A	      0.0000    3    180.0000
+A	A	A	A	      0.0000    4      0.0000
+A	A	A	A	      0.0000    5    180.0000
+
+NonBonded 1-4 parameters:
+Type1  Type2             Epsilon(K)    Sigma(A)       N
+A      A                     0.0000      3.6950   12.00
+
+NonBonded parameters:
+Type1  Type2             Epsilon(K)    Sigma(A)       N
+A      A                    50.5000      3.6950   12.00
+
+Info: Reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc
+
+Info: Finished reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc
+
+Info: Reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.coor
+
+Info: Finished reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.coor
+
+Info: Box  0:  Periodic Cell Basis 1     42.170   0.000   0.000
+Info: Box  0:  Periodic Cell Basis 2      0.000  42.170   0.000
+Info: Box  0:  Periodic Cell Basis 3      0.000   0.000  42.170
+
+Minimum coordinates in box 0: x =    2.002, y =    1.995, z =    2.000
+Maximum coordinates in box 0: x =   40.170, y =   40.165, z =   40.171
+Wrapping molecules inside the simulation box 0:
+
+################################################################################
+########################## INITIAL SIMULATION ENERGY ###########################
+
+ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+
+ENER_0:        0  4.67786171e+07 -1.19957916e+00  0.00000000e+00  4.68087536e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75253349e+05
+
+STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+
+STAT_0:        0      7.4991e+04      5.6087e+05      1.6925e+03      7.3047e+03             400      6.9187e+02
+
+################################################################################
+############################# STARTING SIMULATION ##############################
+
+MTITLE:     STEP          DISTRY       DISACCEPT      DISACCEPT%          DISMAX          ROTATE       ROTACCEPT      ROTACCEPT%          ROTMAX        REGROWTH    REGROWACCEPT   REGROWACCEPT%          VOLUME       VOLACCEPT      VOLACCEPT%          VOLMAX
+
+ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+
+STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+
+Opening DCD coordinate file: production_run_BOX_0.dcd
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+MOVE_0:        1               0               0      0.0000e+00      1.0000e-10               1               1      1.0000e+02      7.8540e-01               0               0      0.0000e+00               0               0      0.0000e+00      5.0000e+02
+
+ENER_0:        1  4.67674934e+07 -1.19957916e+00  0.00000000e+00  4.67976299e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75253118e+05
+
+STAT_0:        1      7.4991e+04      5.6087e+05      1.6925e+03      7.3045e+03             400      6.9187e+02
+
+PRES_0:        1      5.7100e+05      5.4896e+05      5.6201e+05
+
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1
+Printed combined psf to file production_run_merged.psf
+Writing checkpoint to file production_run_restart.chk at step 1
+Checkpoint saved to production_run_restart.chk
+MOVE_0:        2               0               0      0.0000e+00      1.0000e-10               2               2      1.0000e+02      1.5708e+00               0               0      0.0000e+00               0               0      0.0000e+00      5.0000e+02
+
+ENER_0:        2  4.67664292e+07 -1.19957916e+00  0.00000000e+00  4.67965657e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75172010e+05
+
+STAT_0:        2      7.4991e+04      5.6082e+05      1.6923e+03      7.3039e+03             400      6.9187e+02
+
+PRES_0:        2      5.7191e+05      5.4677e+05      5.6313e+05
+
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 2
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 2
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2
+Writing checkpoint to file production_run_restart.chk at step 2
+Checkpoint saved to production_run_restart.chk
+Simulation Time (total): 1.4385e-01 sec.
+
+Move Type                Mol. Kind      BOX_0
+% Accepted Displacement        benz     0.00000
+% Accepted Rotation            benz   100.00000
+% Accepted Regrowth            benz     0.00000
+% Accepted Volume-Transfer              0.00000
+
+Displacement:                            0.0000    sec.
+Rotation:                                0.0016    sec.
+MultiParticle:                           0.0000    sec.
+Brownian-like MultiParticle:             0.0000    sec.
+Intra Molecule Transfer:                 0.0000    sec.
+Regrowth:                                0.0000    sec.
+Intra Molecule Exchange:                 0.0000    sec.
+Crankshaft:                              0.0000    sec.
+Intra Targeted Transfer:                 0.0000    sec.
+Volume Transfer:                         0.0000    sec.
+
+Info: GOMC Version 2.70
+Info: Completed at: Tue Mar  1 12:56:45 2022
+Info: On hostname: Info: Hostname Unavailable

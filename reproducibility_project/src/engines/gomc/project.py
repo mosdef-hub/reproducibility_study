@@ -47,7 +47,8 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_9_25_21/bin"
+# gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_2_22_22/bin"
+gomc_binary_path = "/home/brad/Programs/GOMC/GOMC_dev_2_22_22/bin"
 
 # number of MC cycles
 MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
@@ -682,7 +683,7 @@ def build_charmm(job, write_files=True):
     }
     Molecule_ResName_List = [job.sp.molecule]
 
-    if job.sp.molecule in ["waterSPCE"]:
+    if job.sp.molecule in ["waterSPCE", "benzeneUA"]:
         gomc_fix_bonds_angles_list = Molecule_ResName_List
     else:
         gomc_fix_bonds_angles_list = None
@@ -832,14 +833,14 @@ def build_psf_pdb_ff_gomc_conf(job):
             RotFreq = (None,)
             RegrowthFreq = (None,)
 
-        elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+        elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
 
-        elif job.sp.molecule in ["waterSPCE"]:
+        elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
@@ -886,14 +887,14 @@ def build_psf_pdb_ff_gomc_conf(job):
             RotFreq = (None,)
             RegrowthFreq = (None,)
 
-        elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+        elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
 
-        elif job.sp.molecule in ["waterSPCE"]:
+        elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
@@ -1077,14 +1078,14 @@ def build_psf_pdb_ff_gomc_conf(job):
             RotFreq = (None,)
             RegrowthFreq = (None,)
 
-        elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+        elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
 
-        elif job.sp.molecule in ["waterSPCE"]:
+        elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
@@ -1131,14 +1132,14 @@ def build_psf_pdb_ff_gomc_conf(job):
             RotFreq = (None,)
             RegrowthFreq = (None,)
 
-        elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+        elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.34,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
 
-        elif job.sp.molecule in ["waterSPCE"]:
+        elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
             VolFreq = (None,)
             SwapFreq = (None,)
             DisFreq = (0.5,)
@@ -1347,14 +1348,14 @@ def build_psf_pdb_ff_gomc_conf(job):
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
 
-            elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+            elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.33,)
                 RotFreq = (0.33,)
                 RegrowthFreq = (0.33,)
 
-            elif job.sp.molecule in ["waterSPCE"]:
+            elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.49,)
@@ -1401,14 +1402,14 @@ def build_psf_pdb_ff_gomc_conf(job):
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
 
-            elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+            elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.27,)
                 RotFreq = (0.26,)
                 RegrowthFreq = (0.26,)
 
-            elif job.sp.molecule in ["waterSPCE"]:
+            elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.40,)
@@ -1610,14 +1611,14 @@ def build_psf_pdb_ff_gomc_conf(job):
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
 
-            elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+            elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.33,)
                 RotFreq = (0.33,)
                 RegrowthFreq = (0.33,)
 
-            elif job.sp.molecule in ["waterSPCE"]:
+            elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (None,)
                 DisFreq = (0.49,)
@@ -1664,14 +1665,14 @@ def build_psf_pdb_ff_gomc_conf(job):
                 RotFreq = (None,)
                 RegrowthFreq = (None,)
 
-            elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+            elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.27,)
                 RotFreq = (0.26,)
                 RegrowthFreq = (0.26,)
 
-            elif job.sp.molecule in ["waterSPCE"]:
+            elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
                 VolFreq = (0.01,)
                 SwapFreq = (0.20,)
                 DisFreq = (0.40,)
