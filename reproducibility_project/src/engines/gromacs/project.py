@@ -71,6 +71,7 @@ def init_job(job):
         "em": {
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
+            "p3m-template": f"{mdp_abs_path}/em_template_p3m.mdp.jinja",
             "water-template": f"{mdp_abs_path}/em_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
@@ -85,6 +86,7 @@ def init_job(job):
         "nvt": {
             "fname": "nvt.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
+            "p3m-template": f"{mdp_abs_path}/nvt_template_p3m.mdp.jinja",
             "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/nvt_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/nvt_template_rigid.mdp.jinja",
@@ -100,6 +102,7 @@ def init_job(job):
         "npt_prod": {
             "fname": "npt_prod.mdp",
             "template": f"{mdp_abs_path}/npt_template.mdp.jinja",
+            "p3m-template": f"{mdp_abs_path}/npt_template_p3m.mdp.jinja",
             "water-template": f"{mdp_abs_path}/npt_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/npt_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/npt_template_rigid.mdp.jinja",
@@ -116,6 +119,7 @@ def init_job(job):
         "nvt_prod": {
             "fname": "nvt_prod.mdp",
             "template": f"{mdp_abs_path}/nvt_template.mdp.jinja",
+            "p3m-template": f"{mdp_abs_path}/nvt_template_p3m.mdp.jinja",
             "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
@@ -149,6 +153,13 @@ def init_job(job):
             _setup_mdp(
                 fname=mdp["fname"],
                 template=mdp["rigid-template"],
+                data=mdp["data"],
+                overwrite=True,
+            )
+        elif job.sp.molecule == "ethanolAA":
+            _setup_mdp(
+                fname=mdp["fname"],
+                template=mdp["p3m-template"],
                 data=mdp["data"],
                 overwrite=True,
             )
