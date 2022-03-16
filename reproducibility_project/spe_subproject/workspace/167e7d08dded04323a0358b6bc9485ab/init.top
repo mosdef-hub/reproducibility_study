@@ -1,0 +1,41 @@
+;
+;   File init.top  was generated
+;   By user: quachcd (501)
+;   On host: Cos-MacBook-Pro.local
+;   At date: Mon. March  1 15:02:05 2022
+;
+;   This is a standalone topology file
+;
+;   Created by:
+;   ParmEd:       project.py, VERSION 3.4.3
+;   Executable:   project.py
+;   Library dir:  /Users/quachcd/mambaforge/envs/mosdef-study38/share/gromacs/top
+;   Command line:
+;     project.py run -o LoadSystemSnapShot -p
+;
+
+[ defaults ]
+; nbfunc        comb-rule       gen-pairs       fudgeLJ fudgeQQ
+1               2               no              0            0
+
+[ atomtypes ]
+; name    at.num    mass    charge ptype  sigma      epsilon
+CH4            0  16.043000  0.00000000  A          0.373        1.23054
+
+
+[ moleculetype ]
+; Name            nrexcl
+RES          3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr    charge       mass  typeB    chargeB      massB
+; residue    1 RES rtp RES q 0.0
+    1        CH4      1    RES   _CH4      1 0.00000000  16.043000   ; qtot 0.000000
+
+[ system ]
+; Name
+Generic title
+
+[ molecules ]
+; Compound       #mols
+RES                900

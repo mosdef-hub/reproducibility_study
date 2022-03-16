@@ -17,11 +17,9 @@ vdwtype         = Cut-off
 vdw-modifier    = {{  cutoff_style  }}
 rvdw            = {{  r_cut  }}
 
-coulombtype             = P3M-AD
+coulombtype             = Cut-off
 coulomb-modifier        = {{  cutoff_style  }}
 rcoulomb                = {{  r_cut }}
-fourierspacing      = 0.1
-ewald-rtol          = 0.000001
 
 gen_vel             = yes
 gen-temp            = {{  temp  }}
@@ -37,3 +35,4 @@ DispCorr            = {{  lrc  }}
 
 constraints         = all-angles
 constraint-algorithm = LINCS
+continuation         = no
