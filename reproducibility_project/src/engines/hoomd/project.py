@@ -401,7 +401,7 @@ def run_hoomd(job, method, restart=False):
     # start with high tau and tauS
     if job.sp.molecule == "ethanolAA":
         tau = 100 * dt
-        tauS = 5000 * dt
+        tauS = 1000 * dt
     else:
         tau = 1000 * dt
         tauS = 5000 * dt
@@ -437,25 +437,24 @@ def run_hoomd(job, method, restart=False):
             sim.run(steps)
             print("Done")
         if job.sp.molecule == "ethanolAA":
-            integrator.methods[0].tauS = 1000 * dt
-            integrator.methods[0].tau = 50 * dt
+            integrator.methods[0].tauS = 500 * dt
+            integrator.methods[0].tau = 10 * dt
         else:
             integrator.methods[0].tauS = 1000 * dt
             integrator.methods[0].tau = 100 * dt
     else:
-        # Shrink and NVT both use NVT method
-        if method == "shrink":
-            # shrink to the desired box length
-            L = job.sp.box_L_liq
-            shrink_steps = 1e5
-        else:
-            # The target volume should be the average volume from NPT
-            target_volume = job.doc.avg_volume
-            L = target_volume ** (1 / 3)
-            shrink_steps = 2e4
-
         if not restart:
-            # Shrink and nvt methods both use shrink step
+            # Shrink and NVT both use NVT method
+            if method == "shrink":
+                # shrink to the desired box length
+                L = job.sp.box_L_liq
+                shrink_steps = 1e5
+            else:
+                # The target volume should be the average volume from NPT
+                target_volume = job.doc.avg_volume
+                L = target_volume ** (1 / 3)
+                shrink_steps = 2e4
+
             # Shrink step follows this example
             # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
             # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
@@ -481,10 +480,7 @@ def run_hoomd(job, method, restart=False):
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-            if job.sp.molecule == "ethanolAA":
-                integrator.methods[0].tau = 50 * dt
-            else:
-                integrator.methods[0].tau = 100 * dt
+        integrator.methods[0].tau = 100 * dt
 
     if method != "shrink":
         steps = 5e6
