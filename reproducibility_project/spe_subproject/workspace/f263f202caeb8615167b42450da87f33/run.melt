@@ -1,4 +1,4 @@
-Program started at 2022-03-02 15:34:13.778
+Program started at 2022-03-21 11:40:53.157
 Number of processors: 1
 Threads per processor: 1
 
@@ -109,7 +109,7 @@ molecule type:  1 undefined
       bonded to bead 5, type 1002, bond length:  1.09000, k/2:   0.00000000
       bonded to bead 1, type 1001, bond length:  1.52900, k/2:   0.00000000
       bonded to bead 6, type 1002, bond length:  1.09000, k/2:   0.00000000
-      bending interaction through 3 with bead 4, bending type: 2005, bending angle:  109.500, k/2:   27677.2494
+      bending interaction through 3 with bead 4, bending type: 2005, bending angle:  108.500, k/2:   27677.2494
       bending interaction through 1 with bead 7, bending type: 2001, bending angle:  110.700, k/2:   18870.8519
       bending interaction through 1 with bead 8, bending type: 2001, bending angle:  110.700, k/2:   18870.8519
       bending interaction through 1 with bead 9, bending type: 2001, bending angle:  110.700, k/2:   18870.8519
@@ -126,7 +126,7 @@ molecule type:  1 undefined
 
    bead 4: bead type 4 [H], charge leader 4
       bonded to bead 3, type 1004, bond length:  0.94500, k/2:   0.00000000
-      bending interaction through 3 with bead 2, bending type: 2005, bending angle:  109.500, k/2:   27677.2494
+      bending interaction through 3 with bead 2, bending type: 2005, bending angle:  108.500, k/2:   27677.2494
       torsional interaction through 3 and 2 with bead 1, torsional type: 3003
       torsional interaction through 3 and 2 with bead 5, torsional type: 3004
       torsional interaction through 3 and 2 with bead 6, torsional type: 3004
@@ -478,15 +478,15 @@ number of chains of type    1 undefined      500
  intra lj energy    5330.67883405052
  Tail correction   -50259.2424263641
  bond vibration    0.000000000000000E+000
- bond bending       876022.046486985
+ bond bending       869967.983576497
  torsional          143441.438130645
  external          0.000000000000000E+000
  coulombic energy   429992.872203144
  fluc Q energy     0.000000000000000E+000
  well energy       0.000000000000000E+000
- total energy       3783750.98039371
+ total energy       3777696.91748322
 
- box             1  initial v   =    3783750.98039371
+ box             1  initial v   =    3777696.91748322
  surf. tension :   box 1 =   -1013.28229
  pressure check:   box 1 =    7281172.70
  compress factor:  box 1 =     170.40285
@@ -548,17 +548,17 @@ number of chains of type    1 undefined      500
  intra lj energy    5330.67883405052
  Tail correction   -50259.2424263641
  bond vibration    0.000000000000000E+000
- bond bending       876022.046486985
+ bond bending       869967.983576497
  torsional          143441.438130645
  external          0.000000000000000E+000
  coulombic energy   429992.872203144
  fluc Q energy     0.000000000000000E+000
  well energy       0.000000000000000E+000
- total energy       3783750.98039371
+ total energy       3777696.91748322
 
- vstart       =      3783750.9803937119
- vend         =      3783750.9803937119
- vbox         =      3783750.9803937119
+ vstart       =      3777696.9174832241
+ vend         =      3777696.9174832241
+ vbox         =      3777696.9174832241
 
  Averages and fluctuations                                  Box  1
 
@@ -593,4 +593,4 @@ number of chains of type    1 undefined      500
 
  type  box       vinter       vintra         vtor        vbend        vtail
     1    1      0.00000      0.00000      0.00000      0.00000      0.00000
- Program ended at 2022-03-02 15:34:15.260
+ Program ended at 2022-03-21 11:40:55.460
