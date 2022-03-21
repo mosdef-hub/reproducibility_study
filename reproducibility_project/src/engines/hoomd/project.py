@@ -396,19 +396,19 @@ def run_hoomd(job, method, restart=False):
     integrator.forces = forcefield
 
     # convert temp in K to kJ/mol
-    kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    kT = float(
+        (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    )
+    print(f"kT = {kT}")
 
     # start with high tau and tauS
-    if job.sp.molecule == "ethanolAA":
-        tau = 100 * dt
-        tauS = 1000 * dt
-    else:
-        tau = 1000 * dt
-        tauS = 5000 * dt
+    tau = 1000 * dt
+    tauS = 5000 * dt
 
     if method == "npt":
         # convert pressure to unit system
-        pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
+        pressure = float((job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value)
+        print(f"Pressure = {pressure}")
         integrator_method = hoomd.md.methods.NPT(
             filter=_all,
             kT=kT,
@@ -431,17 +431,12 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             steps = 1e6
             print(
-                f"Running {steps} with tau: {integrator.methods[0].tau} and "
-                f"tauS: {integrator.methods[0].tauS}"
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} "
+                f"dt and tauS: {integrator.methods[0].tauS/dt} dt"
             )
             sim.run(steps)
             print("Done")
-        if job.sp.molecule == "ethanolAA":
-            integrator.methods[0].tauS = 500 * dt
-            integrator.methods[0].tau = 10 * dt
-        else:
-            integrator.methods[0].tauS = 1000 * dt
-            integrator.methods[0].tau = 100 * dt
+
     else:
         if not restart:
             # Shrink and NVT both use NVT method
@@ -472,26 +467,39 @@ def run_hoomd(job, method, restart=False):
             )
             sim.operations.updaters.append(box_resize)
             print(
-                f"Running shrink {shrink_steps} with tau: "
-                f"{integrator.methods[0].tau}"
+                f"Running shrink {shrink_steps:.0e} with tau: "
+                f"{integrator.methods[0].tau/dt} dt"
             )
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-        integrator.methods[0].tau = 100 * dt
-
     if method != "shrink":
         steps = 5e6
         if method == "npt":
+            integrator.methods[0].tauS = 1000 * dt
+            integrator.methods[0].tau = 100 * dt
             print(
-                f"Running {steps} with tau: {integrator.methods[0].tau} and "
-                f"tauS: {integrator.methods[0].tauS}"
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} "
+                f"dt and tauS: {integrator.methods[0].tauS/dt} dt"
             )
         else:
-            print(f"Running {steps} with tau: {integrator.methods[0].tau}")
+            integrator.methods[0].tau = 100 * dt
+            print(
+                f"Running {steps:.0e} with tau: "
+                f"{integrator.methods[0].tau/dt} dt"
+            )
         sim.run(steps)
+    else:
+        # Try adding a temperature equilibration step after shrink
+        steps = 1e6
+        integrator.methods[0].tau = 100 * dt
+        print(
+            f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} dt"
+        )
+        sim.run(steps)
+
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
