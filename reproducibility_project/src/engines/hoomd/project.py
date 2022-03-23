@@ -10,6 +10,25 @@ from flow.environment import DefaultSlurmEnvironment
 
 rigid_molecules = ["waterSPCE", "benzeneUA"]
 
+header_dict = {
+    "Simulationtimestep": "timestep",
+    "Simulationtps": "tps",
+    "mdcomputeThermodynamicQuantitieskinetic_energy": "kinetic_energy",
+    "mdcomputeThermodynamicQuantitiespotential_energy": "potential_energy",
+    "mdcomputeThermodynamicQuantitiespressure": "pressure",
+    "mdcomputeThermodynamicQuantitieskinetic_temperature": "temperature",
+    "mdcomputeThermodynamicQuantitiesvolume": "volume",
+    "mdpairLJenergy": "LJ_energy",
+    "mdpairEwaldenergy": "Ewald_energy",
+    "mdlong_rangepppmCoulombenergy": "Coulomb_energy",
+    "mdspecial_pairLJenergy": "LJ_1-4_energy",
+    "mdspecial_pairCoulombenergy": "Coulomb_1-4_energy",
+    "mdbondHarmonicenergy": "bond_energy",
+    "mdangleHarmonicenergy": "angle_energy",
+    "mddihedralOPLSenergy": "dihedral_energy",
+    "Statustime_remaining": "time_remaining",
+}
+
 
 class Project(FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
@@ -96,14 +115,16 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
-    for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
-        # Make a copy, just in case
-        backup = f"{logfile}.bkup"
-        if not os.path.exists(backup):
-            copy(logfile, backup)
+    for filename in ["log-npt-raw.txt", "log-nvt-raw.txt"]:
+        rawlogfile = job.fn(filename)
+        logfile = job.fn(filename.replace("-raw", ""))
 
-        data = np.genfromtxt(logfile, names=True)
+        data = np.genfromtxt(rawlogfile, names=True)
         data = clean_data(data)
+
+        # Clean up headers
+        for k, v in header_dict.items():
+            data = rf.rename_fields(data, {k: v})
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
         volume = data["volume"] * u.nm ** 3
@@ -112,7 +133,6 @@ def post_process(job):
         pressure_factor = float((1 * u.kJ / u.mol / u.nm ** 3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
-        data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
         data["temperature"] /= kB
         data["pressure"] *= pressure_factor
         data = rf.append_fields(
@@ -377,13 +397,16 @@ def run_hoomd(job, method, restart=False):
 
     status = Status(sim)
     logger[("Status", "time_remaining")] = (status, "time_remaining", "string")
+
+    for f in forcefield:
+        logger.add(f, quantities=["energy"])
+
     table_file = hoomd.write.Table(
         output=open(
-            job.fn(f"log-{method}.txt"), mode=f"{writemode}", newline="\n"
+            job.fn(f"log-{method}-raw.txt"), mode=f"{writemode}", newline="\n"
         ),
         trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
-        max_header_len=7,
     )
     sim.operations.writers.append(table_file)
 
@@ -486,6 +509,7 @@ def run_hoomd(job, method, restart=False):
     if method != "shrink":
         steps = 5e6
         if method == "npt":
+            integrator.methods[0].tauS = 1
             print(
                 f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
                 f"and tauS: {integrator.methods[0].tauS}"
@@ -494,8 +518,8 @@ def run_hoomd(job, method, restart=False):
             print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
     else:
-        # Try adding a temperature equilibration step after shrink
-        steps = 1e6
+        # Try adding a short temperature equilibration step after shrink
+        steps = 1e4
         print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
 
@@ -510,9 +534,9 @@ def check_equilibration(job, method, eq_property, min_t0=100):
 
     import reproducibility_project.src.analysis.equilibration as eq
 
-    data = np.genfromtxt(job.fn(f"log-{method}.txt"), names=True)
+    data = np.genfromtxt(job.fn(f"log-{method}-raw.txt"), names=True)
     data = clean_data(data)
-    prop_data = data[eq_property]
+    prop_data = data[f"mdcomputeThermodynamicQuantities{eq_property}"]
     iseq, _, _, _ = eq.is_equilibrated(prop_data)
     if iseq:
         uncorr, t0, g, N = eq.trim_non_equilibrated(prop_data)
@@ -533,7 +557,9 @@ def clean_data(data):
     The HOOMD Table file writer always writes a header, but for restarted jobs,
     this header is in the middle of the file, which creates nan values.
     """
-    return np.delete(data, np.where(np.isnan(data["timestep"]))[0], axis=0)
+    return np.delete(
+        data, np.where(np.isnan(data["Simulationtimestep"]))[0], axis=0
+    )
 
 
 class Status:
