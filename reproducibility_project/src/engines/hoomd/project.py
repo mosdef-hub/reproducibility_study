@@ -482,29 +482,21 @@ def run_hoomd(job, method, restart=False):
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
+    integrator.methods[0].tau = 0.1
     if method != "shrink":
         steps = 5e6
         if method == "npt":
-            integrator.methods[0].tauS = 1
-            integrator.methods[0].tau = 0.1
             print(
-                f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} "
-                f"dt and tauS: {integrator.methods[0].tauS/dt} dt"
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
+                f"and tauS: {integrator.methods[0].tauS}"
             )
         else:
-            integrator.methods[0].tau = 0.1
-            print(
-                f"Running {steps:.0e} with tau: "
-                f"{integrator.methods[0].tau/dt} dt"
-            )
+            print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
     else:
         # Try adding a temperature equilibration step after shrink
         steps = 1e6
-        integrator.methods[0].tau = 0.1
-        print(
-            f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} dt"
-        )
+        print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
 
     job.doc[f"{method}_finished"] = True
