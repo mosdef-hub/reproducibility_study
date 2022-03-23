@@ -145,6 +145,7 @@ def post_process(job):
 def run_hoomd(job, method, restart=False):
     """Run a simulation with HOOMD-blue."""
     import foyer
+    import git
     import gsd.hoomd
     import hoomd
     import hoomd.md
@@ -159,7 +160,10 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
     print(job.sp.molecule)
+    print(f"git commit: {sha}\n")
     if method not in ["npt", "nvt", "shrink"]:
         raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 

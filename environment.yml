@@ -8,6 +8,7 @@ dependencies:
   - ele
   - foyer>=0.9.4
   - freud
+  - gitpython
   - gmso
   - gromacs=2020.6
   - gsd
