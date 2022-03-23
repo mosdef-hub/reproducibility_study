@@ -109,7 +109,7 @@ def post_process(job):
         volume = data["volume"] * u.nm ** 3
         density = (system_mass / volume).to("g/cm**3")
         kB = 0.00831446262  # kJ/(mol K)
-        pressure_factor = float((1 * u.kJ / u.mol / u.nm**3).to("kPa"))
+        pressure_factor = float((1 * u.kJ / u.mol / u.nm ** 3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
@@ -186,14 +186,7 @@ def run_hoomd(job, method, restart=False):
         init_snap=init_snap,
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
-
-    # update the neighborlist exclusions for pentane and benzene
-    # these wont be set automatically because their scaling is 0
-    # forcefield[0] is LJ pair force and all nlist objects are connected
-    if job.sp.molecule == "benzeneUA" or job.sp.molecule.startswith("pentane"):
-        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
-    if job.sp.molecule == "methaneUA":
-        forcefield[0].nlist.exclusions = []
+    print("Snapshot created")
 
     # If the molecule is constrained, add distance constraints to
     # bonded particles in snapshot
@@ -257,7 +250,16 @@ def run_hoomd(job, method, restart=False):
             forcefield.remove(f)
 
         # update the neighborlist exclusions for rigid
+        # forcefield[0] is LJ pair force and all nlist objects are connected
         forcefield[0].nlist.exclusions = ["body"]
+
+    # update the neighborlist exclusions for pentane and methane
+    # pentane's wont be set automatically because the scaling is 0
+    # and the default (bond, 1-3) is unecessary and raises a warning for methane
+    if job.sp.molecule.startswith("pentane"):
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    elif job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
@@ -385,7 +387,12 @@ def run_hoomd(job, method, restart=False):
     )
     sim.operations.writers.append(table_file)
 
-    dt = 0.001
+    if job.sp.molecule == "ethanolAA":
+        # ethanol needs a smaller timestep to capture fast oscillations of
+        # explicit hydrogen bonds (period 0.0118 time units)
+        dt = 0.0005
+    else:
+        dt = 0.001
     if isrigid:
         integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
         integrator.rigid = rigid
@@ -402,8 +409,8 @@ def run_hoomd(job, method, restart=False):
     print(f"kT = {kT}")
 
     # start with high tau and tauS
-    tau = 1000 * dt
-    tauS = 5000 * dt
+    tau = 0.5  # 1000dt (ethanol) or 500dt
+    tauS = 1  # 2000dt (ethanol) or 1000dt
 
     if method == "npt":
         # convert pressure to unit system
@@ -431,8 +438,8 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             steps = 1e6
             print(
-                f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} "
-                f"dt and tauS: {integrator.methods[0].tauS/dt} dt"
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
+                f"and tauS: {integrator.methods[0].tauS}"
             )
             sim.run(steps)
             print("Done")
@@ -468,7 +475,7 @@ def run_hoomd(job, method, restart=False):
             sim.operations.updaters.append(box_resize)
             print(
                 f"Running shrink {shrink_steps:.0e} with tau: "
-                f"{integrator.methods[0].tau/dt} dt"
+                f"{integrator.methods[0].tau}"
             )
             sim.run(shrink_steps + 1)
             print("Done")
@@ -478,14 +485,14 @@ def run_hoomd(job, method, restart=False):
     if method != "shrink":
         steps = 5e6
         if method == "npt":
-            integrator.methods[0].tauS = 1000 * dt
-            integrator.methods[0].tau = 100 * dt
+            integrator.methods[0].tauS = 1
+            integrator.methods[0].tau = 0.1
             print(
                 f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} "
                 f"dt and tauS: {integrator.methods[0].tauS/dt} dt"
             )
         else:
-            integrator.methods[0].tau = 100 * dt
+            integrator.methods[0].tau = 0.1
             print(
                 f"Running {steps:.0e} with tau: "
                 f"{integrator.methods[0].tau/dt} dt"
@@ -494,7 +501,7 @@ def run_hoomd(job, method, restart=False):
     else:
         # Try adding a temperature equilibration step after shrink
         steps = 1e6
-        integrator.methods[0].tau = 100 * dt
+        integrator.methods[0].tau = 0.1
         print(
             f"Running {steps:.0e} with tau: {integrator.methods[0].tau/dt} dt"
         )
