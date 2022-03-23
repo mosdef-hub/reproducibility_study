@@ -7,7 +7,7 @@ import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-rigid_molecules = ["waterSPCE"]
+rigid_molecules = ["waterSPCE", "benzeneUA"]
 
 
 class Project(FlowProject):
@@ -114,14 +114,6 @@ def run_singleframe(job):
     )
     print("Snapshot created")
 
-    # update the neighborlist exclusions for pentane and benzene
-    # these wont be set automatically because their scaling is 0
-    # forcefield[0] is LJ pair force and all nlist objects are connected
-    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
-        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
-    if job.sp.molecule == "methaneUA":
-        forcefield[0].nlist.exclusions = []
-
     # Adjust the snapshot rigid bodies
     if isrigid:
         # number of particles per molecule
@@ -169,6 +161,14 @@ def run_singleframe(job):
         # update the neighborlist exclusions for rigid
         # forcefield[0] is LJ pair force and all nlist objects are connected
         forcefield[0].nlist.exclusions = ["body"]
+
+    # update the neighborlist exclusions for pentane and methane
+    # pentane's wont be set automatically because the scaling is 0
+    # and the default (bond, 1-3) is unecessary and raises a warning for methane
+    if job.sp.molecule == "pentaneUA":
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    elif job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
