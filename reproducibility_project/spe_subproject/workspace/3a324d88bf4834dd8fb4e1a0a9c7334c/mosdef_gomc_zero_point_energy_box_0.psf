@@ -2,8 +2,8 @@ PSF
 
        3 !NTITLE
  REMARKS this file mosdef_gomc_zero_point_energy_box_0 - created by mBuild/foyer using the
- REMARKS parameters from the {'benzeneUA': '/Users/brad/Programs/GIT_repositories/reproduciblity/reproducibility_study/reproducibility_project/src/xmls/benzene_trappe-ua_like.xml'} force field via MoSDef
- REMARKS created on 2022-03-01 12:56:38.050721
+ REMARKS parameters from the {'benzeneUA': '/Users/brad/Programs/GIT_repositories/reproduciblity/reproducibility_study/reproducibility_project/src/xmls/benzene_trappe-ua.xml'} force field via MoSDef
+ REMARKS created on 2022-03-10 13:44:45.618284
 
 
     2400 !NATOM
