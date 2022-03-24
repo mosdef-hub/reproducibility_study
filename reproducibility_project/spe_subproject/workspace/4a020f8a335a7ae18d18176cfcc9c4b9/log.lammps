@@ -7,7 +7,7 @@ atom_style      full
 
 # Assume ff info is included in data file
 pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut
-pair_style     lj/cut/coul/cut 14.0 
+pair_style     lj/cut/coul/cut 14.0
 bond_style  harmonic
 angle_style harmonic
 dihedral_style  opls
@@ -22,8 +22,8 @@ read_data box.lammps
   1 = max # of special neighbors
 #fix pppm
 pair_modify shift ${pass_shift} tail ${pass_lrc}  #TODO: Look to make sure this shift is okay
-pair_modify shift no tail ${pass_lrc}  
-pair_modify shift no tail yes  
+pair_modify shift no tail ${pass_lrc}
+pair_modify shift no tail yes
 #fix shake
 neighbor        2.5 bin #skin cutoff
 
@@ -34,9 +34,9 @@ thermo 1000
 thermo_style custom etotal pe evdwl ecoul epair ebond eangle edihed etail elong
 
 variable tsample equal ${T} #kelvin, modified by job.sp.temperature
-variable tsample equal 140.0 
+variable tsample equal 140.0
 variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
-variable psample equal 1318.0/101.325 
+variable psample equal 1318.0/101.325
 # ________________________________________________________________________________________
 
 
@@ -78,8 +78,8 @@ Neighbor list info ...
       stencil: half/bin/3d/newton/tri
       bin: standard
 Per MPI rank memory allocation (min/avg/max) = 5.706 | 5.812 | 5.992 Mbytes
-TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long 
-   128310.45    128310.45    128310.45            0    128310.45            0            0            0   -28.460285            0 
+TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long
+   128310.45    128310.45    128310.45            0    128310.45            0            0            0   -28.460285            0
 Loop time of 7.39015e-05 on 36 procs for 0 steps with 900 atoms
 
 62.8% CPU use with 36 MPI tasks x no OpenMP threads

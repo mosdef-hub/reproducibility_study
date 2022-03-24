@@ -34,8 +34,8 @@ read_data box.lammps
   8 = max # of special neighbors
 kspace_style pppm 0.00001
 pair_modify shift ${pass_shift} tail ${pass_lrc}  #TODO: Look to make sure this shift is okay
-pair_modify shift no tail ${pass_lrc}  
-pair_modify shift no tail yes  
+pair_modify shift no tail ${pass_lrc}
+pair_modify shift no tail yes
 #fix shake
 neighbor        2.5 bin #skin cutoff
 
@@ -46,9 +46,9 @@ thermo 1000
 thermo_style custom etotal pe evdwl ecoul epair ebond eangle edihed etail elong
 
 variable tsample equal ${T} #kelvin, modified by job.sp.temperature
-variable tsample equal 300.0 
+variable tsample equal 300.0
 variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
-variable psample equal 101.325/101.325 
+variable psample equal 101.325/101.325
 # ________________________________________________________________________________________
 
 
@@ -103,8 +103,8 @@ Neighbor list info ...
       stencil: half/bin/3d/newton/tri
       bin: standard
 Per MPI rank memory allocation (min/avg/max) = 11.73 | 11.92 | 12.87 Mbytes
-TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long 
-   7536.6563    7536.6563    4674.2491    19268.731    5522.8174 1.4257279e-05    1728.7931    285.04575   -91.484935   -18420.163 
+TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long
+   7536.6563    7536.6563    4674.2491    19268.731    5522.8174 1.4257279e-05    1728.7931    285.04575   -91.484935   -18420.163
 Loop time of 7.32486e-05 on 36 procs for 0 steps with 4500 atoms
 
 73.5% CPU use with 36 MPI tasks x no OpenMP threads

@@ -30,8 +30,8 @@ read_data box.lammps
   2 = max # of special neighbors
 kspace_style pppm 0.00001
 pair_modify shift ${pass_shift} tail ${pass_lrc}  #TODO: Look to make sure this shift is okay
-pair_modify shift no tail ${pass_lrc}  
-pair_modify shift no tail yes  
+pair_modify shift no tail ${pass_lrc}
+pair_modify shift no tail yes
 fix fix_shake all shake 0.00001 20 1000 b 1 a 1
   0 = # of size 2 clusters
   0 = # of size 3 clusters
@@ -46,9 +46,9 @@ thermo 1000
 thermo_style custom etotal pe evdwl ecoul epair ebond eangle edihed etail elong
 
 variable tsample equal ${T} #kelvin, modified by job.sp.temperature
-variable tsample equal 300.0 
+variable tsample equal 300.0
 variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
-variable psample equal 101.325/101.325 
+variable psample equal 101.325/101.325
 # ________________________________________________________________________________________
 
 
@@ -102,8 +102,8 @@ SHAKE stats (type/ave/delta) on step 0
   1 1 2.17088e-07
   1 109.47 1.54898e-12
 Per MPI rank memory allocation (min/avg/max) = 7.933 | 8.056 | 8.218 Mbytes
-TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long 
-    14285.96     14285.96    18354.805    69419.218     14285.96            0            0            0   -59.609306   -73488.063 
+TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long
+    14285.96     14285.96    18354.805    69419.218     14285.96            0            0            0   -59.609306   -73488.063
 Loop time of 4.78065e-05 on 36 procs for 0 steps with 3300 atoms
 
 48.1% CPU use with 36 MPI tasks x no OpenMP threads

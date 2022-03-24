@@ -53,4 +53,4 @@ print "${startstep} $e $p $v $c ${pa} $b $a $d $t $k" append prlog-npt.txt
 
 unfix intiegrator
 uindump traj1
-reset_timestep 0 
+reset_timestep 0

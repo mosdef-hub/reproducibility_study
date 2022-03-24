@@ -70,12 +70,12 @@ def lammps_equilibrated_npt(job):
         try:
             data = np.genfromtxt(latest_eqdata.name)
             check_equil = [
-            is_equilibrated(data[:, 1])[0],
-            is_equilibrated(data[:, 2])[0],
-            is_equilibrated(data[:, 4])[0],
-            is_equilibrated(data[:, 6])[0],
+                is_equilibrated(data[:, 1])[0],
+                is_equilibrated(data[:, 2])[0],
+                is_equilibrated(data[:, 4])[0],
+                is_equilibrated(data[:, 6])[0],
             ]
-        except (IOError,IndexError) as e:
+        except (IOError, IndexError) as e:
             check_equil = [False, False, False, False]
     else:
         check_equil = [False, False, False, False]
@@ -164,7 +164,9 @@ def built_lammps(job):
 @flow.cmd
 def lammps_cp_files(job):
     """Copy over run files for lammps and the PBS scheduler."""
-    lmps_submit_path = "../../src/engine_input/lammps/input_scripts/submit.slurm"
+    lmps_submit_path = (
+        "../../src/engine_input/lammps/input_scripts/submit.slurm"
+    )
     lmps_run_path = "../../src/engine_input/lammps/input_scripts/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
@@ -183,11 +185,13 @@ def lammps_em_nvt(job):
     else:
         tstep = 2.0
     in_script_name = "in.minimize"
-    if job.sp.molecule in ["waterSPCE","ethanolAA"]:
-        modify_engine_scripts(in_script_name,7,'pair_style lj/cut/coul/long ${rcut}\n')
-        add_pppm(in_script_name,12)
+    if job.sp.molecule in ["waterSPCE", "ethanolAA"]:
+        modify_engine_scripts(
+            in_script_name, 7, "pair_style lj/cut/coul/long ${rcut}\n"
+        )
+        add_pppm(in_script_name, 12)
     if job.sp.molecule in ["ethanolAA"]:
-        add_14coul(in_script_name,28)
+        add_14coul(in_script_name, 28)
     r_cut = job.sp.r_cut * 10
     modify_submit_scripts(in_script_name, job.id)
     pass_lrc = "yes"
@@ -211,12 +215,14 @@ def lammps_equil_npt(job):
     in_script_name = "in.equilibration"
     modify_submit_scripts(in_script_name, job.id)
     if job.sp.molecule in ["waterSPCE"]:
-        add_shake(in_script_name,14)        
-    if job.sp.molecule in ["waterSPCE","ethanolAA"]:
-        add_pppm(in_script_name,12)
-        modify_engine_scripts(in_script_name,7,'pair_style lj/cut/coul/long ${rcut}\n')
+        add_shake(in_script_name, 14)
+    if job.sp.molecule in ["waterSPCE", "ethanolAA"]:
+        add_pppm(in_script_name, 12)
+        modify_engine_scripts(
+            in_script_name, 7, "pair_style lj/cut/coul/long ${rcut}\n"
+        )
     if job.sp.molecule in ["ethanolAA"]:
-        add_14coul(in_script_name,28)
+        add_14coul(in_script_name, 28)
     r_cut = job.sp.r_cut * 10
     pass_lrc = "yes"
     pass_shift = "no"
@@ -239,12 +245,14 @@ def lammps_prod_npt(job):
     in_script_name = "in.production-npt"
     modify_submit_scripts(in_script_name, job.id)
     if job.sp.molecule in ["waterSPCE"]:
-        add_shake(in_script_name,14)        
-    if job.sp.molecule in ["waterSPCE","ethanolAA"]:
-        add_pppm(in_script_name,12)
-        modify_engine_scripts(in_script_name,7,'pair_style lj/cut/coul/long ${rcut}\n')
+        add_shake(in_script_name, 14)
+    if job.sp.molecule in ["waterSPCE", "ethanolAA"]:
+        add_pppm(in_script_name, 12)
+        modify_engine_scripts(
+            in_script_name, 7, "pair_style lj/cut/coul/long ${rcut}\n"
+        )
     if job.sp.molecule in ["ethanolAA"]:
-        add_14coul(in_script_name,28)
+        add_14coul(in_script_name, 28)
     r_cut = job.sp.r_cut * 10
     pass_lrc = "yes"
     pass_shift = "no"
@@ -267,12 +275,14 @@ def lammps_prod_nvt(job):
     in_script_name = "in.production-nvt"
     modify_submit_scripts(in_script_name, job.id)
     if job.sp.molecule in ["waterSPCE"]:
-        add_shake(in_script_name,14)        
-    if job.sp.molecule in ["waterSPCE","ethanolAA"]:
-        add_pppm(in_script_name,12)
-        modify_engine_scripts(in_script_name,7,'pair_style lj/cut/coul/long ${rcut}\n')
+        add_shake(in_script_name, 14)
+    if job.sp.molecule in ["waterSPCE", "ethanolAA"]:
+        add_pppm(in_script_name, 12)
+        modify_engine_scripts(
+            in_script_name, 7, "pair_style lj/cut/coul/long ${rcut}\n"
+        )
     if job.sp.molecule in ["ethanolAA"]:
-        add_14coul(in_script_name,28)
+        add_14coul(in_script_name, 28)
     r_cut = job.sp.r_cut * 10
     pass_lrc = "yes"
     pass_shift = "no"
@@ -294,11 +304,22 @@ def lammps_reformat_data(job):
     """
     import numpy as np
     import pandas as pd
+
     attr_list = ["step", "temp", "press", "etotal", "pe", "ke", "density"]
-    df_npt_in = pd.read_csv(job.ws + "/prlog-npt.txt", delimiter=" ",
-                        comment="#",header=0, names = attr_list)
-    df_nvt_in = pd.read_csv(job.ws + "/prlog-nvt.txt", delimiter=" ",
-                        comment="#",header=0, names = attr_list)
+    df_npt_in = pd.read_csv(
+        job.ws + "/prlog-npt.txt",
+        delimiter=" ",
+        comment="#",
+        header=0,
+        names=attr_list,
+    )
+    df_nvt_in = pd.read_csv(
+        job.ws + "/prlog-nvt.txt",
+        delimiter=" ",
+        comment="#",
+        header=0,
+        names=attr_list,
+    )
     new_titles_list = [
         "timestep",
         "potential_energy",
@@ -323,6 +344,7 @@ def lammps_reformat_data(job):
     df_npt_out.to_csv("log-npt.txt", header=True, index=False, sep=" ")
     df_nvt_out.to_csv("log-nvt.txt", header=True, index=False, sep=" ")
 
+
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "lammps-UD")
 @Project.pre(lammps_reformatted_data)
@@ -338,7 +360,9 @@ def lammps_create_gsd(job):
     traj = md.load("prod-nvt.dcd", top="box.gro")
     traj.save("trajectory-nvt.gsd")
     return
-def add_shake(filename,ln):
+
+
+def add_shake(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "fix fix_shake all shake 0.00001 20 1000 b 1 a 1\n"
@@ -346,7 +370,8 @@ def add_shake(filename,ln):
         f.writelines(lines)
     return
 
-def add_14coul(filename,ln):
+
+def add_14coul(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "special_bonds lj/coul 0 0 0.5\n"
@@ -355,13 +380,14 @@ def add_14coul(filename,ln):
     return
 
 
-def add_pppm(filename,ln):
+def add_pppm(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "kspace_style pppm 0.00001\n"
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 def remove_shake(filename):
     with open(filename, "r") as f:
@@ -370,6 +396,7 @@ def remove_shake(filename):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
@@ -380,6 +407,7 @@ def modify_submit_scripts(filename, jobid, cores=8):
         f.writelines(lines)
     return
 
+
 def modify_engine_scripts(filename, ln, info):
     """Modify any line of any scripts."""
     with open(filename, "r") as f:
@@ -388,6 +416,7 @@ def modify_engine_scripts(filename, ln, info):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 if __name__ == "__main__":
     pr = Project()

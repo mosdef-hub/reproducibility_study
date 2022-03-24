@@ -3,13 +3,14 @@ import os
 import pathlib
 
 import flow
+import foyer
 import numpy as np
 from flow import environments
+from mbuild.formats.lammpsdata import write_lammpsdata
 
 from reproducibility_project.src.utils.forcefields import load_ff
 
-import foyer
-from mbuild.formats.lammpsdata import write_lammpsdata
+
 class Project(flow.FlowProject):
     """Subclass of FlowProject to provide custom methods and attributes."""
 
@@ -95,18 +96,19 @@ def CalculateEnergy(job):
     in_script_name = "in.spe"
     modify_submit_scripts(in_script_name, job.id)
     if job.sp.molecule in ["waterSPCE"]:
-        add_shake(in_script_name,14)        
-    if job.sp.molecule in ["waterSPCE","ethanolAA"]:
-        add_pppm(in_script_name,12)
-        modify_engine_scripts(in_script_name,7,'pair_style lj/cut/coul/long ${rcut}\n')
+        add_shake(in_script_name, 14)
+    if job.sp.molecule in ["waterSPCE", "ethanolAA"]:
+        add_pppm(in_script_name, 12)
+        modify_engine_scripts(
+            in_script_name, 7, "pair_style lj/cut/coul/long ${rcut}\n"
+        )
     if job.sp.molecule in ["ethanolAA"]:
-        add_14coul(in_script_name,28)
+        add_14coul(in_script_name, 28)
     r_cut = job.sp.r_cut * 10
     pass_lrc = "yes"
     pass_shift = "no"
     msg = f"sbatch submit.slurm {in_script_name} {job.sp.replica+1} {job.sp.temperature} {job.sp.pressure} {r_cut} {tstep} {pass_lrc} {pass_shift}"
     return msg
-
 
 
 @Project.operation
@@ -123,10 +125,23 @@ def FormatTextFile(job):
     # __________________________________________________
     import numpy as np
     import pandas as pd
-    attr_list = ["step","total", "pot", "vdw", "coul", "pair", "bonds",
-                 "angles","dihedrals","tail","kspace"]
-    df_npt_in = pd.read_csv(job.ws + "/prlog-npt.txt", delimiter=" ",
-                        comment="#", names = attr_list)
+
+    attr_list = [
+        "step",
+        "total",
+        "pot",
+        "vdw",
+        "coul",
+        "pair",
+        "bonds",
+        "angles",
+        "dihedrals",
+        "tail",
+        "kspace",
+    ]
+    df_npt_in = pd.read_csv(
+        job.ws + "/prlog-npt.txt", delimiter=" ", comment="#", names=attr_list
+    )
     print(df_npt_in)
     KCAL_TO_KJ = 4.184  # kcal to kj
     ATM_TO_MPA = 0.101325  # atm to mpa
@@ -134,7 +149,8 @@ def FormatTextFile(job):
         df_npt_in[attr] = df_npt_in[attr] * KCAL_TO_KJ
     df_npt_in.to_csv("log-spe.txt", header=True, index=False, sep=" ")
 
-def add_shake(filename,ln):
+
+def add_shake(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "fix fix_shake all shake 0.00001 20 1000 b 1 a 1\n"
@@ -142,7 +158,8 @@ def add_shake(filename,ln):
         f.writelines(lines)
     return
 
-def add_14coul(filename,ln):
+
+def add_14coul(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "special_bonds lj/coul 0 0 0.5\n"
@@ -151,13 +168,14 @@ def add_14coul(filename,ln):
     return
 
 
-def add_pppm(filename,ln):
+def add_pppm(filename, ln):
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "kspace_style pppm 0.00001\n"
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 def remove_shake(filename):
     with open(filename, "r") as f:
@@ -166,6 +184,7 @@ def remove_shake(filename):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
@@ -176,6 +195,7 @@ def modify_submit_scripts(filename, jobid, cores=8):
         f.writelines(lines)
     return
 
+
 def modify_engine_scripts(filename, ln, info):
     """Modify any line of any scripts."""
     with open(filename, "r") as f:
@@ -184,6 +204,7 @@ def modify_engine_scripts(filename, ln, info):
     with open(filename, "w") as f:
         f.writelines(lines)
     return
+
 
 if __name__ == "__main__":
     pr = Project()

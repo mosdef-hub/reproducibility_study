@@ -6,9 +6,9 @@ Adding dependency `python/2.7.15` to your environment
 Adding package `jlab-lammps/22Aug18` to your environment
 GridEngine parameters:
   mpirun        = /opt/shared/openmpi/3.1.3-intel/bin/mpirun
-  nhosts        = 
-  nproc         = 
-  executable    = 
+  nhosts        =
+  nproc         =
+  executable    =
   Open MPI vers = 3.1.3
   MPI flags     = --display-map --mca btl ^tcp
 -- begin OPENMPI run --
@@ -74,8 +74,8 @@ Reading data file ...
   reading dihedrals ...
   2400 dihedrals
 Finding 1-2 1-3 1-4 neighbors ...
-  special bond factors lj:   0          0          0         
-  special bond factors coul: 0          0          0         
+  special bond factors lj:   0          0          0
+  special bond factors coul: 0          0          0
   2 = max # of 1-2 neighbors
   2 = max # of 1-3 neighbors
   4 = max # of 1-4 neighbors
@@ -97,8 +97,8 @@ Setting up Verlet run ...
   Current step  : 0
   Time step     : 2
 Per MPI rank memory allocation (min/avg/max) = 7.232 | 7.412 | 7.989 Mbytes
-TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long 
-   92984.655    92984.655    92984.655            0    92984.655            0 6.9304029e-11            0   -55.818804            0 
+TotEng PotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_tail E_long
+   92984.655    92984.655    92984.655            0    92984.655            0 6.9304029e-11            0   -55.818804            0
 Loop time of 4.36013e-05 on 36 procs for 0 steps with 2400 atoms
 
 52.9% CPU use with 36 MPI tasks x no OpenMP threads
