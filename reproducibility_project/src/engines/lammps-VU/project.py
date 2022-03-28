@@ -77,6 +77,7 @@ def lammps_equilibrated_npt(job):
         ]
     else:
         check_equil = [False, False, False, False]
+    print('Average is: ', data[:,6].mean())
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
 
 
@@ -132,6 +133,8 @@ def built_lammps(job):
     typed_box.save(
         "box.gro"
     )  # save to gromacs topology for later conversions in mdtraj
+    if job.sp.molecule == 'benzeneUA':
+        update_benzene_rigid_body(typed_box)
     write_lammpsdata(
         typed_box,
         "box.lammps",
@@ -184,6 +187,39 @@ def lammps_em_nvt(job):
     elif 'UA' in job.sp.molecule:
         modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0\n', 16)
         modify_engine_scripts(in_script_name, 'pair_modify mix arithmetic\n', 20)
+    if 'benzeneUA' in job.sp.molecule:
+        define_benzene_molecules = ["# Set lammps molecules\n",
+            f"change_box all ortho\n",
+            "variable nmols loop 400\n",
+            "label startloop\n",
+            "variable atomid equal (${nmols}-1)*6+1\n",
+            "variable atomid2 equal ${atomid}+5\n",
+            "set atom ${atomid}*${atomid2} mol ${nmols}\n",
+            "if '${nmols} == 400' then 'jump in.minimize endloop'\n",
+            "next nmols\n",
+            "jump in.minimize startloop\n",
+            "label endloop\n",
+            "minimize 1e-2 1e-2 100 100\n",
+            "fix integrator all rigid/nve/small molecule \n",
+            "run 10000\n",
+            "unfix integrator\n",
+            "fix integrator all rigid/nvt/small molecule temp ${tsample} ${tsample} 100.0\n",
+            "timestep ${tstep}\n",
+            "run 50000\n",
+            "unfix integrator\n",
+            "reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name\n",
+            "write_restart minimized.restart-*\n",
+        ]
+        start_line = 26
+        with open(in_script_name, "r") as f:
+            lines = f.readlines()
+        for i,new_line in enumerate(define_benzene_molecules):
+            modify_engine_scripts(
+                in_script_name,
+                new_line,
+                start_line+i,
+            )
+
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
     return msg
@@ -215,6 +251,9 @@ def lammps_equil_npt(job):
     elif 'UA' in job.sp.molecule:
         modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0\n', 16)
         modify_engine_scripts(in_script_name, 'pair_modify mix arithmetic\n', 20)
+    if 'benzeneUA' == job.sp.molecule:
+        fixrigid = "fix integrator all rigid/npt/small molecule temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10\n"
+        modify_engine_scripts(in_script_name, fixrigid, 36)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
@@ -248,8 +287,9 @@ def lammps_prod_npt(job):
     elif 'UA' in job.sp.molecule:
         modify_engine_scripts(in_script_name, 'special_bonds lj/coul 0 0 0\n', 16)
         modify_engine_scripts(in_script_name, 'pair_modify mix arithmetic\n', 20)
-    if job.sp.molecule == 'benzeneUA': #run benzene twice as long to get enough equilibrated points
-        modify_engine_scripts(in_script_name, 'variable runtime equal 10e6/dt\n', 18)
+    if job.sp.molecule == 'benzeneUA':
+        fixrigid = "fix integrator all rigid/npt/small molecule temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10\n"
+        modify_engine_scripts(in_script_name, fixrigid, 37)
 
     msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
 
@@ -317,16 +357,26 @@ def modify_submit_scripts(filename, jobid, cores=8):
         lines[1] = "#PBS -N {}\n".format(jobid)
     with open("submit.pbs", "w") as f:
         f.writelines(lines)
-    return
 
 def modify_engine_scripts(filename, msg, line):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open(filename, "r") as f:
         lines = f.readlines()
-        lines[line] = msg
+        if line < len(lines):
+            lines[line] = msg
+        else:
+            lines.append(msg)
     with open(filename, "w") as f:
         f.writelines(lines)
-    return
+
+def update_benzene_rigid_body(parmed_obj):
+    """Take benzene parmed object and use large params for writing to lammps and setting as a rigid body."""
+    for bond in parmed_obj.bond_types:
+        bond.k = 10000
+    for angle in parmed_obj.angle_types:
+        angle.k = 10000
+    for rb in parmed_obj.rb_torsion_types:
+        rb.c2 = -10000
 
 if __name__ == "__main__":
     pr = Project()
