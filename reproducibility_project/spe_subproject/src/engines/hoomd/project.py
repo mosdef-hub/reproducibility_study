@@ -58,6 +58,7 @@ def FinishedSPECalc(job):
 def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
     import foyer
+    import git
     import hoomd
     import hoomd.md
     import mbuild as mb
@@ -71,7 +72,12 @@ def run_singleframe(job):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
     molecule = job.sp.molecule
+    print(job.sp.molecule)
+    print(f"git commit: {sha}\n")
+
     pr = Project()
     snapshot_directory = (
         pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
@@ -113,6 +119,7 @@ def run_singleframe(job):
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
     print("Snapshot created")
+    print(f"box: {snapshot.configuration.box}")
 
     # Adjust the snapshot rigid bodies
     if isrigid:
@@ -249,7 +256,7 @@ def run_singleframe(job):
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
 
-    print(job.sp.molecule)
+    print("mbuild version: ", mb.__version__)
     print("foyer version: ", foyer.__version__)
     print("nlist exclusions: ", forcefield[0].nlist.exclusions)
 
