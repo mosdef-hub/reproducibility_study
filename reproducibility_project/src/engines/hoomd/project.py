@@ -106,10 +106,10 @@ def post_process(job):
         data = clean_data(data)
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
-        volume = data["volume"] * u.nm ** 3
+        volume = data["volume"] * u.nm**3
         density = (system_mass / volume).to("g/cm**3")
         kB = 0.00831446262  # kJ/(mol K)
-        pressure_factor = float((1 * u.kJ / u.mol / u.nm**3).to("kPa"))
+        pressure_factor = float((1 * u.kJ / u.mol / u.nm ** 3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
