@@ -27,7 +27,7 @@
      lchgall= F
      lewald= T
      lcutcm= T
-     ltailc= F
+     ltailc= T
      lshift= F
      ldual= T
      L_Coul_CBMC= T
