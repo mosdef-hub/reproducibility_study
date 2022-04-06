@@ -77,7 +77,6 @@ def lammps_equilibrated_npt(job):
         ]
     else:
         check_equil = [False, False, False, False]
-    print('Average is: ', data[:,6].mean())
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
 
 
@@ -119,8 +118,10 @@ def built_lammps(job):
         construct_system,
     )
     from reproducibility_project.src.utils.forcefields import load_ff
-
-    system = construct_system(job.sp)[0]
+    if  "benzeneUA" == job.sp.molecule:
+        system = construct_system(job.sp, scale_liq_box=2, fix_orientation=True)[0]
+    else:
+        system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
     ff = load_ff(job.sp.forcefield_name)
     system.save(
@@ -133,8 +134,6 @@ def built_lammps(job):
     typed_box.save(
         "box.gro"
     )  # save to gromacs topology for later conversions in mdtraj
-    if job.sp.molecule == 'benzeneUA':
-        update_benzene_rigid_body(typed_box)
     write_lammpsdata(
         typed_box,
         "box.lammps",
@@ -199,7 +198,6 @@ def lammps_em_nvt(job):
             "next nmols\n",
             "jump in.minimize startloop\n",
             "label endloop\n",
-            "minimize 1e-2 1e-2 100 100\n",
             "fix integrator all rigid/nve/small molecule \n",
             "run 10000\n",
             "unfix integrator\n",
@@ -368,15 +366,6 @@ def modify_engine_scripts(filename, msg, line):
             lines.append(msg)
     with open(filename, "w") as f:
         f.writelines(lines)
-
-def update_benzene_rigid_body(parmed_obj):
-    """Take benzene parmed object and use large params for writing to lammps and setting as a rigid body."""
-    for bond in parmed_obj.bond_types:
-        bond.k = 10000
-    for angle in parmed_obj.angle_types:
-        angle.k = 10000
-    for rb in parmed_obj.rb_torsion_types:
-        rb.c2 = -10000
 
 if __name__ == "__main__":
     pr = Project()

@@ -87,7 +87,7 @@ def main():
             density_list = []
             for job in group:
                 os.chdir(job.ws)
-                #        print(job)
+                # print(job)
                 prod_run_files = sorted(glob("run*prod*"))
                 if len(prod_run_files) < 4:
                     print(
@@ -104,7 +104,7 @@ def main():
                     )
                 density_list.append(avg_one_seed_density(prod_run_files))
 
-            #    print(density_list)
+                # print(density_list)
             filtered_density_list = list(filter(None, density_list))
             output_string = "The average density is {} g/ml with SEM {} from {} samples".format(
                 np.mean(filtered_density_list),
@@ -132,6 +132,7 @@ def avg_one_seed_density(prod_run_files):
     os.system(
         "grep 'specific density                        ' run.prod* | awk '{print $6}' > temp_density.txt"
     )
+    # os.system("grep 'specific density                        ' run.prod* | awk '{print $6}' ")
     if os.path.exists("temp_density.txt"):
         try:
             density_list_one_seed = np.genfromtxt("temp_density.txt")

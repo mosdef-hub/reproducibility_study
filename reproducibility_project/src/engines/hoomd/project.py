@@ -8,7 +8,7 @@ import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-rigid_molecules = ["waterSPCE"]
+rigid_molecules = ["waterSPCE", "benzeneUA"]
 
 
 class Project(FlowProject):
@@ -98,7 +98,9 @@ def post_process(job):
 
     for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
         # Make a copy, just in case
-        copy(logfile, f"{logfile}.bkup")
+        backup = f"{logfile}.bkup"
+        if not os.path.exists(backup):
+            copy(logfile, backup)
 
         data = np.genfromtxt(logfile, names=True)
         data = clean_data(data)
@@ -106,9 +108,13 @@ def post_process(job):
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
         volume = data["volume"] * u.nm**3
         density = (system_mass / volume).to("g/cm**3")
+        kB = 0.00831446262  # kJ/(mol K)
+        pressure_factor = float((1 * u.kJ / u.mol / u.nm ** 3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
         data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
+        data["temperature"] /= kB
+        data["pressure"] *= pressure_factor
         data = rf.append_fields(
             data, "density", np.array(density), usemask=False
         )
@@ -133,6 +139,7 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
+    print(job.sp.molecule)
     if method not in ["npt", "nvt", "shrink"]:
         raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 
@@ -179,6 +186,14 @@ def run_hoomd(job, method, restart=False):
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
 
+    # update the neighborlist exclusions for pentane and benzene
+    # these wont be set automatically because their scaling is 0
+    # forcefield[0] is LJ pair force and all nlist objects are connected
+    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    if job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
+
     # Adjust the snapshot rigid bodies
     if isrigid:
         # number of particles per molecule
@@ -224,21 +239,8 @@ def run_hoomd(job, method, restart=False):
             forcefield.remove(f)
 
         # update the neighborlist exclusions for rigid
-        for f in forcefield:
-            f.nlist.exclusions += ["body"]
+        forcefield[0].nlist.exclusions = ["body"]
 
-    # update the neighborlist exclusions for all
-    for f in forcefield:
-        try:
-            f.nlist.exclusions += ["1-4"]
-        except AttributeError:
-            pass
-
-    if job.sp.get("cutoff_style") == "shift":
-        for force in forcefield:
-            if isinstance(force, hoomd.md.pair.LJ):
-                force.mode = "shift"
-                print(f"{force} mode set to {force.mode}")
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
             if isinstance(force, hoomd.md.pair.LJ):
@@ -376,6 +378,7 @@ def run_hoomd(job, method, restart=False):
     # convert temp in K to kJ/mol
     kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
 
+    # start with high tau and tauS
     tau = 1000 * dt
     tauS = 5000 * dt
 
@@ -402,28 +405,35 @@ def run_hoomd(job, method, restart=False):
     if method == "npt":
         # only run with high tauS if we are starting from scratch
         if not restart:
-            sim.run(1e6)
-        integrator.tauS = tauS / 10
+            steps = 1e6
+            print(
+                f"""Running {steps} with tau: {integrator.methods[0].tau} and
+                tauS: {integrator.methods[0].tauS}"""
+            )
+            sim.run(steps)
+            print("Done")
+        integrator.methods[0].tauS = 1000 * dt
+        integrator.methods[0].tau = 100 * dt
     else:
+        # Shrink and NVT both use NVT method
         if method == "shrink":
             # shrink to the desired box length
             L = job.sp.box_L_liq
             shrink_steps = 1e5
         else:
-            # the target volume should be the average volume from NPT
+            # The target volume should be the average volume from NPT
             target_volume = job.doc.avg_volume
             L = target_volume ** (1 / 3)
             shrink_steps = 2e4
 
         if not restart:
-            # shrink and nvt methods both use shrink step
+            # Shrink and nvt methods both use shrink step
             # Shrink step follows this example
             # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
             # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
             ramp = hoomd.variant.Ramp(
                 A=0, B=1, t_start=sim.timestep, t_ramp=int(shrink_steps)
             )
-            # the target volume should be the average volume from NPT
             initial_box = sim.state.box
             final_box = hoomd.Box(Lx=L, Ly=L, Lz=L)
             box_resize_trigger = hoomd.trigger.Periodic(10)
@@ -434,12 +444,25 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
+            print(
+                f"Running shrink {shrink_steps} with tau: {integrator.methods[0].tau}"
+            )
             sim.run(shrink_steps + 1)
+            print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
+            integrator.methods[0].tau = 100 * dt
 
     if method != "shrink":
-        sim.run(5e6)
+        steps = 5e6
+        if method == "npt":
+            print(
+                f"""Running {steps} with tau: {integrator.methods[0].tau} and
+                tauS: {integrator.methods[0].tauS}"""
+            )
+        else:
+            print(f"Running {steps} with tau: {integrator.methods[0].tau}")
+        sim.run(steps)
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 

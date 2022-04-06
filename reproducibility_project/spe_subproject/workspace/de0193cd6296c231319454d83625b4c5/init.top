@@ -1,0 +1,64 @@
+;
+;   File init.top  was generated
+;   By user: quachcd (501)
+;   On host: Cos-MacBook-Pro.local
+;   At date: Mon. March  1 15:02:07 2022
+;
+;   This is a standalone topology file
+;
+;   Created by:
+;   ParmEd:       project.py, VERSION 3.4.3
+;   Executable:   project.py
+;   Library dir:  /Users/quachcd/mambaforge/envs/mosdef-study38/share/gromacs/top
+;   Command line:
+;     project.py run -o LoadSystemSnapShot -p
+;
+
+[ defaults ]
+; nbfunc        comb-rule       gen-pairs       fudgeLJ fudgeQQ
+1               2               no              0            0
+
+[ atomtypes ]
+; name    at.num    mass    charge ptype  sigma      epsilon
+CH2_sp3        0  14.027000  0.00000000  A          0.395       0.382465
+CH3_sp3        0  15.035000  0.00000000  A          0.375       0.814817
+
+
+[ moleculetype ]
+; Name            nrexcl
+RES          3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr    charge       mass  typeB    chargeB      massB
+; residue    1 RES rtp RES q 0.0
+    1    CH2_sp3      1    RES   _CH2      1 0.00000000  14.027000   ; qtot 0.000000
+    2    CH2_sp3      1    RES   _CH2      2 0.00000000  14.027000   ; qtot 0.000000
+    3    CH2_sp3      1    RES   _CH2      3 0.00000000  14.027000   ; qtot 0.000000
+    4    CH3_sp3      1    RES   _CH3      4 0.00000000  15.035000   ; qtot 0.000000
+    5    CH3_sp3      1    RES   _CH3      5 0.00000000  15.035000   ; qtot 0.000000
+
+[ bonds ]
+;    ai     aj funct         c0         c1         c2         c3
+      1      2     1   0.15400 502416.000000
+      3      2     1   0.15400 502416.000000
+      4      1     1   0.15400 502416.000000
+      5      3     1   0.15400 502416.000000
+
+[ angles ]
+;    ai     aj     ak funct         c0         c1         c2         c3
+      1      2      3     1   113.9996936 519.653890
+      2      1      4     1   113.9996936 519.653890
+      2      3      5     1   113.9996936 519.653890
+
+[ dihedrals ]
+;    ai     aj     ak     al funct         c0         c1         c2         c3         c4         c5
+      1      2      3      5     3     8.3973600    16.7863200     1.1339300   -26.3176000     0.0000000     0.0000000
+      3      2      1      4     3     8.3973600    16.7863200     1.1339300   -26.3176000     0.0000000     0.0000000
+
+[ system ]
+; Name
+Generic title
+
+[ molecules ]
+; Compound       #mols
+RES                300
