@@ -511,7 +511,7 @@ def run_hoomd(job, method, restart=False):
 
     integrator.methods[0].tau = 0.1
     if method != "shrink":
-        steps = 5e6
+        steps = 2e7
         if method == "npt":
             integrator.methods[0].tauS = 1
             print(
