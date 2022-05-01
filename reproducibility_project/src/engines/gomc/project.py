@@ -2170,18 +2170,26 @@ def run_equilb_ensemble_gomc_command(job):
             )
             os.waitpid(exec_run_command.pid, 0)  # os.WSTOPPED) # 0)
 
-            test_pymbar_stabilized_equilb_design_ensemble(job)
+            # test if the simulation actualy finished before checkin and adding 1 to the equilb counter
+            if gomc_sim_completed_properly(
+                job,
+                job.doc.equilb_design_ensemble_dict[
+                    str(job.doc.equilb_design_ensemble_number)
+                ]["output_name_control_file_name"],
+            ):
 
-            if job.doc.stable_equilb_design_ensemble is False:
-                # need to add equilb_design_ensemble_number by 1 so it is fixed to run the correct job
-                # so it is rerun if restarted
-                job.doc.equilb_design_ensemble_number += 1
+                test_pymbar_stabilized_equilb_design_ensemble(job)
 
-                if (
-                    job.doc.equilb_design_ensemble_number
-                    >= job.doc.equilb_design_ensemble_max_number
-                ):
-                    job.doc.stable_equilb_design_ensemble = True
+                if job.doc.stable_equilb_design_ensemble is False:
+                    # need to add equilb_design_ensemble_number by 1 so it is fixed to run the correct job
+                    # so it is rerun if restarted
+                    job.doc.equilb_design_ensemble_number += 1
+
+                    if (
+                        job.doc.equilb_design_ensemble_number
+                        >= job.doc.equilb_design_ensemble_max_number
+                    ):
+                        job.doc.stable_equilb_design_ensemble = True
 
 
 # ******************************************************
