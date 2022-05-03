@@ -489,7 +489,7 @@ def build_charmm(job, write_files=True):
     }
     Molecule_ResName_List = [job.sp.molecule]
 
-    if job.sp.molecule in ["waterSPCE"]:
+    if job.sp.molecule in ["waterSPCE", "benzeneUA"]:
         gomc_fix_bonds_angles_list = Molecule_ResName_List
     else:
         gomc_fix_bonds_angles_list = None
@@ -638,14 +638,14 @@ def build_psf_pdb_ff_gomc_conf(job):
             RotFreq = (None,)
             RegrowthFreq = (None,)
 
-        elif job.sp.molecule in ["pentaneUA", "benzeneUA", "ethanolAA"]:
+        elif job.sp.molecule in ["pentaneUA", "ethanolAA"]:
             VolFreq = (0.01,)
             SwapFreq = (None,)
             DisFreq = (0.33,)
             RotFreq = (0.33,)
             RegrowthFreq = (0.33,)
 
-        elif job.sp.molecule in ["waterSPCE"]:
+        elif job.sp.molecule in ["waterSPCE", "benzeneUA"]:
             VolFreq = (0.01,)
             SwapFreq = (None,)
             DisFreq = (0.49,)
