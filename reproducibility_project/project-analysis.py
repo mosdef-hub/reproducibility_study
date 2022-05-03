@@ -63,7 +63,8 @@ mc_nvt_props = [
 
 
 # make a FlowGroup for all analysis operations, usually faster than the plotting methods
-analysis = Project.make_group(name='analysis')
+analysis = Project.make_group(name="analysis")
+
 
 def _aggregate_statistics(val, n):
     avg = np.mean(avg_vals)

@@ -14,6 +14,7 @@ def dict_product(dd):
     for element in itertools.product(*dd.values()):
         yield dict(zip(keys, element))
 
+
 molecules = [
     "methaneUA",
     "pentaneUA-flexible_bonds",
@@ -257,4 +258,3 @@ for sp in total_statepoints:
     pr.open_job(
         statepoint=sp,
     ).init()
-
