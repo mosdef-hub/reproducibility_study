@@ -62,6 +62,9 @@ mc_nvt_props = [
 ]
 
 
+# make a FlowGroup for all analysis operations, usually faster than the plotting methods
+analysis = Project.make_group(name='analysis')
+
 def _aggregate_statistics(val, n):
     avg = np.mean(avg_vals)
     std = np.std(avg_vals)
@@ -268,6 +271,7 @@ def create_property_sampling(
 ):
     """Dynamically create the sampling steps for the simulation data."""
 
+    @analysis
     @Project.operation(
         f"{simulation_type}_determine_{ensemble}_{prop}_sampling"
     )
@@ -322,6 +326,7 @@ def create_largest_t0_operations(
 ):
     """Dynamically create the operations to determine the largest t0 for sampling."""
 
+    @analysis
     @Project.operation(f"{ensemble}_{simulation_type}_write_largest_t0")
     @Project.pre(lambda job: job.isfile(f"log-{ensemble}.txt"))
     @Project.pre(lambda job: job.sp.engine in engine_list)
@@ -369,6 +374,7 @@ def create_write_subsampled_max_t0(
 ):
     """Dynamically create the operations to write the subsampled data based on max t0."""
 
+    @analysis
     @Project.operation(
         f"{ensemble}_{simulation_type}_write_subsampled_data_max_t0"
     )
@@ -424,6 +430,7 @@ def create_calc_prop_statistics(
 ):
     """Dynamically create the functions to calculate property statistics."""
 
+    @analysis
     @Project.operation(
         f"{simulation_type}_{ensemble}_{prop}_calc_prop_statistics"
     )
@@ -466,6 +473,7 @@ def create_calc_aggregate_statistics(
 ):
     """Dynamically create the operations to calculate the aggregate property statistics for each engine."""
 
+    @analysis
     @aggregator.groupby(
         key=[
             "ensemble",
@@ -541,7 +549,7 @@ for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
             simulation_type="mc",
         )
 
-
+'''
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
 @Project.post(lambda job: job.isfile("density-npt.png"))
@@ -595,7 +603,7 @@ def plot_npt_prod_data_with_t0(job):
         vline_scale=1.1,
         data_plt_kwargs=data_plt_kwarg,
     )
-
+'''
 
 '''
 @Project.operation
