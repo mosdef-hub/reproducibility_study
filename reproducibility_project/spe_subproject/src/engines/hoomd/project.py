@@ -7,7 +7,7 @@ import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-rigid_molecules = ["waterSPCE"]
+rigid_molecules = ["waterSPCE", "benzeneUA"]
 
 
 class Project(FlowProject):
@@ -58,6 +58,7 @@ def FinishedSPECalc(job):
 def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
     import foyer
+    import git
     import hoomd
     import hoomd.md
     import mbuild as mb
@@ -71,7 +72,12 @@ def run_singleframe(job):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
     molecule = job.sp.molecule
+    print(job.sp.molecule)
+    print(f"git commit: {sha}\n")
+
     pr = Project()
     snapshot_directory = (
         pathlib.Path(pr.root_directory()) / "src" / "system_snapshots"
@@ -113,14 +119,7 @@ def run_singleframe(job):
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
     print("Snapshot created")
-
-    # update the neighborlist exclusions for pentane and benzene
-    # these wont be set automatically because their scaling is 0
-    # forcefield[0] is LJ pair force and all nlist objects are connected
-    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
-        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
-    if job.sp.molecule == "methaneUA":
-        forcefield[0].nlist.exclusions = []
+    print(f"box: {snapshot.configuration.box}")
 
     # Adjust the snapshot rigid bodies
     if isrigid:
@@ -169,6 +168,14 @@ def run_singleframe(job):
         # update the neighborlist exclusions for rigid
         # forcefield[0] is LJ pair force and all nlist objects are connected
         forcefield[0].nlist.exclusions = ["body"]
+
+    # update the neighborlist exclusions for pentane and methane
+    # pentane's wont be set automatically because the scaling is 0
+    # and the default (bond, 1-3) is unecessary and raises a warning for methane
+    if job.sp.molecule == "pentaneUA":
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    elif job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
@@ -249,7 +256,7 @@ def run_singleframe(job):
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
 
-    print(job.sp.molecule)
+    print("mbuild version: ", mb.__version__)
     print("foyer version: ", foyer.__version__)
     print("nlist exclusions: ", forcefield[0].nlist.exclusions)
 
@@ -320,19 +327,21 @@ def FormatTextFile(job):
     coulomb = data_dict["pppm_Coulomb"] + data_dict["special_pair_Coulomb"]
 
     new_data_dict = {
-        "Potential_energy": data_dict["potential_energy"],
-        "LJ_energy": lj,
-        "Tail_energy": tail,
-        "Short_range_electrostatics": ewald,
-        "Long_range_electrostatics": coulomb,
-        "Pair_energy": lj + ewald + coulomb,
-        "Bond_energy": data_dict["bond_Harmonic"],
-        "Angle_energy": data_dict["angle_Harmonic"],
-        "Dihedral_energy": data_dict["dihedral_OPLS"],
-        "Intramolecular_LJ": 0,
-        "Intermolecular_LJ": 0,
-        "Total_electrostatic": ewald + coulomb,
-        "Short_range_LJ": lj - tail,
+        "potential_energy": data_dict["potential_energy"],
+        "tot_vdw_energy": lj,
+        "tail_energy": tail,
+        "short_range_electrostatics": ewald,
+        "long_range_electrostatics": coulomb,
+        "tot_pair_energy": lj + ewald + coulomb,
+        "bonds_energy": data_dict["bond_Harmonic"],
+        "angles_energy": data_dict["angle_Harmonic"],
+        "dihedrals_energy": data_dict["dihedral_OPLS"],
+        "tot_bonded_energy": data_dict["bond_Harmonic"]
+        + data_dict["angle_Harmonic"]
+        + data_dict["dihedral_OPLS"],
+        "tot_electrostatics": ewald + coulomb,
+        "intramolecular_energy": 0,
+        "intermolecular_energy": 0,
     }
 
     # dicts are ordered in python3.6+
