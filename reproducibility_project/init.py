@@ -16,22 +16,22 @@ def dict_product(dd):
 
 
 molecules = [
-    "methaneUA",
-    "pentaneUA-flexible_bonds",
-    "pentaneUA-constrain_bonds",
-    "benzeneUA",
-    "waterSPCE",
-    "ethanolAA",
+    "methaneUA"
+    #"pentaneUA-flexible_bonds",
+    #"pentaneUA-constrain_bonds",
+    #"benzeneUA",
+    #"waterSPCE",
+    #"ethanolAA",
 ]
 replicas = range(16)
 simulation_engines = [
-    "cassandra",
-    "mcccs",
-    "gomc",
-    "gromacs",
-    "hoomd",
-    "lammps-VU",
-    "lammps-UD",
+    #"cassandra",
+    #"mcccs",
+    "gomc"
+    #"gromacs",
+    #"hoomd",
+    #"lammps-VU",
+    #"lammps-UD",
 ]
 md_engines = ["gromacs", "hoomd", "lammps-VU", "lammps-UD"]
 mc_engines = ["cassandra", "mcccs", "gomc"]
@@ -132,7 +132,7 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "methaneUA": ["NPT", "GEMC-NVT"],
+    "methaneUA": ["NPT"],#, "GEMC-NVT"],
     "pentaneUA-flexible_bonds": ["NPT", "GEMC-NVT"],
     "pentaneUA-constrain_bonds": ["NPT", "GEMC-NVT"],
     "benzeneUA": ["NPT", None],

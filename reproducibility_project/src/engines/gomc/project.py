@@ -49,7 +49,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
 # gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_2_22_22/bin"
-gomc_binary_path = "/wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin"  # /home6/maxim/gregFixedHvapInstall/GOMCinstall/GOMC/bin   /wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin
+gomc_binary_path = "/wsu/home/go/go07/go0719/githubReproPush/5_9_2022try2/GOMC/bin"  # /home6/maxim/gregFixedHvapInstall/GOMCinstall/GOMC/bin   /wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin
 
 
 # number of MC cycles
@@ -2292,86 +2292,82 @@ def statepoint_minus_replica(job):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_4c_job_equilb_design_ensemble_completed_properly for job in jobs
+        part_4d_job_production_run_completed_properly for job in jobs       #can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
     )
 )  # beware of string issue: if u have an old version cast the long range correction as str(long_range_correction)
 @FlowProject.post.isfile("trajectory-npt.gsd")
 def jobJustin(*jobs):
-
-    if not all(
-        gomc_sim_completed_properly(job, production_control_file_name_str)
+    if all (gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
-        print(
-            "Not all jobs are complete! Proceed cautiously, statisticians beware."
-        )
+        '''if not all(
+            gomc_sim_completed_properly(job, production_control_file_name_str)
+            for job in jobs
+        ):
+            print(
+                "Not all jobs are complete! Proceed cautiously, statisticians beware."
+            )'''
 
-    for job in jobs:
-        # moreDateHere = open("averagesWithinReplicates.txt","w")
-        # make new folder
-        # make folder inside with 1 statepoint.
-        # run this method ONLY without signac inside this folder.
-        # take out job.isfile
-        # run 2 testcase 1 for NPT, 1 for GEMC.
-        with (job):
-            dataFileName_1 = str(
-                "Blk_" + production_control_file_name_str + "_BOX_0.dat"
-            )
-
-            MCstep = np.loadtxt(dataFileName_1)[:, 0]
-            energy = np.loadtxt(dataFileName_1)[:, 1]
-            # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-            # energy = np.multiply(energy,(8.3144626181532/1000))
-            pressure = np.loadtxt(dataFileName_1)[:, 10]
-            pressure = np.multiply(pressure, 100)
-            density = np.loadtxt(dataFileName_1)[:, 12]
-            density = np.multiply(density, (1 / 1000))
-            Z = np.loadtxt(dataFileName_1)[:, 13]
-
-            if job.isfile(
-                str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-            ):
-                dataJustin = open("log-liquid.txt", "w")
-                dataJustin2 = open("log-vapor.txt", "w")
-
-                dataFileName_2 = str(
-                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+        for job in jobs:
+            with (job):
+                dataFileName_1 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_0.dat"
                 )
 
-                MCstep2 = np.loadtxt(dataFileName_2)[:, 0]
-                energy2 = np.loadtxt(dataFileName_2)[:, 1]
-                # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                # energy2 = np.multiply(energy2,(8.3144626181532/1000))
-                pressure2 = np.loadtxt(dataFileName_2)[:, 10]
-                pressure2 = np.multiply(pressure2, 100)
-                density2 = np.loadtxt(dataFileName_2)[:, 12]
-                density2 = np.multiply(density2, (1 / 1000))
-                Z2 = np.loadtxt(dataFileName_2)[:, 13]
+                MCstep = np.loadtxt(dataFileName_1)[:, 0]
+                energy = np.loadtxt(dataFileName_1)[:, 1]
+                # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                # energy = np.multiply(energy,(8.3144626181532/1000))
+                pressure = np.loadtxt(dataFileName_1)[:, 10]
+                pressure = np.multiply(pressure, 100)
+                density = np.loadtxt(dataFileName_1)[:, 12]
+                density = np.multiply(density, (1 / 1000))
+                Z = np.loadtxt(dataFileName_1)[:, 13]
 
-                dataJustin2.write(
+                if job.isfile(
+                    str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+                ):
+                    dataJustin = open("log-liquid.txt", "w")
+                    dataJustin2 = open("log-vapor.txt", "w")
+
+                    dataFileName_2 = str(
+                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                    )
+
+                    MCstep2 = np.loadtxt(dataFileName_2)[:, 0]
+                    energy2 = np.loadtxt(dataFileName_2)[:, 1]
+                    # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                    # energy2 = np.multiply(energy2,(8.3144626181532/1000))
+                    pressure2 = np.loadtxt(dataFileName_2)[:, 10]
+                    pressure2 = np.multiply(pressure2, 100)
+                    density2 = np.loadtxt(dataFileName_2)[:, 12]
+                    density2 = np.multiply(density2, (1 / 1000))
+                    Z2 = np.loadtxt(dataFileName_2)[:, 13]
+
+                    dataJustin2.write(
+                        f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n"
+                    )
+                    for i in range(len(MCstep2)):
+                        dataJustin2.write(
+                            f"{MCstep2[i]:<22} {energy2[i]:<22} {np.double(0.0):<22} {pressure2[i]:<22} {np.double(job.sp.temperature):<22} {density2[i]:<22} \n"
+                        )
+                    dataJustin2.close()
+
+                else:
+                    dataJustin = open("log-npt.txt", "w")
+                    trajJustin = md.load(
+                        "production_run_BOX_0.dcd", top="mosdef_box_0.pdb"
+                    )
+                    trajJustin.save_gsd("trajectory-npt.gsd")
+
+                dataJustin.write(
                     f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n"
                 )
-                for i in range(len(MCstep2)):
-                    dataJustin2.write(
-                        f"{MCstep2[i]:<22} {energy2[i]:<22} {np.double(0.0):<22} {pressure2[i]:<22} {np.double(job.sp.temperature):<22} {density2[i]:<22} \n"
+                for i in range(len(MCstep)):
+                    dataJustin.write(
+                        f"{MCstep[i]:<22} {energy[i]:<22} {np.double(0.0):<22} {pressure[i]:<22} {np.double(job.sp.temperature):<22} {density[i]:<22} \n"
                     )
-                dataJustin2.close()
-
-            else:
-                dataJustin = open("log-npt.txt", "w")
-                trajJustin = md.load(
-                    "production_run_BOX_0.dcd", top="mosdef_box_0.pdb"
-                )
-                trajJustin.save_gsd("trajectory-npt.gsd")
-
-            dataJustin.write(
-                f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n"
-            )
-            for i in range(len(MCstep)):
-                dataJustin.write(
-                    f"{MCstep[i]:<22} {energy[i]:<22} {np.double(0.0):<22} {pressure[i]:<22} {np.double(job.sp.temperature):<22} {density[i]:<22} \n"
-                )
-            dataJustin.close()
+                dataJustin.close()
 
 
 ###################################################################
@@ -2391,427 +2387,395 @@ def jobJustin(*jobs):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_4c_job_equilb_design_ensemble_completed_properly for job in jobs
+        part_4d_job_production_run_completed_properly for job in jobs   #can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
+
     )
 )  # part_4c_job_equilb_design_ensemble_completed_properly
 @FlowProject.post.isfile("setAverages.txt")
 def analysis(*jobs):
-    if not all(
-        gomc_sim_completed_properly(job, production_control_file_name_str)
+    if all (gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
-        print(
-            "Not all jobs are complete! Proceed cautiously, statisticians beware."
+    
+        '''if not all(
+            gomc_sim_completed_properly(job, production_control_file_name_str)
+            for job in jobs
+        ):
+            print(
+                "Not all jobs are complete! Proceed cautiously, statisticians beware."
+            )'''
+
+
+        moreDateHere = open(
+            "averagesWithinReplicatez.txt", "a+"
+        )  # open("averagesWithinReplicatez.txt","a+")
+
+        dataHere = open("setAverages.txt", "a+")  # open("setAverages.txt","a+")
+        moreDateHere.write(
+            f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n"
+        )
+        dataHere.write(
+            f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n"
         )
 
-    # print("___________________________________________")
-    # print(jobs)
-    # print("___________________________________________")
+        allTheJobs = np.double(len(list(pr.groupby())))  # {"replica"}))))
+        replicaCount = allTheJobs / np.double(len(pr.find_jobs({"replica": 1})))
+        uniqueJobs = np.double(allTheJobs) / replicaCount
 
-    """THIS CAN BE USEFUL DON"T DELETE
-    moreDataHereName = ""
+        allTheJobs = int(allTheJobs)
+        replicaCount = int(replicaCount)
+        uniqueJobs = int(uniqueJobs)
 
-    for job in jobs:
-        keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
-        for k in keys:
-            moreDataHereName = moreDataHereName + str(job.sp[k])
-    moreDataHereName = "averagesWithinReplicates" + moreDataHereName + ".txt" # this is a very fast way to find the status of the sims
-    moreDateHere = open(moreDataHereName,"w")
-    if not all(gomc_sim_completed_properly(job,production_control_file_name_str) for job in jobs):
-        moreDateHere.write("Not all jobs are complete! Proceed cautiously, statisticians beware. \n") #the usefull bit ending """
+        replicateAverageEnergy = []
+        replicateAveragePressure = []
+        replicateAverageDensity = []
+        replicateAverageZ = []
+        replicateAverageT = []
+        replicateAverageMolecule = []
+        replicateAverageJob = []
+        replicateAverageName = []
+        replicateAverageReplicate = []
+        replicateAverageOptions = []
 
-    """if "moreDataHereHeader" not in globals():
-        global moreDataHereHeader
-        moreDataHereHeader = True
-    else:
-        #global moreDataHereHeader
-        moreDataHereHeader = False
+        replicateAverageEnergy2 = []
+        replicateAveragePressure2 = []
+        replicateAverageDensity2 = []
+        replicateAverageZ2 = []
+        replicateAverageT2 = []
+        replicateAverageMolecule2 = []
+        replicateAverageJob2 = []
+        replicateAverageName2 = []
+        replicateAverageReplicate2 = []
+        replicateAverageOptions2 = []
 
-
-    if "dataHereHeader" not in globals():
-        global dataHereHeader
-        dataHereHeader = True
-    else:
-        #global dataHereHeader
-        dataHereHeader = False"""
-
-    moreDateHere = open(
-        "averagesWithinReplicatez.txt", "a+"
-    )  # open("averagesWithinReplicatez.txt","a+")
-    # if ('mean_energy' not in moreDateHere.read()):
-    #    moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
-
-    dataHere = open("setAverages.txt", "a+")  # open("setAverages.txt","a+")
-    # if ('mean_energy' not in dataHere.read()):
-    #    dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
-
-    # moreDataHereHeader = str("{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
-    # dataHereHeader = str("{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
-    moreDateHere.write(
-        f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n"
-    )
-    dataHere.write(
-        f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n"
-    )
-
-    allTheJobs = np.double(len(list(pr.groupby())))  # {"replica"}))))
-    replicaCount = allTheJobs / np.double(len(pr.find_jobs({"replica": 1})))
-    uniqueJobs = np.double(allTheJobs) / replicaCount
-
-    allTheJobs = int(allTheJobs)
-    replicaCount = int(replicaCount)
-    uniqueJobs = int(uniqueJobs)
-
-    replicateAverageEnergy = []
-    replicateAveragePressure = []
-    replicateAverageDensity = []
-    replicateAverageZ = []
-    replicateAverageT = []
-    replicateAverageMolecule = []
-    replicateAverageJob = []
-    replicateAverageName = []
-    replicateAverageReplicate = []
-    replicateAverageOptions = []
-
-    replicateAverageEnergy2 = []
-    replicateAveragePressure2 = []
-    replicateAverageDensity2 = []
-    replicateAverageZ2 = []
-    replicateAverageT2 = []
-    replicateAverageMolecule2 = []
-    replicateAverageJob2 = []
-    replicateAverageName2 = []
-    replicateAverageReplicate2 = []
-    replicateAverageOptions2 = []
-
-    for job in jobs:
-        # moreDateHere = open("averagesWithinReplicates.txt","w")
-        with (job):
-            # print(job.sp)
-            dataFileName_1 = str(
-                "Blk_" + production_control_file_name_str + "_BOX_0.dat"
-            )
-
-            MCstep = np.loadtxt(dataFileName_1)[:, 0]
-            energy = np.loadtxt(dataFileName_1)[:, 1]
-            # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-            # energy = np.multiply(energy,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
-            # note to convert to K try /N(molecules)*0.008314
-            pressure = np.loadtxt(dataFileName_1)[:, 10]
-            pressure = np.multiply(pressure, 100)
-            density = np.loadtxt(dataFileName_1)[:, 12]
-            density = np.multiply(density, (1 / 1000))
-            Z = np.loadtxt(dataFileName_1)[:, 13]
-
-            replicateAverageEnergy.append(np.double(np.mean(energy)))
-            replicateAveragePressure.append(np.double(np.mean(pressure)))
-            replicateAverageDensity.append(np.double(np.mean(density)))
-            replicateAverageZ.append(np.double(np.mean(Z)))
-            replicateAverageT.append(job.sp.temperature)
-            replicateAverageMolecule.append(job.sp.molecule)
-            replicateAverageJob.append(str(job))
-
-            nameHolder = ""
-
-            keys = sorted(
-                tuple(k for k in job.sp.keys() if k not in {"replica"})
-            )
-            for k in keys:
-                nameHolder = nameHolder + str(job.sp[k])
-
-            replicateAverageName.append(str(nameHolder + "Box0"))
-            replicateAverageReplicate.append(job.sp.replica)
-            options = (
-                str(job.sp.engine)
-                + str(job.sp.ensemble)
-                + str(job.sp.cutoff_style)
-                + str(job.sp.long_range_correction)
-                + "Box0"
-            )
-            replicateAverageOptions.append(options)
-
-            if job.isfile(
-                str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-            ):
-                dataFileName_2 = str(
-                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+        for job in jobs:
+            # moreDateHere = open("averagesWithinReplicates.txt","w")
+            with (job):
+                # print(job.sp)
+                dataFileName_1 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_0.dat"
                 )
 
-                energy2 = np.loadtxt(dataFileName_2)[:, 1]
-                # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                # energy2 = np.multiply(energy2,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
+                MCstep = np.loadtxt(dataFileName_1)[:, 0]
+                energy = np.loadtxt(dataFileName_1)[:, 1]
+                # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                # energy = np.multiply(energy,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
                 # note to convert to K try /N(molecules)*0.008314
-                pressure2 = np.loadtxt(dataFileName_2)[:, 10]
-                pressure2 = np.multiply(pressure2, 100)
-                density2 = np.loadtxt(dataFileName_2)[:, 12]
-                density2 = np.multiply(density2, (1 / 1000))
-                Z2 = np.loadtxt(dataFileName_2)[:, 13]
+                pressure = np.loadtxt(dataFileName_1)[:, 10]
+                pressure = np.multiply(pressure, 100)
+                density = np.loadtxt(dataFileName_1)[:, 12]
+                density = np.multiply(density, (1 / 1000))
+                Z = np.loadtxt(dataFileName_1)[:, 13]
 
-                replicateAverageName2.append(str(nameHolder + "Box1"))
-                replicateAverageReplicate2.append(job.sp.replica)
-                options2 = (
+                replicateAverageEnergy.append(np.double(np.mean(energy)))
+                replicateAveragePressure.append(np.double(np.mean(pressure)))
+                replicateAverageDensity.append(np.double(np.mean(density)))
+                replicateAverageZ.append(np.double(np.mean(Z)))
+                replicateAverageT.append(job.sp.temperature)
+                replicateAverageMolecule.append(job.sp.molecule)
+                replicateAverageJob.append(str(job))
+
+                nameHolder = ""
+
+                keys = sorted(
+                    tuple(k for k in job.sp.keys() if k not in {"replica"})
+                )
+                for k in keys:
+                    nameHolder = nameHolder + str(job.sp[k])
+
+                replicateAverageName.append(str(nameHolder + "Box0"))
+                replicateAverageReplicate.append(job.sp.replica)
+                options = (
                     str(job.sp.engine)
                     + str(job.sp.ensemble)
                     + str(job.sp.cutoff_style)
                     + str(job.sp.long_range_correction)
-                    + "Box1"
+                    + "Box0"
                 )
-                replicateAverageOptions2.append(options2)
+                replicateAverageOptions.append(options)
 
-                replicateAverageEnergy2.append(np.double(np.mean(energy2)))
-                replicateAveragePressure2.append(np.double(np.mean(pressure2)))
-                replicateAverageDensity2.append(np.double(np.mean(density2)))
-                replicateAverageZ2.append(np.double(np.mean(Z)))
-                replicateAverageT2.append(job.sp.temperature)
-                replicateAverageMolecule2.append(job.sp.molecule)
-                replicateAverageJob2.append(str(job))
+                if job.isfile(
+                    str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+                ):
+                    dataFileName_2 = str(
+                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                    )
 
-                moreDateHere.write(
-                    f"{replicateAverageEnergy2[-1]:<22} {replicateAverageDensity2[-1]:<22} {replicateAverageZ2[-1]:<22} {replicateAverageT2[-1]:<22} {replicateAveragePressure2[-1]:<22} {replicateAverageMolecule2[-1]:<22} {replicateAverageJob2[-1]:2<22} {replicateAverageOptions2[-1]:<22} \n"
+                    energy2 = np.loadtxt(dataFileName_2)[:, 1]
+                    # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
+                    # energy2 = np.multiply(energy2,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
+                    # note to convert to K try /N(molecules)*0.008314
+                    pressure2 = np.loadtxt(dataFileName_2)[:, 10]
+                    pressure2 = np.multiply(pressure2, 100)
+                    density2 = np.loadtxt(dataFileName_2)[:, 12]
+                    density2 = np.multiply(density2, (1 / 1000))
+                    Z2 = np.loadtxt(dataFileName_2)[:, 13]
+
+                    replicateAverageName2.append(str(nameHolder + "Box1"))
+                    replicateAverageReplicate2.append(job.sp.replica)
+                    options2 = (
+                        str(job.sp.engine)
+                        + str(job.sp.ensemble)
+                        + str(job.sp.cutoff_style)
+                        + str(job.sp.long_range_correction)
+                        + "Box1"
+                    )
+                    replicateAverageOptions2.append(options2)
+
+                    replicateAverageEnergy2.append(np.double(np.mean(energy2)))
+                    replicateAveragePressure2.append(np.double(np.mean(pressure2)))
+                    replicateAverageDensity2.append(np.double(np.mean(density2)))
+                    replicateAverageZ2.append(np.double(np.mean(Z)))
+                    replicateAverageT2.append(job.sp.temperature)
+                    replicateAverageMolecule2.append(job.sp.molecule)
+                    replicateAverageJob2.append(str(job))
+
+                    moreDateHere.write(
+                        f"{replicateAverageEnergy2[-1]:<22} {replicateAverageDensity2[-1]:<22} {replicateAverageZ2[-1]:<22} {replicateAverageT2[-1]:<22} {replicateAveragePressure2[-1]:<22} {replicateAverageMolecule2[-1]:<22} {replicateAverageJob2[-1]:2<22} {replicateAverageOptions2[-1]:<22} \n"
+                    )
+
+            moreDateHere.write(
+                f"{replicateAverageEnergy[-1]:<22} {replicateAverageDensity[-1]:<22} {replicateAverageZ[-1]:<22} {replicateAverageT[-1]:<22} {replicateAveragePressure[-1]:<22} {replicateAverageMolecule[-1]:<22} {replicateAverageJob[-1]:2<22} {replicateAverageOptions[-1]:<22} \n"
+            )
+
+        setMeanEnergy = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanPressure = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanDensity = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanZ = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanTemperature = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanMolecule = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setMeanOptions = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+
+        setStdEnergy = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setStdPressure = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setStdDensity = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+        setStdZ = pd.DataFrame(
+            index=range(1), columns=np.unique(replicateAverageName)
+        )
+
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            setMeanEnergy2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanPressure2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanDensity2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanZ2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanTemperature2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanMolecule2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setMeanOptions2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+
+            setStdEnergy2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setStdPressure2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setStdDensity2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+            setStdZ2 = pd.DataFrame(
+                index=range(1), columns=np.unique(replicateAverageName2)
+            )
+
+        for i in np.unique(replicateAverageName):
+            setMeanEnergy[i] = 0
+            setMeanPressure[i] = 0
+            setMeanDensity[i] = 0
+            setMeanZ[i] = 0
+            setMeanTemperature[i] = 0
+            setMeanMolecule[i] = ""
+            setMeanOptions[i] = ""
+
+            setStdEnergy[i] = 0
+            setStdPressure[i] = 0
+            setStdDensity[i] = 0
+            setStdZ[i] = 0
+
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            for i in np.unique(replicateAverageName2):
+                setMeanEnergy2[i] = 0
+                setMeanPressure2[i] = 0
+                setMeanDensity2[i] = 0
+                setMeanZ2[i] = 0
+                setMeanTemperature2[i] = 0
+                setMeanMolecule2[i] = ""
+                setMeanOptions2[i] = ""
+
+                setStdEnergy2[i] = 0
+                setStdPressure2[i] = 0
+                setStdDensity2[i] = 0
+                setStdZ2[i] = 0
+
+        for i in range(len(replicateAverageEnergy)):
+            setMeanEnergy[replicateAverageName[i]] = (
+                setMeanEnergy[replicateAverageName[i]] + replicateAverageEnergy[i]
+            )
+            setMeanPressure[replicateAverageName[i]] = (
+                setMeanPressure[replicateAverageName[i]]
+                + replicateAveragePressure[i]
+            )
+            setMeanDensity[replicateAverageName[i]] = (
+                setMeanDensity[replicateAverageName[i]] + replicateAverageDensity[i]
+            )
+            setMeanZ[replicateAverageName[i]] = (
+                setMeanZ[replicateAverageName[i]] + replicateAverageZ[i]
+            )
+            setMeanTemperature[replicateAverageName[i]] = replicateAverageT[i]
+            setMeanMolecule[replicateAverageName[i]] = replicateAverageMolecule[i]
+            setMeanOptions[replicateAverageName[i]] = replicateAverageOptions[i]
+
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            for i in range(len(replicateAverageEnergy2)):
+                setMeanEnergy2[replicateAverageName2[i]] = (
+                    setMeanEnergy2[replicateAverageName2[i]]
+                    + replicateAverageEnergy2[i]
                 )
+                setMeanPressure2[replicateAverageName2[i]] = (
+                    setMeanPressure2[replicateAverageName2[i]]
+                    + replicateAveragePressure2[i]
+                )
+                setMeanDensity2[replicateAverageName2[i]] = (
+                    setMeanDensity2[replicateAverageName2[i]]
+                    + replicateAverageDensity2[i]
+                )
+                setMeanZ2[replicateAverageName2[i]] = (
+                    setMeanZ2[replicateAverageName2[i]] + replicateAverageZ2[i]
+                )
+                setMeanTemperature2[replicateAverageName2[i]] = replicateAverageT2[
+                    i
+                ]
+                setMeanMolecule2[
+                    replicateAverageName2[i]
+                ] = replicateAverageMolecule2[i]
+                setMeanOptions2[
+                    replicateAverageName2[i]
+                ] = replicateAverageOptions2[i]
 
-        moreDateHere.write(
-            f"{replicateAverageEnergy[-1]:<22} {replicateAverageDensity[-1]:<22} {replicateAverageZ[-1]:<22} {replicateAverageT[-1]:<22} {replicateAveragePressure[-1]:<22} {replicateAverageMolecule[-1]:<22} {replicateAverageJob[-1]:2<22} {replicateAverageOptions[-1]:<22} \n"
-        )
+        for i in np.unique(replicateAverageName):
+            setMeanEnergy[i] /= replicaCount
+            setMeanPressure[i] /= replicaCount
+            setMeanDensity[i] /= replicaCount
+            setMeanZ[i] /= replicaCount
 
-    setMeanEnergy = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanPressure = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanDensity = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanZ = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanTemperature = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanMolecule = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setMeanOptions = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            for i in np.unique(replicateAverageName2):
+                setMeanEnergy2[i] /= replicaCount
+                setMeanPressure2[i] /= replicaCount
+                setMeanDensity2[i] /= replicaCount
+                setMeanZ2[i] /= replicaCount
 
-    setStdEnergy = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setStdPressure = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setStdDensity = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
-    setStdZ = pd.DataFrame(
-        index=range(1), columns=np.unique(replicateAverageName)
-    )
+        for i in range(len(replicateAverageEnergy)):
 
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        setMeanEnergy2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanPressure2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanDensity2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanZ2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanTemperature2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanMolecule2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setMeanOptions2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-
-        setStdEnergy2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setStdPressure2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setStdDensity2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-        setStdZ2 = pd.DataFrame(
-            index=range(1), columns=np.unique(replicateAverageName2)
-        )
-
-    for i in np.unique(replicateAverageName):
-        setMeanEnergy[i] = 0
-        setMeanPressure[i] = 0
-        setMeanDensity[i] = 0
-        setMeanZ[i] = 0
-        setMeanTemperature[i] = 0
-        setMeanMolecule[i] = ""
-        setMeanOptions[i] = ""
-
-        setStdEnergy[i] = 0
-        setStdPressure[i] = 0
-        setStdDensity[i] = 0
-        setStdZ[i] = 0
-
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        for i in np.unique(replicateAverageName2):
-            setMeanEnergy2[i] = 0
-            setMeanPressure2[i] = 0
-            setMeanDensity2[i] = 0
-            setMeanZ2[i] = 0
-            setMeanTemperature2[i] = 0
-            setMeanMolecule2[i] = ""
-            setMeanOptions2[i] = ""
-
-            setStdEnergy2[i] = 0
-            setStdPressure2[i] = 0
-            setStdDensity2[i] = 0
-            setStdZ2[i] = 0
-
-    for i in range(len(replicateAverageEnergy)):
-        setMeanEnergy[replicateAverageName[i]] = (
-            setMeanEnergy[replicateAverageName[i]] + replicateAverageEnergy[i]
-        )
-        setMeanPressure[replicateAverageName[i]] = (
-            setMeanPressure[replicateAverageName[i]]
-            + replicateAveragePressure[i]
-        )
-        setMeanDensity[replicateAverageName[i]] = (
-            setMeanDensity[replicateAverageName[i]] + replicateAverageDensity[i]
-        )
-        setMeanZ[replicateAverageName[i]] = (
-            setMeanZ[replicateAverageName[i]] + replicateAverageZ[i]
-        )
-        setMeanTemperature[replicateAverageName[i]] = replicateAverageT[i]
-        setMeanMolecule[replicateAverageName[i]] = replicateAverageMolecule[i]
-        setMeanOptions[replicateAverageName[i]] = replicateAverageOptions[i]
-
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        for i in range(len(replicateAverageEnergy2)):
-            setMeanEnergy2[replicateAverageName2[i]] = (
-                setMeanEnergy2[replicateAverageName2[i]]
-                + replicateAverageEnergy2[i]
-            )
-            setMeanPressure2[replicateAverageName2[i]] = (
-                setMeanPressure2[replicateAverageName2[i]]
-                + replicateAveragePressure2[i]
-            )
-            setMeanDensity2[replicateAverageName2[i]] = (
-                setMeanDensity2[replicateAverageName2[i]]
-                + replicateAverageDensity2[i]
-            )
-            setMeanZ2[replicateAverageName2[i]] = (
-                setMeanZ2[replicateAverageName2[i]] + replicateAverageZ2[i]
-            )
-            setMeanTemperature2[replicateAverageName2[i]] = replicateAverageT2[
-                i
-            ]
-            setMeanMolecule2[
-                replicateAverageName2[i]
-            ] = replicateAverageMolecule2[i]
-            setMeanOptions2[
-                replicateAverageName2[i]
-            ] = replicateAverageOptions2[i]
-
-    for i in np.unique(replicateAverageName):
-        setMeanEnergy[i] /= replicaCount
-        setMeanPressure[i] /= replicaCount
-        setMeanDensity[i] /= replicaCount
-        setMeanZ[i] /= replicaCount
-
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        for i in np.unique(replicateAverageName2):
-            setMeanEnergy2[i] /= replicaCount
-            setMeanPressure2[i] /= replicaCount
-            setMeanDensity2[i] /= replicaCount
-            setMeanZ2[i] /= replicaCount
-
-    for i in range(len(replicateAverageEnergy)):
-
-        setStdEnergy[replicateAverageName[i]] += (
-            replicateAverageEnergy[i] - setMeanEnergy[replicateAverageName[i]]
-        ) ** 2
-        setStdPressure[replicateAverageName[i]] += (
-            replicateAveragePressure[i]
-            - setMeanPressure[replicateAverageName[i]]
-        ) ** 2
-        setStdDensity[replicateAverageName[i]] += (
-            replicateAverageDensity[i] - setMeanDensity[replicateAverageName[i]]
-        ) ** 2
-        setStdZ[replicateAverageName[i]] += (
-            replicateAverageZ[i] - setMeanZ[replicateAverageName[i]]
-        ) ** 2
-
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        for i in range(len(replicateAverageEnergy2)):
-
-            setStdEnergy2[replicateAverageName2[i]] += (
-                replicateAverageEnergy2[i]
-                - setMeanEnergy2[replicateAverageName2[i]]
+            setStdEnergy[replicateAverageName[i]] += (
+                replicateAverageEnergy[i] - setMeanEnergy[replicateAverageName[i]]
             ) ** 2
-            setStdPressure2[replicateAverageName2[i]] += (
-                replicateAveragePressure2[i]
-                - setMeanPressure2[replicateAverageName2[i]]
+            setStdPressure[replicateAverageName[i]] += (
+                replicateAveragePressure[i]
+                - setMeanPressure[replicateAverageName[i]]
             ) ** 2
-            setStdDensity2[replicateAverageName2[i]] += (
-                replicateAverageDensity2[i]
-                - setMeanDensity2[replicateAverageName2[i]]
+            setStdDensity[replicateAverageName[i]] += (
+                replicateAverageDensity[i] - setMeanDensity[replicateAverageName[i]]
             ) ** 2
-            setStdZ2[replicateAverageName2[i]] += (
-                replicateAverageZ2[i] - setMeanZ2[replicateAverageName2[i]]
+            setStdZ[replicateAverageName[i]] += (
+                replicateAverageZ[i] - setMeanZ[replicateAverageName[i]]
             ) ** 2
 
-    for i in np.unique(replicateAverageName):
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            for i in range(len(replicateAverageEnergy2)):
 
-        setStdEnergy[i] = (setStdEnergy[i] / (replicaCount - 1)) ** 0.5
-        setStdPressure[i] = (setStdPressure[i] / (replicaCount - 1)) ** 0.5
-        setStdDensity[i] = (setStdDensity[i] / (replicaCount - 1)) ** 0.5
-        setStdZ[i] = (setStdZ[i] / (replicaCount - 1)) ** 0.5
+                setStdEnergy2[replicateAverageName2[i]] += (
+                    replicateAverageEnergy2[i]
+                    - setMeanEnergy2[replicateAverageName2[i]]
+                ) ** 2
+                setStdPressure2[replicateAverageName2[i]] += (
+                    replicateAveragePressure2[i]
+                    - setMeanPressure2[replicateAverageName2[i]]
+                ) ** 2
+                setStdDensity2[replicateAverageName2[i]] += (
+                    replicateAverageDensity2[i]
+                    - setMeanDensity2[replicateAverageName2[i]]
+                ) ** 2
+                setStdZ2[replicateAverageName2[i]] += (
+                    replicateAverageZ2[i] - setMeanZ2[replicateAverageName2[i]]
+                ) ** 2
 
-        # print(setMeanEnergy.loc[0,i])
+        for i in np.unique(replicateAverageName):
 
-        dataHere.write(
-            f"{setMeanEnergy.loc[0,i]:<22} {setStdEnergy.loc[0,i]:<22} {setMeanPressure.loc[0,i]:<22} {setStdPressure.loc[0,i]:<22} {setMeanDensity.loc[0,i]:<22} {setStdDensity.loc[0,i]:<22} {setMeanZ.loc[0,i]:<22} {setStdZ.loc[0,i]:<22} {setMeanTemperature.loc[0,i]:<22} {setMeanMolecule.loc[0,i]:<22} {setMeanOptions.loc[0,i]:<22} \n"
-        )
+            setStdEnergy[i] = (setStdEnergy[i] / (replicaCount - 1)) ** 0.5
+            setStdPressure[i] = (setStdPressure[i] / (replicaCount - 1)) ** 0.5
+            setStdDensity[i] = (setStdDensity[i] / (replicaCount - 1)) ** 0.5
+            setStdZ[i] = (setStdZ[i] / (replicaCount - 1)) ** 0.5
 
-    if job.isfile(
-        str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
-    ):
-        for i in np.unique(replicateAverageName2):
-            setStdEnergy2[i] = (setStdEnergy2[i] / (replicaCount - 1)) ** 0.5
-            setStdPressure2[i] = (
-                setStdPressure2[i] / (replicaCount - 1)
-            ) ** 0.5
-            setStdDensity2[i] = (setStdDensity2[i] / (replicaCount - 1)) ** 0.5
-            setStdZ2[i] = (setStdZ2[i] / (replicaCount - 1)) ** 0.5
+            # print(setMeanEnergy.loc[0,i])
 
             dataHere.write(
-                f"{setMeanEnergy2.loc[0,i]:<22} {setStdEnergy2.loc[0,i]:<22} {setMeanPressure2.loc[0,i]:<22} {setStdPressure2.loc[0,i]:<22} {setMeanDensity2.loc[0,i]:<22} {setStdDensity2.loc[0,i]:<22} {setMeanZ2.loc[0,i]:<22} {setStdZ2.loc[0,i]:<22} {setMeanTemperature2.loc[0,i]:<22} {setMeanMolecule2.loc[0,i]:<22} {setMeanOptions2.loc[0,i]:<22} \n"
+                f"{setMeanEnergy.loc[0,i]:<22} {setStdEnergy.loc[0,i]:<22} {setMeanPressure.loc[0,i]:<22} {setStdPressure.loc[0,i]:<22} {setMeanDensity.loc[0,i]:<22} {setStdDensity.loc[0,i]:<22} {setMeanZ.loc[0,i]:<22} {setStdZ.loc[0,i]:<22} {setMeanTemperature.loc[0,i]:<22} {setMeanMolecule.loc[0,i]:<22} {setMeanOptions.loc[0,i]:<22} \n"
             )
 
-    # dataHere.write(f"{str(replicateAverageName2):<22} \n")
+        if job.isfile(
+            str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+        ):
+            for i in np.unique(replicateAverageName2):
+                setStdEnergy2[i] = (setStdEnergy2[i] / (replicaCount - 1)) ** 0.5
+                setStdPressure2[i] = (
+                    setStdPressure2[i] / (replicaCount - 1)
+                ) ** 0.5
+                setStdDensity2[i] = (setStdDensity2[i] / (replicaCount - 1)) ** 0.5
+                setStdZ2[i] = (setStdZ2[i] / (replicaCount - 1)) ** 0.5
 
-    # moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
-    # dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
+                dataHere.write(
+                    f"{setMeanEnergy2.loc[0,i]:<22} {setStdEnergy2.loc[0,i]:<22} {setMeanPressure2.loc[0,i]:<22} {setStdPressure2.loc[0,i]:<22} {setMeanDensity2.loc[0,i]:<22} {setStdDensity2.loc[0,i]:<22} {setMeanZ2.loc[0,i]:<22} {setStdZ2.loc[0,i]:<22} {setMeanTemperature2.loc[0,i]:<22} {setMeanMolecule2.loc[0,i]:<22} {setMeanOptions2.loc[0,i]:<22} \n"
+                )
 
-    dataHere.close()
-    moreDateHere.close()
+        # dataHere.write(f"{str(replicateAverageName2):<22} \n")
+
+        # moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
+        # dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
+
+        dataHere.close()
+        moreDateHere.close()
 
 
 # ******************************************************
