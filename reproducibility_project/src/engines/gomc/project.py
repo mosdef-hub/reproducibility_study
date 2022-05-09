@@ -2292,21 +2292,23 @@ def statepoint_minus_replica(job):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_4d_job_production_run_completed_properly for job in jobs       #can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
+        part_4d_job_production_run_completed_properly
+        for job in jobs  # can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
     )
 )  # beware of string issue: if u have an old version cast the long range correction as str(long_range_correction)
 @FlowProject.post.isfile("trajectory-npt.gsd")
 def jobJustin(*jobs):
-    if all (gomc_sim_completed_properly(job, production_control_file_name_str)
+    if all(
+        gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
-        '''if not all(
+        """if not all(
             gomc_sim_completed_properly(job, production_control_file_name_str)
             for job in jobs
         ):
             print(
                 "Not all jobs are complete! Proceed cautiously, statisticians beware."
-            )'''
+            )"""
 
         for job in jobs:
             with (job):
@@ -2325,7 +2327,9 @@ def jobJustin(*jobs):
                 Z = np.loadtxt(dataFileName_1)[:, 13]
 
                 if job.isfile(
-                    str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+                    str(
+                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                    )
                 ):
                     dataJustin = open("log-liquid.txt", "w")
                     dataJustin2 = open("log-vapor.txt", "w")
@@ -2387,24 +2391,24 @@ def jobJustin(*jobs):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_4d_job_production_run_completed_properly for job in jobs   #can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
-
+        part_4d_job_production_run_completed_properly
+        for job in jobs  # can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
     )
 )  # part_4c_job_equilb_design_ensemble_completed_properly
 @FlowProject.post.isfile("setAverages.txt")
 def analysis(*jobs):
-    if all (gomc_sim_completed_properly(job, production_control_file_name_str)
+    if all(
+        gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
-    
-        '''if not all(
+
+        """if not all(
             gomc_sim_completed_properly(job, production_control_file_name_str)
             for job in jobs
         ):
             print(
                 "Not all jobs are complete! Proceed cautiously, statisticians beware."
-            )'''
-
+            )"""
 
         moreDateHere = open(
             "averagesWithinReplicatez.txt", "a+"
@@ -2495,7 +2499,9 @@ def analysis(*jobs):
                 replicateAverageOptions.append(options)
 
                 if job.isfile(
-                    str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
+                    str(
+                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                    )
                 ):
                     dataFileName_2 = str(
                         "Blk_" + production_control_file_name_str + "_BOX_1.dat"
@@ -2523,8 +2529,12 @@ def analysis(*jobs):
                     replicateAverageOptions2.append(options2)
 
                     replicateAverageEnergy2.append(np.double(np.mean(energy2)))
-                    replicateAveragePressure2.append(np.double(np.mean(pressure2)))
-                    replicateAverageDensity2.append(np.double(np.mean(density2)))
+                    replicateAveragePressure2.append(
+                        np.double(np.mean(pressure2))
+                    )
+                    replicateAverageDensity2.append(
+                        np.double(np.mean(density2))
+                    )
                     replicateAverageZ2.append(np.double(np.mean(Z)))
                     replicateAverageT2.append(job.sp.temperature)
                     replicateAverageMolecule2.append(job.sp.molecule)
@@ -2644,20 +2654,24 @@ def analysis(*jobs):
 
         for i in range(len(replicateAverageEnergy)):
             setMeanEnergy[replicateAverageName[i]] = (
-                setMeanEnergy[replicateAverageName[i]] + replicateAverageEnergy[i]
+                setMeanEnergy[replicateAverageName[i]]
+                + replicateAverageEnergy[i]
             )
             setMeanPressure[replicateAverageName[i]] = (
                 setMeanPressure[replicateAverageName[i]]
                 + replicateAveragePressure[i]
             )
             setMeanDensity[replicateAverageName[i]] = (
-                setMeanDensity[replicateAverageName[i]] + replicateAverageDensity[i]
+                setMeanDensity[replicateAverageName[i]]
+                + replicateAverageDensity[i]
             )
             setMeanZ[replicateAverageName[i]] = (
                 setMeanZ[replicateAverageName[i]] + replicateAverageZ[i]
             )
             setMeanTemperature[replicateAverageName[i]] = replicateAverageT[i]
-            setMeanMolecule[replicateAverageName[i]] = replicateAverageMolecule[i]
+            setMeanMolecule[replicateAverageName[i]] = replicateAverageMolecule[
+                i
+            ]
             setMeanOptions[replicateAverageName[i]] = replicateAverageOptions[i]
 
         if job.isfile(
@@ -2679,9 +2693,9 @@ def analysis(*jobs):
                 setMeanZ2[replicateAverageName2[i]] = (
                     setMeanZ2[replicateAverageName2[i]] + replicateAverageZ2[i]
                 )
-                setMeanTemperature2[replicateAverageName2[i]] = replicateAverageT2[
-                    i
-                ]
+                setMeanTemperature2[
+                    replicateAverageName2[i]
+                ] = replicateAverageT2[i]
                 setMeanMolecule2[
                     replicateAverageName2[i]
                 ] = replicateAverageMolecule2[i]
@@ -2707,14 +2721,16 @@ def analysis(*jobs):
         for i in range(len(replicateAverageEnergy)):
 
             setStdEnergy[replicateAverageName[i]] += (
-                replicateAverageEnergy[i] - setMeanEnergy[replicateAverageName[i]]
+                replicateAverageEnergy[i]
+                - setMeanEnergy[replicateAverageName[i]]
             ) ** 2
             setStdPressure[replicateAverageName[i]] += (
                 replicateAveragePressure[i]
                 - setMeanPressure[replicateAverageName[i]]
             ) ** 2
             setStdDensity[replicateAverageName[i]] += (
-                replicateAverageDensity[i] - setMeanDensity[replicateAverageName[i]]
+                replicateAverageDensity[i]
+                - setMeanDensity[replicateAverageName[i]]
             ) ** 2
             setStdZ[replicateAverageName[i]] += (
                 replicateAverageZ[i] - setMeanZ[replicateAverageName[i]]
@@ -2758,11 +2774,15 @@ def analysis(*jobs):
             str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
         ):
             for i in np.unique(replicateAverageName2):
-                setStdEnergy2[i] = (setStdEnergy2[i] / (replicaCount - 1)) ** 0.5
+                setStdEnergy2[i] = (
+                    setStdEnergy2[i] / (replicaCount - 1)
+                ) ** 0.5
                 setStdPressure2[i] = (
                     setStdPressure2[i] / (replicaCount - 1)
                 ) ** 0.5
-                setStdDensity2[i] = (setStdDensity2[i] / (replicaCount - 1)) ** 0.5
+                setStdDensity2[i] = (
+                    setStdDensity2[i] / (replicaCount - 1)
+                ) ** 0.5
                 setStdZ2[i] = (setStdZ2[i] / (replicaCount - 1)) ** 0.5
 
                 dataHere.write(
