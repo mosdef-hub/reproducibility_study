@@ -37,13 +37,13 @@ class TestSampler(BaseTest):
             TypeError,
             match=r"Expected input \'job\' of type signac\.contrib\.project\.Job",
         ):
-            get_subsampled_values("foo", property="density", ensemble="npt")
+            get_subsampled_values("foo", prop="density", ensemble="npt")
 
         with pytest.raises(
             ValueError,
-            match=r"Expected \'property\' to be a name of a property",
+            match=r"Expected \'prop\' to be a name of a property",
         ):
-            get_subsampled_values(tmp_job, property="", ensemble="npt")
+            get_subsampled_values(tmp_job, prop="", ensemble="npt")
 
     def test_file_missing(self, tmp_job):
         # by default, the tmp job is missing the file
@@ -55,7 +55,7 @@ class TestSampler(BaseTest):
             }
             get_subsampled_values(
                 tmp_job,
-                property="foo",
+                prop="foo",
                 ensemble="npt",
                 property_filename="missing.txt",
             )
@@ -74,7 +74,7 @@ class TestSampler(BaseTest):
         }
         arr = get_subsampled_values(
             tmp_job,
-            property="foo",
+            prop="foo",
             property_filename="log.txt",
             ensemble="npt",
         )
