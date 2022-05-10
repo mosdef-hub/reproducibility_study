@@ -41,4 +41,4 @@ variable lon equal elong
 variable pai equal epair
 variable filename string "prlog-npt.txt"
 print "step etotal pe evdwl ecoul ebond eangle edihed etail elong epair" file ${filename}
-print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append ${filename} 
+print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append ${filename}
