@@ -53,13 +53,17 @@ md_nvt_props = [
     "potential_energy",
     "kinetic_energy",
     "temperature",
-    "volume",
+    "density",
 ]
 mc_nvt_props = [
     "potential_energy",
     "temperature",
-    "volume",
+    "density",
 ]
+
+
+# make a FlowGroup for all analysis operations, usually faster than the plotting methods
+analysis = Project.make_group(name="analysis")
 
 
 def _aggregate_statistics(val, n):
@@ -73,6 +77,7 @@ def _determine_sampling_information(
     job: signac.contrib.project.Job,
     ensemble: str,
     prop: str,
+    strict: bool,
     filename: str = None,
 ) -> None:
     """Write out sampling results for production properties."""
@@ -90,19 +95,6 @@ def _determine_sampling_information(
             filename=filename,
             variable=prop,
             threshold_fraction=0.75,
-            threshold_neff=100,
-            monte_carlo_override=True,
-        )
-    else:
-        sample_job(
-            job,
-            ensemble=ensemble,
-            filename=filename,
-            variable=prop,
-            threshold_fraction=0.75,
-            threshold_neff=100,
-            monte_carlo_override=False,
-        )
 
 
 def _is_prop_subsampled(
@@ -265,6 +257,7 @@ def create_property_sampling(
 ):
     """Dynamically create the sampling steps for the simulation data."""
 
+    @analysis
     @Project.operation(
         f"{simulation_type}_determine_{ensemble}_{prop}_sampling"
     )
@@ -282,9 +275,14 @@ def create_property_sampling(
         from reproducibility_project.src.analysis.sampler import sample_job
 
         _determine_sampling_information(
-            job=job, ensemble=ensemble, prop=prop, filename=None
+            job=job,
+            ensemble=ensemble,
+            prop=prop,
+            filename=None,
+            strict=False,
         )
 
+<<<<<<< HEAD
 
 # generate md sampling methods
 for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
@@ -315,6 +313,7 @@ def create_largest_t0_operations(
 ):
     """Dynamically create the operations to determine the largest t0 for sampling."""
 
+    @analysis
     @Project.operation(f"{ensemble}_{simulation_type}_write_largest_t0")
     @Project.pre(lambda job: job.isfile(f"log-{ensemble}.txt"))
     @Project.pre(lambda job: job.sp.engine in engine_list)
@@ -362,6 +361,7 @@ def create_write_subsampled_max_t0(
 ):
     """Dynamically create the operations to write the subsampled data based on max t0."""
 
+    @analysis
     @Project.operation(
         f"{ensemble}_{simulation_type}_write_subsampled_data_max_t0"
     )
@@ -417,6 +417,7 @@ def create_calc_prop_statistics(
 ):
     """Dynamically create the functions to calculate property statistics."""
 
+    @analysis
     @Project.operation(
         f"{simulation_type}_{ensemble}_{prop}_calc_prop_statistics"
     )
@@ -459,6 +460,7 @@ def create_calc_aggregate_statistics(
 ):
     """Dynamically create the operations to calculate the aggregate property statistics for each engine."""
 
+    @analysis
     @aggregator.groupby(
         key=[
             "ensemble",
@@ -533,10 +535,11 @@ for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
             prop=prop,
             simulation_type="mc",
         )
+
 '''
 @Project.operation
 @Project.pre(lambda job: job.isfile("log-npt.txt"))
-@Project.pre(lambda job: False)
+@Project.post(lambda job: job.isfile("density-npt.png"))
 @flow.with_job
 def plot_npt_prod_data_with_t0(job):
     """Generate plots for production data with t0 as a vertical line."""
@@ -549,7 +552,12 @@ def plot_npt_prod_data_with_t0(job):
     ensemble = "npt"
 
     # plot t0
-    df = pd.read_csv(job.fn("log-npt.txt"), delim_whitespace=True, header=0)
+    with open(job.fn("log-npt.txt"), "r") as f:
+        line1 = f.readline()
+        df = pd.read_csv(
+            f, delim_whitespace=True, names=line1.replace("#", "").split()
+        )
+    """
     for prop in df.columns:
         data_plt_kwarg = {"label": prop}
         fname = str(prop) + "-" + ensemble + ".png"
@@ -562,11 +570,29 @@ def plot_npt_prod_data_with_t0(job):
             overwrite=True,
             threshold_fraction=0.0,
             threshold_neff=1,
+            strict=False,
             vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )
+    """
+    data_plt_kwarg = {"label": "density"}
+    fname = "density" + "-" + ensemble + ".png"
+    plot_job_property_with_t0(
+        job,
+        filename=fname,
+        property_name="density",
+        log_filename="log-npt.txt",
+        title="Density",
+        overwrite=True,
+        threshold_fraction=0.0,
+        threshold_neff=1,
+        strict=False,
+        vline_scale=1.1,
+        data_plt_kwargs=data_plt_kwarg,
+    )
+'''
 
-
+'''
 @Project.operation
 # @Project.pre(lambda job: job.isfile("trajectory-nvt.gsd"))
 @Project.pre(lambda job: job.isfile("log-nvt.txt"))
@@ -583,7 +609,9 @@ def plot_nvt_prod_data_with_t0(job):
     ensemble = "nvt"
 
     # plot t0
-    df = pd.read_csv(job.fn("log-nvt.txt"), delim_whitespace=True, header=0)
+    with open(job.fn("log-nvt.txt", 'r') as f:
+        line1 = f.readline()
+        df = pd.read_csv(f, delim_whitespace=True, names=line1.replace('#', '').split())
     for prop in df.columns:
         data_plt_kwarg = {"label": prop}
         fname = str(prop) + "-" + ensemble + ".png"
@@ -596,6 +624,7 @@ def plot_nvt_prod_data_with_t0(job):
             overwrite=True,
             threshold_fraction=0.0,
             threshold_neff=1,
+            strict=False,
             vline_scale=1.1,
             data_plt_kwargs=data_plt_kwarg,
         )
