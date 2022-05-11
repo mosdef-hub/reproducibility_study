@@ -49,7 +49,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
 # gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_2_22_22/bin"
-gomc_binary_path = "/wsu/home/go/go07/go0719/githubReproPush/5_9_2022try2/GOMC/bin"  # /home6/maxim/gregFixedHvapInstall/GOMCinstall/GOMC/bin   /wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin
+gomc_binary_path = "/home6/maxim/GOMC/reproducibilityData/reproPush/GOMC/bin"  # /home6/maxim/gregFixedHvapInstall/GOMCinstall/GOMC/bin   /wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin
 
 
 # number of MC cycles
