@@ -123,7 +123,12 @@ def built_lammps(job):
     )
     from reproducibility_project.src.utils.forcefields import load_ff
 
-    system = construct_system(job.sp)[0]
+    if "benzeneUA" == job.sp.molecule:
+        system = construct_system(
+            job.sp, scale_liq_box=2, fix_orientation=True
+        )[0]
+    else:
+        system = construct_system(job.sp)[0]
     parmed_structure = system.to_parmed()
     ff = load_ff(job.sp.forcefield_name)
     system.save(
@@ -217,7 +222,6 @@ def lammps_em_nvt(job):
             "next nmols\n",
             "jump in.minimize startloop\n",
             "label endloop\n",
-            "minimize 1e-2 1e-2 100 100\n",
             "fix integrator all rigid/nve/small molecule \n",
             "run 10000\n",
             "unfix integrator\n",
