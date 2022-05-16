@@ -95,6 +95,21 @@ def _determine_sampling_information(
             filename=filename,
             variable=prop,
             threshold_fraction=0.75,
+            threshold_neff=100,
+            strict=strict,
+            monte_carlo_override=True,
+        )
+    else:
+        sample_job(
+            job,
+            ensemble=ensemble,
+            filename=filename,
+            variable=prop,
+            threshold_fraction=0.75,
+            threshold_neff=100,
+            strict=strict,
+            monte_carlo_override=False,
+        )
 
 
 def _is_prop_subsampled(
@@ -282,7 +297,6 @@ def create_property_sampling(
             strict=False,
         )
 
-<<<<<<< HEAD
 
 # generate md sampling methods
 for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
