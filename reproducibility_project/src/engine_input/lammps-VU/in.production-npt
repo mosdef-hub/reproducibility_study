@@ -1,0 +1,42 @@
+# Lammps script to read in mBuild topologies and perform energy minimization
+# Initialization
+units           real
+boundary        p p p
+atom_style      full
+
+# Assume ff info is included in data file
+pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut, add coul/long for spce/water
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  opls
+read_restart equilibrated-npt.restart
+# Line 12 for fix pppm option with spce water
+pair_modify shift no tail yes
+# Line 14 for fix shake option with spce water
+neighbor        2.5 bin #skin cutoff
+
+timestep ${tstep}
+variable runtime equal 5e6/dt
+thermo 1000
+thermo_style custom step temp press pe epair emol ke etotal density
+
+variable tsample equal ${T} #kelvin, modified by job.sp.temperature
+variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
+# ________________________________________________________________________________________
+
+# Production
+variable startstep equal step
+variable t equal temp
+variable pressure equal press
+variable e equal etotal
+variable p equal pe
+variable k equal ke
+variable d equal density
+variable filename string "prlog-npt.txt"
+fix output_data all print 1000 "${startstep} ${t} ${pressure} $e $p $k $d" file ${filename} title "step temp press etotal pe ke density"
+dump traj1 all xtc 10000 prod-npt.xtc
+fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+run ${runtime}
+unfix integrator
+write_restart production-npt.restart
+undump traj1
