@@ -77,7 +77,6 @@ def lammps_equilibrated_npt(job):
         ]
     else:
         check_equil = [False, False, False, False]
-    print('Average is: ', data[:,6].mean())
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
 
 
