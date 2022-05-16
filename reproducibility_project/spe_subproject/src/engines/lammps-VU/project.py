@@ -22,14 +22,14 @@ class Project(flow.FlowProject):
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def CreatedEngineInput(job):
-    """Check if the .json molecule topology was converted to engine input"""
+    """Check if the .json molecule topology was converted to engine input."""
     return job.isfile("box.lammps")
 
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def OutputThermoData(job):
-    """Check if the engine loaded the input files and wrote out thermo data"""
+    """Check if the engine loaded the input files and wrote out thermo data."""
     return job.isfile("prlog-npt.txt")
 
 
