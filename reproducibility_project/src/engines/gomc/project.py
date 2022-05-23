@@ -52,12 +52,12 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 gomc_binary_path = "/home6/maxim/GOMC/reproducibilityData/reproPush/GOMC/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10 ** 3
+    40 * 10**3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 120 * 10**3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
@@ -156,6 +156,7 @@ def part_1a_initial_data_input_to_json(job):
         data_written_bool = True
 
     return data_written_bool
+
 
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_1a_initial_data_input_to_json)
@@ -659,11 +660,11 @@ def part_4d_job_production_run_completed_properly(job):
 def part_5a_individial_simulations_analysis_completed(job):
     """Check that the initial job data is written to the json files."""
     data_written_bool = False
-    if job.isfile(f"log-npt.txt") \
-            and job.isfile(f"trajectory-npt.gsd"):
+    if job.isfile(f"log-npt.txt") and job.isfile(f"trajectory-npt.gsd"):
         data_written_bool = True
 
     return data_written_bool
+
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "gomc")
@@ -674,8 +675,9 @@ def part_5b_avg_std_dev_of_replicates_analysis_completed(*jobs):
     all_file_written_bool_pass = False
     for job in jobs:
         data_written_bool = False
-        if job.isfile(f"../../src/engines/gomc/averagesWithinReplicatez.txt") \
-                and job.isfile(f"../../src/engines/gomc/setAverages.txt"):
+        if job.isfile(
+            f"../../src/engines/gomc/averagesWithinReplicatez.txt"
+        ) and job.isfile(f"../../src/engines/gomc/setAverages.txt"):
             data_written_bool = True
 
         file_written_bool_list.append(data_written_bool)
@@ -684,6 +686,7 @@ def part_5b_avg_std_dev_of_replicates_analysis_completed(*jobs):
             all_file_written_bool_pass = True
 
         return all_file_written_bool_pass
+
 
 # ******************************************************
 # ******************************************************
@@ -2316,20 +2319,19 @@ def statepoint_minus_replica(job):
     }
 )
 @FlowProject.pre(
-     lambda * jobs: all(
-         part_4d_job_production_run_completed_properly(job)
-         for job in jobs
-     )
+    lambda *jobs: all(
+        part_4d_job_production_run_completed_properly(job) for job in jobs
+    )
 )
 @FlowProject.pre(part_4d_job_production_run_completed_properly)
 @FlowProject.post(part_5a_individial_simulations_analysis_completed)
 def part_5a_individial_simulations_analysis(*jobs):
-    ''' part_5a_individial_simulations_analysis creates simulation log and gsd trajectory files for the reproducibility project to do cross-engine analysis. '''
+    """part_5a_individial_simulations_analysis creates simulation log and gsd trajectory files for the reproducibility project to do cross-engine analysis."""
 
-    if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
-        os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
-    if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
-        os.remove(f'src/engines/gomc/setAverages.txt')
+    if os.path.isfile(f"src/engines/gomc/averagesWithinReplicatez.txt"):
+        os.remove(f"src/engines/gomc/averagesWithinReplicatez.txt")
+    if os.path.isfile(f"src/engines/gomc/setAverages.txt"):
+        os.remove(f"src/engines/gomc/setAverages.txt")
     for job in jobs:
         with (job):
 
@@ -2346,9 +2348,7 @@ def part_5a_individial_simulations_analysis(*jobs):
             Z = np.loadtxt(dataFileName_1)[:, 13]
 
             if job.isfile(
-                str(
-                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
-                )
+                str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
             ):
                 data_liq = open("log-liquid.txt", "w")
                 data_vap = open("log-vapor.txt", "w")
@@ -2412,6 +2412,7 @@ def part_5a_individial_simulations_analysis(*jobs):
 
 ###################################################################
 
+
 @aggregator()
 @Project.operation.with_directives(
     {
@@ -2423,19 +2424,18 @@ def part_5a_individial_simulations_analysis(*jobs):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_5a_individial_simulations_analysis_completed
-        for job in jobs
+        part_5a_individial_simulations_analysis_completed for job in jobs
     )
 )
 @FlowProject.pre(part_5a_individial_simulations_analysis_completed)
 @FlowProject.post(part_5b_avg_std_dev_of_replicates_analysis_completed)
 def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
-    ''' part_5b_avg_std_dev_of_replicates_analysis creates the files used internally inside GOMC team for the purposes of analysis. '''
+    """part_5b_avg_std_dev_of_replicates_analysis creates the files used internally inside GOMC team for the purposes of analysis."""
 
-    if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
-        os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
-    if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
-        os.remove(f'src/engines/gomc/setAverages.txt')
+    if os.path.isfile(f"src/engines/gomc/averagesWithinReplicatez.txt"):
+        os.remove(f"src/engines/gomc/averagesWithinReplicatez.txt")
+    if os.path.isfile(f"src/engines/gomc/setAverages.txt"):
+        os.remove(f"src/engines/gomc/setAverages.txt")
 
     if all(
         gomc_sim_completed_properly(job, production_control_file_name_str)
@@ -2864,6 +2864,7 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
 
         dataHere.close()
         moreDateHere.close()
+
 
 # ******************************************************
 # ******************************************************
