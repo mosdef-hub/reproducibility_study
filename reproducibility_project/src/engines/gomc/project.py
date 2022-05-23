@@ -49,16 +49,15 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
 # gomc_binary_path = "/wsu/home/hf/hf68/hf6839/GOMC_dev_2_22_22/bin"
-gomc_binary_path = "/home6/maxim/GOMC/reproducibilityData/reproPush/GOMC/bin"  # /home6/maxim/gregFixedHvapInstall/GOMCinstall/GOMC/bin   /wsu/home/go/go07/go0719/GOMC/2_21_2022GOMCinstallDev/GOMC/bin
-
+gomc_binary_path = "/home6/maxim/GOMC/reproducibilityData/reproPush/GOMC/bin"
 
 # number of MC cycles
-MC_cycles_melt_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
-MC_cycles_equilb_NVT = 5 * 10**3  # set value for paper = 5 * 10 ** 3
+MC_cycles_melt_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
+MC_cycles_equilb_NVT = 5 * 10 ** 3  # set value for paper = 5 * 10 ** 3
 MC_cycles_equilb_design_ensemble = (
-    40 * 10**3
+    40 * 10 ** 3
 )  # set value for paper = 40 * 10 ** 3
-MC_cycles_production = 120 * 10**3  # set value for paper = 120 * 10 ** 3
+MC_cycles_production = 120 * 10 ** 3  # set value for paper = 120 * 10 ** 3
 
 output_data_every_X_MC_cycles = 10  # set value for paper = 10
 
@@ -157,7 +156,6 @@ def part_1a_initial_data_input_to_json(job):
         data_written_bool = True
 
     return data_written_bool
-
 
 @Project.pre(lambda j: j.sp.engine == "gomc")
 @Project.post(part_1a_initial_data_input_to_json)
@@ -654,6 +652,38 @@ def part_4d_job_production_run_completed_properly(job):
     """Check to see if the production run (set temperature) gomc simulation was completed properly."""
     return gomc_sim_completed_properly(job, production_control_file_name_str)
 
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "gomc")
+@flow.with_job
+def part_5a_individial_simulations_analysis_completed(job):
+    """Check that the initial job data is written to the json files."""
+    data_written_bool = False
+    if job.isfile(f"log-npt.txt") \
+            and job.isfile(f"trajectory-npt.gsd"):
+        data_written_bool = True
+
+    return data_written_bool
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "gomc")
+@flow.with_job
+def part_5b_avg_std_dev_of_replicates_analysis_completed(*jobs):
+    """Check that the initial job data is written to the json files."""
+    file_written_bool_list = []
+    all_file_written_bool_pass = False
+    for job in jobs:
+        data_written_bool = False
+        if job.isfile(f"../../src/engines/gomc/averagesWithinReplicatez.txt") \
+                and job.isfile(f"../../src/engines/gomc/setAverages.txt"):
+            data_written_bool = True
+
+        file_written_bool_list.append(data_written_bool)
+
+        if False not in file_written_bool_list:
+            all_file_written_bool_pass = True
+
+        return all_file_written_bool_pass
 
 # ******************************************************
 # ******************************************************
@@ -1902,7 +1932,7 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
     print("# Started the test_pymbar_stabilized_equilb_design_ensemble")
     print("#**********************")
 
-    fraction_data_required_for_equilbrium = 0.25  # 0.25 # float
+    fraction_data_required_for_equilbrium = 0.25  # float
     data_points_to_skip_for_equilbrium = 1  # int
     equilb_plot_base_name = "pymbar_equilb_design_ensemble_plot"
 
@@ -2184,8 +2214,6 @@ def run_equilb_ensemble_gomc_command(job):
                 test_pymbar_stabilized_equilb_design_ensemble(job)
 
                 if job.doc.stable_equilb_design_ensemble is False:
-                    # need to add equilb_design_ensemble_number by 1 so it is fixed to run the correct job
-                    # so it is rerun if restarted
                     job.doc.equilb_design_ensemble_number += 1
 
                     if (
@@ -2265,19 +2293,16 @@ def run_production_run_gomc_command(job):
 # ******************************************************
 # ******************************************************
 
-#       analysis
-#       analysis
-#       analysis
-#       analysis
-#
+# ******************************************************
+# ******************************************************
+# analysis - analyzing the GOMC simulation data (start)
+# ******************************************************
+# ******************************************************
 
 
 def statepoint_minus_replica(job):
-    # print(job.sp.keys())
-    # print("___________________________________________________________________________________")
-
     keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
-    # print("hello world")
+
     return [str(job.sp[k]) for k in keys]
 
 
@@ -2291,95 +2316,102 @@ def statepoint_minus_replica(job):
     }
 )
 @FlowProject.pre(
-    lambda *jobs: all(
-        part_4d_job_production_run_completed_properly
-        for job in jobs  # can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
-    )
-)  # beware of string issue: if u have an old version cast the long range correction as str(long_range_correction)
-@FlowProject.post.isfile("trajectory-npt.gsd")
-def jobJustin(*jobs):
-    if all(
-        gomc_sim_completed_properly(job, production_control_file_name_str)
-        for job in jobs
-    ):
-        """if not all(
-            gomc_sim_completed_properly(job, production_control_file_name_str)
-            for job in jobs
-        ):
-            print(
-                "Not all jobs are complete! Proceed cautiously, statisticians beware."
-            )"""
+     lambda * jobs: all(
+         part_4d_job_production_run_completed_properly(job)
+         for job in jobs
+     )
+)
+@FlowProject.pre(part_4d_job_production_run_completed_properly)
+@FlowProject.post(part_5a_individial_simulations_analysis_completed)
+def part_5a_individial_simulations_analysis(*jobs):
+    ''' part_5a_individial_simulations_analysis creates simulation log and gsd trajectory files for the reproducibility project to do cross-engine analysis. '''
 
-        for job in jobs:
-            with (job):
-                dataFileName_1 = str(
-                    "Blk_" + production_control_file_name_str + "_BOX_0.dat"
+    if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
+        os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
+    if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
+        os.remove(f'src/engines/gomc/setAverages.txt')
+    for job in jobs:
+        with (job):
+
+            dataFileName_1 = str(
+                "Blk_" + production_control_file_name_str + "_BOX_0.dat"
+            )
+
+            MCstep = np.loadtxt(dataFileName_1)[:, 0]
+            energy = np.loadtxt(dataFileName_1)[:, 1]
+            pressure = np.loadtxt(dataFileName_1)[:, 10]
+            pressure = np.multiply(pressure, 100)
+            density = np.loadtxt(dataFileName_1)[:, 12]
+            density = np.multiply(density, (1 / 1000))
+            Z = np.loadtxt(dataFileName_1)[:, 13]
+
+            if job.isfile(
+                str(
+                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
+                )
+            ):
+                data_liq = open("log-liquid.txt", "w")
+                data_vap = open("log-vapor.txt", "w")
+
+                dataFileName_2 = str(
+                    "Blk_" + production_control_file_name_str + "_BOX_1.dat"
                 )
 
-                MCstep = np.loadtxt(dataFileName_1)[:, 0]
-                energy = np.loadtxt(dataFileName_1)[:, 1]
-                # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                # energy = np.multiply(energy,(8.3144626181532/1000))
-                pressure = np.loadtxt(dataFileName_1)[:, 10]
-                pressure = np.multiply(pressure, 100)
-                density = np.loadtxt(dataFileName_1)[:, 12]
-                density = np.multiply(density, (1 / 1000))
-                Z = np.loadtxt(dataFileName_1)[:, 13]
+                MCstep2 = np.loadtxt(dataFileName_2)[:, 0]
+                energy2 = np.loadtxt(dataFileName_2)[:, 1]
+                pressure2 = np.loadtxt(dataFileName_2)[:, 10]
+                pressure2 = np.multiply(pressure2, 100)
+                density2 = np.loadtxt(dataFileName_2)[:, 12]
+                density2 = np.multiply(density2, (1 / 1000))
+                Z2 = np.loadtxt(dataFileName_2)[:, 13]
 
-                if job.isfile(
-                    str(
-                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
-                    )
-                ):
-                    dataJustin = open("log-liquid.txt", "w")
-                    dataJustin2 = open("log-vapor.txt", "w")
-
-                    dataFileName_2 = str(
-                        "Blk_" + production_control_file_name_str + "_BOX_1.dat"
-                    )
-
-                    MCstep2 = np.loadtxt(dataFileName_2)[:, 0]
-                    energy2 = np.loadtxt(dataFileName_2)[:, 1]
-                    # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                    # energy2 = np.multiply(energy2,(8.3144626181532/1000))
-                    pressure2 = np.loadtxt(dataFileName_2)[:, 10]
-                    pressure2 = np.multiply(pressure2, 100)
-                    density2 = np.loadtxt(dataFileName_2)[:, 12]
-                    density2 = np.multiply(density2, (1 / 1000))
-                    Z2 = np.loadtxt(dataFileName_2)[:, 13]
-
-                    dataJustin2.write(
-                        f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n"
-                    )
-                    for i in range(len(MCstep2)):
-                        dataJustin2.write(
-                            f"{MCstep2[i]:<22} {energy2[i]:<22} {np.double(0.0):<22} {pressure2[i]:<22} {np.double(job.sp.temperature):<22} {density2[i]:<22} \n"
-                        )
-                    dataJustin2.close()
-
-                else:
-                    dataJustin = open("log-npt.txt", "w")
-                    trajJustin = md.load(
-                        "production_run_BOX_0.dcd", top="mosdef_box_0.pdb"
-                    )
-                    trajJustin.save_gsd("trajectory-npt.gsd")
-
-                dataJustin.write(
-                    f"{'timestep':22} {'potential_energy':22} {'kinetic_energy':22} {'pressure':22} {'temperature':22} {'density':22} \n"
+                data_vap.write(
+                    f"{'timestep':22} {'potential_energy':22} "
+                    f"{'kinetic_energy':22} "
+                    f"{'pressure':22} "
+                    f"{'temperature':22} "
+                    f"{'density':22} \n"
                 )
-                for i in range(len(MCstep)):
-                    dataJustin.write(
-                        f"{MCstep[i]:<22} {energy[i]:<22} {np.double(0.0):<22} {pressure[i]:<22} {np.double(job.sp.temperature):<22} {density[i]:<22} \n"
+                for i in range(len(MCstep2)):
+                    data_vap.write(
+                        f"{MCstep2[i]:<22} "
+                        f"{energy2[i]:<22} "
+                        f"{np.double(0.0):<22} "
+                        f"{pressure2[i]:<22} "
+                        f"{np.double(job.sp.temperature):<22} "
+                        f"{density2[i]:<22} \n"
                     )
-                dataJustin.close()
+                data_vap.close()
+
+            else:
+                data_liq = open("log-npt.txt", "w")
+                traj_data = md.load(
+                    "production_run_BOX_0.dcd", top="mosdef_box_0.pdb"
+                )
+                traj_data.save_gsd("trajectory-npt.gsd")
+
+            data_liq.write(
+                f"{'timestep':22} "
+                f"{'potential_energy':22} "
+                f"{'kinetic_energy':22} "
+                f"{'pressure':22} "
+                f"{'temperature':22} "
+                f"{'density':22} \n"
+            )
+            for i in range(len(MCstep)):
+                data_liq.write(
+                    f"{MCstep[i]:<22} "
+                    f"{energy[i]:<22} "
+                    f"{np.double(0.0):<22} "
+                    f"{pressure[i]:<22} "
+                    f"{np.double(job.sp.temperature):<22} "
+                    f"{density[i]:<22} \n"
+                )
+            data_liq.close()
 
 
 ###################################################################
 
-# @aggregator.groupby(key=statepoint_minus_replica)#possibly just run @aggregator()   edited 2/3/2022
-
-
-# @aggregator.groupby(key=statepoint_minus_replica)
 @aggregator()
 @Project.operation.with_directives(
     {
@@ -2391,38 +2423,55 @@ def jobJustin(*jobs):
 )
 @FlowProject.pre(
     lambda *jobs: all(
-        part_4d_job_production_run_completed_properly
-        for job in jobs  # can't use part_4c_job_equilb_design_ensemble_completed_properly: tries jobs too early
+        part_5a_individial_simulations_analysis_completed
+        for job in jobs
     )
-)  # part_4c_job_equilb_design_ensemble_completed_properly
-@FlowProject.post.isfile("setAverages.txt")
-def analysis(*jobs):
+)
+@FlowProject.pre(part_5a_individial_simulations_analysis_completed)
+@FlowProject.post(part_5b_avg_std_dev_of_replicates_analysis_completed)
+def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
+    ''' part_5b_avg_std_dev_of_replicates_analysis creates the files used internally inside GOMC team for the purposes of analysis. '''
+
+    if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
+        os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
+    if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
+        os.remove(f'src/engines/gomc/setAverages.txt')
+
     if all(
         gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
 
-        """if not all(
-            gomc_sim_completed_properly(job, production_control_file_name_str)
-            for job in jobs
-        ):
-            print(
-                "Not all jobs are complete! Proceed cautiously, statisticians beware."
-            )"""
-
         moreDateHere = open(
-            "averagesWithinReplicatez.txt", "a+"
-        )  # open("averagesWithinReplicatez.txt","a+")
+            "src/engines/gomc/averagesWithinReplicatez.txt", "a+"
+        )
 
-        dataHere = open("setAverages.txt", "a+")  # open("setAverages.txt","a+")
+        dataHere = open("src/engines/gomc/setAverages.txt", "a+")
         moreDateHere.write(
-            f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n"
+            f"{'mean_energy':22} "
+            f"{'mean_density':22} "
+            f"{'meanZ':22} "
+            f"{'temperature':22} "
+            f"{'pressure':22} "
+            f"{'molecule':22} "
+            f"{'JobID':50} "
+            f"{'simulation_options':50}\n"
         )
         dataHere.write(
-            f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n"
+            f"{'mean_energy':22}"
+            f" {'std_energy':22} "
+            f"{'mean_pressure':22} "
+            f"{'std_pressure':22} "
+            f"{'mean_density':22} "
+            f"{'std_density':22} "
+            f"{'meanZ':22} "
+            f"{'stdZ':22} "
+            f"{'temperature':22} "
+            f"{'molecule':22} "
+            f"{'options':22} \n"
         )
 
-        allTheJobs = np.double(len(list(pr.groupby())))  # {"replica"}))))
+        allTheJobs = np.double(len(list(pr.groupby())))
         replicaCount = allTheJobs / np.double(len(pr.find_jobs({"replica": 1})))
         uniqueJobs = np.double(allTheJobs) / replicaCount
 
@@ -2453,18 +2502,13 @@ def analysis(*jobs):
         replicateAverageOptions2 = []
 
         for job in jobs:
-            # moreDateHere = open("averagesWithinReplicates.txt","w")
             with (job):
-                # print(job.sp)
                 dataFileName_1 = str(
                     "Blk_" + production_control_file_name_str + "_BOX_0.dat"
                 )
 
                 MCstep = np.loadtxt(dataFileName_1)[:, 0]
                 energy = np.loadtxt(dataFileName_1)[:, 1]
-                # energy = energy + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                # energy = np.multiply(energy,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
-                # note to convert to K try /N(molecules)*0.008314
                 pressure = np.loadtxt(dataFileName_1)[:, 10]
                 pressure = np.multiply(pressure, 100)
                 density = np.loadtxt(dataFileName_1)[:, 12]
@@ -2508,9 +2552,6 @@ def analysis(*jobs):
                     )
 
                     energy2 = np.loadtxt(dataFileName_2)[:, 1]
-                    # energy2 = energy2 + 412.28489484/8.3144626181532 + 45.76959847/8.3144626181532
-                    # energy2 = np.multiply(energy2,(0.008314/job.sp.N_liquid))#8.3144626181532/1000*0.008314/job.sp.N_liquid
-                    # note to convert to K try /N(molecules)*0.008314
                     pressure2 = np.loadtxt(dataFileName_2)[:, 10]
                     pressure2 = np.multiply(pressure2, 100)
                     density2 = np.loadtxt(dataFileName_2)[:, 12]
@@ -2541,11 +2582,25 @@ def analysis(*jobs):
                     replicateAverageJob2.append(str(job))
 
                     moreDateHere.write(
-                        f"{replicateAverageEnergy2[-1]:<22} {replicateAverageDensity2[-1]:<22} {replicateAverageZ2[-1]:<22} {replicateAverageT2[-1]:<22} {replicateAveragePressure2[-1]:<22} {replicateAverageMolecule2[-1]:<22} {replicateAverageJob2[-1]:2<22} {replicateAverageOptions2[-1]:<22} \n"
+                        f"{replicateAverageEnergy2[-1]:<22} "
+                        f"{replicateAverageDensity2[-1]:<22} "
+                        f"{replicateAverageZ2[-1]:<22} "
+                        f"{replicateAverageT2[-1]:<22} "
+                        f"{replicateAveragePressure2[-1]:<22} "
+                        f"{replicateAverageMolecule2[-1]:<22} "
+                        f"{replicateAverageJob2[-1]:2<40} "
+                        f"{replicateAverageOptions2[-1]:<40} \n"
                     )
 
             moreDateHere.write(
-                f"{replicateAverageEnergy[-1]:<22} {replicateAverageDensity[-1]:<22} {replicateAverageZ[-1]:<22} {replicateAverageT[-1]:<22} {replicateAveragePressure[-1]:<22} {replicateAverageMolecule[-1]:<22} {replicateAverageJob[-1]:2<22} {replicateAverageOptions[-1]:<22} \n"
+                f"{replicateAverageEnergy[-1]:<22} "
+                f"{replicateAverageDensity[-1]:<22} "
+                f"{replicateAverageZ[-1]:<22} "
+                f"{replicateAverageT[-1]:<22} "
+                f"{replicateAveragePressure[-1]:<22} "
+                f"{replicateAverageMolecule[-1]:<22} "
+                f"{replicateAverageJob[-1]:<50} "
+                f"{replicateAverageOptions[-1]:<50} \n"
             )
 
         setMeanEnergy = pd.DataFrame(
@@ -2764,10 +2819,18 @@ def analysis(*jobs):
             setStdDensity[i] = (setStdDensity[i] / (replicaCount - 1)) ** 0.5
             setStdZ[i] = (setStdZ[i] / (replicaCount - 1)) ** 0.5
 
-            # print(setMeanEnergy.loc[0,i])
-
             dataHere.write(
-                f"{setMeanEnergy.loc[0,i]:<22} {setStdEnergy.loc[0,i]:<22} {setMeanPressure.loc[0,i]:<22} {setStdPressure.loc[0,i]:<22} {setMeanDensity.loc[0,i]:<22} {setStdDensity.loc[0,i]:<22} {setMeanZ.loc[0,i]:<22} {setStdZ.loc[0,i]:<22} {setMeanTemperature.loc[0,i]:<22} {setMeanMolecule.loc[0,i]:<22} {setMeanOptions.loc[0,i]:<22} \n"
+                f"{setMeanEnergy.loc[0,i]:<22} "
+                f"{setStdEnergy.loc[0,i]:<22} "
+                f"{setMeanPressure.loc[0,i]:<22} "
+                f"{setStdPressure.loc[0,i]:<22} "
+                f"{setMeanDensity.loc[0,i]:<22} "
+                f"{setStdDensity.loc[0,i]:<22} "
+                f"{setMeanZ.loc[0,i]:<22} "
+                f"{setStdZ.loc[0,i]:<22} "
+                f"{setMeanTemperature.loc[0,i]:<22} "
+                f"{setMeanMolecule.loc[0,i]:<22} "
+                f"{setMeanOptions.loc[0,i]:<22} \n"
             )
 
         if job.isfile(
@@ -2786,17 +2849,27 @@ def analysis(*jobs):
                 setStdZ2[i] = (setStdZ2[i] / (replicaCount - 1)) ** 0.5
 
                 dataHere.write(
-                    f"{setMeanEnergy2.loc[0,i]:<22} {setStdEnergy2.loc[0,i]:<22} {setMeanPressure2.loc[0,i]:<22} {setStdPressure2.loc[0,i]:<22} {setMeanDensity2.loc[0,i]:<22} {setStdDensity2.loc[0,i]:<22} {setMeanZ2.loc[0,i]:<22} {setStdZ2.loc[0,i]:<22} {setMeanTemperature2.loc[0,i]:<22} {setMeanMolecule2.loc[0,i]:<22} {setMeanOptions2.loc[0,i]:<22} \n"
+                    f"{setMeanEnergy2.loc[0,i]:<22} "
+                    f"{setStdEnergy2.loc[0,i]:<22} "
+                    f"{setMeanPressure2.loc[0,i]:<22} "
+                    f"{setStdPressure2.loc[0,i]:<22} "
+                    f"{setMeanDensity2.loc[0,i]:<22} "
+                    f"{setStdDensity2.loc[0,i]:<22} "
+                    f"{setMeanZ2.loc[0,i]:<22} "
+                    f"{setStdZ2.loc[0,i]:<22} "
+                    f"{setMeanTemperature2.loc[0,i]:<22} "
+                    f"{setMeanMolecule2.loc[0,i]:<22} "
+                    f"{setMeanOptions2.loc[0,i]:<22} \n"
                 )
-
-        # dataHere.write(f"{str(replicateAverageName2):<22} \n")
-
-        # moreDateHere.write(f"{'mean_energy':22} {'mean_density':22} {'meanZ':22} {'temperature':22} {'pressure':22} {'molecule':22} {'JobID':22}\n")
-        # dataHere.write(f"{'mean_energy':22} {'std_energy':22} {'mean_pressure':22} {'std_pressure':22} {'mean_density':22} {'std_density':22} {'meanZ':22} {'stdZ':22} {'temperature':22} {'molecule':22} {'options':22} \n")
 
         dataHere.close()
         moreDateHere.close()
 
+# ******************************************************
+# ******************************************************
+# analysis - analyzing the GOMC simulation data (end)
+# ******************************************************
+# ******************************************************
 
 # ******************************************************
 # ******************************************************
