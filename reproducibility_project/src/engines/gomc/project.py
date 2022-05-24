@@ -2301,6 +2301,7 @@ def run_production_run_gomc_command(job):
 
 
 def statepoint_minus_replica(job):
+    ''' a function to treat sort replicates into 1 aggregate. '''
     keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
 
     return [str(job.sp[k]) for k in keys]
@@ -2325,7 +2326,6 @@ def statepoint_minus_replica(job):
 @FlowProject.post(part_5a_individial_simulations_analysis_completed)
 def part_5a_individial_simulations_analysis(*jobs):
     ''' part_5a_individial_simulations_analysis creates simulation log and gsd trajectory files for the reproducibility project to do cross-engine analysis. '''
-
     if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
         os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
     if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
@@ -2431,7 +2431,6 @@ def part_5a_individial_simulations_analysis(*jobs):
 @FlowProject.post(part_5b_avg_std_dev_of_replicates_analysis_completed)
 def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
     ''' part_5b_avg_std_dev_of_replicates_analysis creates the files used internally inside GOMC team for the purposes of analysis. '''
-
     if os.path.isfile(f'src/engines/gomc/averagesWithinReplicatez.txt'):
         os.remove(f'src/engines/gomc/averagesWithinReplicatez.txt')
     if os.path.isfile(f'src/engines/gomc/setAverages.txt'):
