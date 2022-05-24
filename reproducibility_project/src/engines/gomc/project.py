@@ -2304,7 +2304,7 @@ def run_production_run_gomc_command(job):
 
 
 def statepoint_minus_replica(job):
-    '''statepoint_minus_replica groups all the jobs by all the parameters but the replicate'''
+    """statepoint_minus_replica groups all the jobs by all the parameters but the replicate"""
     keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
 
     return [str(job.sp[k]) for k in keys]
