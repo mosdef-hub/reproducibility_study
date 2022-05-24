@@ -2301,7 +2301,7 @@ def run_production_run_gomc_command(job):
 
 
 def statepoint_minus_replica(job):
-    ''' a function to treat sort replicates into 1 aggregate. '''
+    ''' A function to treat sort replicates into 1 aggregate. '''
     keys = sorted(tuple(k for k in job.sp.keys() if k not in {"replica"}))
 
     return [str(job.sp[k]) for k in keys]
