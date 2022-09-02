@@ -288,6 +288,7 @@ def sanitize_npt_log(step, job):
     import numpy as np
 
     mw = job.sp.mass
+    temp = job.sp.temperature
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
     for filecurrent in files:
@@ -308,6 +309,7 @@ def sanitize_npt_log(step, job):
     volume = volume.reshape(volume.shape[0], 1)
     density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
     temperature = 0 * np.copy(volume)
+    temperature = (temperature + 1) * temp
     arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
     arrays = np.append(arrays, timestep, axis=1)  # timestep
     arrays = np.append(arrays, volume, axis=1)  # volume nm3
