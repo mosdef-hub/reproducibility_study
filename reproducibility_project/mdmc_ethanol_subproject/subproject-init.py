@@ -168,9 +168,6 @@ for i, sp in enumerate(total_statepoints):
     if sp["ensemble"] == "NPT-flexOH" and sp["engine"] in md_engines:
         indices_to_remove.add(i)
 
-    if sp["ensemble"] == "NPT-fixOH" and sp["engine"] in mc_engines:
-        indices_to_remove.add(i)
-
     if (sp["temperature"] == 400 and sp["box_L_liq"] == 3.646) or (
         sp["temperature"] < 400 and sp["box_L_liq"] == 3.833
     ):
