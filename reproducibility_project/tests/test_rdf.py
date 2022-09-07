@@ -22,5 +22,5 @@ class TestRDF(BaseTest):
     def test_gsdfile_xstal(self, gsdfile_xstal):
         rdf = _gsd_rdf(gsdfile_xstal)
         assert isinstance(rdf, freud.density.RDF)
-        assert np.isclose(max(rdf.rdf), 2.5770662)
+        assert np.isclose(max(rdf.rdf), 2.5827696)
         assert len(rdf.rdf) == 50
