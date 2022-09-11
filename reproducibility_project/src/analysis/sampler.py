@@ -177,7 +177,7 @@ def _decorr_sampling(
         nskip=1,
     )
     if is_equil:
-        uncorr_indices = timeseries.subsample_correlated_data(
+        uncorr_indices = timeseries.subsampleCorrelatedData(
             data[prod_start:], g=ineff, conservative=True
         )
         return (
@@ -224,7 +224,7 @@ def get_decorr_samples_using_max_t0(
                 uncorr_indices = [val for val in range(t0, len(a_t))]
             else:
                 try:
-                    uncorr_indices = timeseries.subsample_correlated_data(
+                    uncorr_indices = timeseries.subsampleCorrelatedData(
                         A_t=a_t,
                         conservative=True,
                     )

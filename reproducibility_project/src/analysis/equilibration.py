@@ -62,7 +62,7 @@ def is_equilibrated(
             "1 or greater."
         )
 
-    [t0, g, Neff] = timeseries.detect_equilibration(a_t, nskip=nskip)
+    [t0, g, Neff] = timeseries.detectEquilibration(a_t, nskip=nskip)
     frac_equilibrated = 1.0 - (t0 / np.shape(a_t)[0])
 
     if strict:
