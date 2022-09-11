@@ -5,9 +5,9 @@ import os
 import pathlib
 import shutil
 from glob import glob
-import mdtraj as md
 
 import flow
+import mdtraj as md
 from flow import FlowProject, environments
 from flow.environment import DefaultSlurmEnvironment
 
@@ -33,11 +33,10 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 ex = Project.make_group(name="ex")
 
 
-
 @Project.operation.with_directives({"walltime": 200})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 def save_bl_dist(job):
-    """Save bl distribution for 4 types of bonds"""
+    """Save bl distribution for 4 types of bonds."""
     import os
 
     import mdtraj as md
@@ -45,20 +44,18 @@ def save_bl_dist(job):
 
     with job:
         if job.sp.molecule == "ethanolAA":
-            filePath = 'bl_C-C.txt'
+            filePath = "bl_C-C.txt"
             if os.path.exists(filePath):
                 os.remove(filePath)
                 print("{} deleted from {}".format(filePath, job))
             else:
                 print("Can not delete the file as it doesn't exists")
 
-
             traj_filename = "trajectory-npt.gsd"
             traj = md.load(traj_filename, top="init1.mol2")
             atoms_per_molecule = 9
             total_atoms = 4500
-            total_molecules = int(total_atoms/atoms_per_molecule)
-          
+            total_molecules = int(total_atoms / atoms_per_molecule)
 
             ## C-C bond length
             atom1 = "C"
@@ -68,34 +65,32 @@ def save_bl_dist(job):
             pairs = []
 
             for molecule_index in range(total_molecules):
-                index1 = molecule_index*atoms_per_molecule
-                index2 = molecule_index*atoms_per_molecule+1
-                #out = md.compute_distances(traj, np.array([[index1,index2]]))
+                index1 = molecule_index * atoms_per_molecule
+                index2 = molecule_index * atoms_per_molecule + 1
+                # out = md.compute_distances(traj, np.array([[index1,index2]]))
                 pairs.append([index1, index2])
 
             pairs = np.array(pairs)
             out = md.compute_distances(traj, pairs)
-            bond_lengths = np.ravel(out)*10
+            bond_lengths = np.ravel(out) * 10
             np.savetxt("bl_C-C.txt", bond_lengths)
-
 
             atom1 = "C"
             atom2 = "O"
             mean = 0.141
-            
+
             pairs = []
-            
+
             for molecule_index in range(total_molecules):
-                index1 = molecule_index*atoms_per_molecule+1
-                index2 = molecule_index*atoms_per_molecule+2
-                #out = md.compute_distances(traj, np.array([[index1,index2]]))
+                index1 = molecule_index * atoms_per_molecule + 1
+                index2 = molecule_index * atoms_per_molecule + 2
+                # out = md.compute_distances(traj, np.array([[index1,index2]]))
                 pairs.append([index1, index2])
-                
+
             pairs = np.array(pairs)
             out = md.compute_distances(traj, pairs)
-            bond_lengths = np.ravel(out)*10
+            bond_lengths = np.ravel(out) * 10
             np.savetxt("bl_C-O.txt", bond_lengths)
-
 
             atom1 = "O"
             atom2 = "H"
@@ -104,16 +99,15 @@ def save_bl_dist(job):
             pairs = []
 
             for molecule_index in range(total_molecules):
-                index1 = molecule_index*atoms_per_molecule+2
-                index2 = molecule_index*atoms_per_molecule+3
-                #out = md.compute_distances(traj, np.array([[index1,index2]]))
+                index1 = molecule_index * atoms_per_molecule + 2
+                index2 = molecule_index * atoms_per_molecule + 3
+                # out = md.compute_distances(traj, np.array([[index1,index2]]))
                 pairs.append([index1, index2])
 
             pairs = np.array(pairs)
             out = md.compute_distances(traj, pairs)
-            bond_lengths = np.ravel(out)*10
+            bond_lengths = np.ravel(out) * 10
             np.savetxt("bl_O-H.txt", bond_lengths)
-            
 
             atom1 = "C"
             atom2 = "H"
@@ -122,16 +116,16 @@ def save_bl_dist(job):
             pairs = []
 
             for molecule_index in range(total_molecules):
-                indexC1 = molecule_index*atoms_per_molecule
-                indexH7 = molecule_index*atoms_per_molecule+6
-                indexH8 = molecule_index*atoms_per_molecule+7
-                indexH9 = molecule_index*atoms_per_molecule+8
+                indexC1 = molecule_index * atoms_per_molecule
+                indexH7 = molecule_index * atoms_per_molecule + 6
+                indexH8 = molecule_index * atoms_per_molecule + 7
+                indexH9 = molecule_index * atoms_per_molecule + 8
 
-                indexC2 = molecule_index*atoms_per_molecule+1
-                indexH5 = molecule_index*atoms_per_molecule+4
-                indexH6 = molecule_index*atoms_per_molecule+5
+                indexC2 = molecule_index * atoms_per_molecule + 1
+                indexH5 = molecule_index * atoms_per_molecule + 4
+                indexH6 = molecule_index * atoms_per_molecule + 5
 
-                #out = md.compute_distances(traj, np.array([[index1,index2]]))
+                # out = md.compute_distances(traj, np.array([[index1,index2]]))
                 pairs.append([indexC1, indexH7])
                 pairs.append([indexC1, indexH8])
                 pairs.append([indexC1, indexH9])
@@ -140,9 +134,10 @@ def save_bl_dist(job):
 
             pairs = np.array(pairs)
             out = md.compute_distances(traj, pairs)
-            bond_lengths = np.ravel(out)*10
+            bond_lengths = np.ravel(out) * 10
 
             np.savetxt("bl_C-H.txt", bond_lengths)
+
 
 if __name__ == "__main__":
     pr = Project()

@@ -95,30 +95,29 @@ def main():
                 cdf_list.append(cdf_pair)
 
             os.chdir(base_dir)
-            avg_rdf = np.mean(rdf_list, axis = 0)
-            avg_rdf[:,0] = avg_rdf[:,0]*10
+            avg_rdf = np.mean(rdf_list, axis=0)
+            avg_rdf[:, 0] = avg_rdf[:, 0] * 10
             np.savetxt("avg_rdf.txt", avg_rdf)
 
-            avg_cdf = np.mean(cdf_list, axis = 0)
-            avg_cdf[:,0] = avg_cdf[:,0]*10
+            avg_cdf = np.mean(cdf_list, axis=0)
+            avg_cdf[:, 0] = avg_cdf[:, 0] * 10
             np.savetxt("avg_cdf.txt", avg_cdf)
 
-            plt.plot(avg_rdf[:, 0], avg_rdf[:,1])
-            plt.grid(alpha = 0.25)
+            plt.plot(avg_rdf[:, 0], avg_rdf[:, 1])
+            plt.grid(alpha=0.25)
             plt.xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
             plt.ylabel(r"$g(r)$")
             plt.title("O-O RDF")
             plt.savefig("O-O_rdf.png")
-            plt.close()             
+            plt.close()
 
-            plt.plot(avg_cdf[:, 0], avg_cdf[:,1])
-            plt.grid(alpha = 0.25)
+            plt.plot(avg_cdf[:, 0], avg_cdf[:, 1])
+            plt.grid(alpha=0.25)
             plt.xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
             plt.ylabel(r"$n(r)$")
             plt.title("O-O CDF")
             plt.savefig("O-O_cdf.png")
             plt.close()
-
 
         os.chdir("..")
 

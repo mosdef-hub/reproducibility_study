@@ -5,10 +5,10 @@ import os
 import pathlib
 import shutil
 from glob import glob
-import mdtraj as md
-import freud
 
 import flow
+import freud
+import mdtraj as md
 from flow import FlowProject, environments
 from flow.environment import DefaultSlurmEnvironment
 
@@ -34,11 +34,10 @@ class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 ex = Project.make_group(name="ex")
 
 
-
 @Project.operation.with_directives({"walltime": 200})
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 def find_O_O_rdf(job):
-    """Save bl distribution for 4 types of bonds"""
+    """Save bl distribution for 4 types of bonds."""
     import os
 
     import mdtraj as md
@@ -46,7 +45,7 @@ def find_O_O_rdf(job):
 
     with job:
         if job.sp.molecule == "ethanolAA":
-            filePath = 'O-O_rdf.txt'
+            filePath = "O-O_rdf.txt"
             if os.path.exists(filePath):
                 os.remove(filePath)
                 print("{} deleted from {}".format(filePath, job))
@@ -58,13 +57,22 @@ def find_O_O_rdf(job):
             oxygen_indices = traj.top.select("name O")
             bins = 250
             r_min = 0
-            r_max = 2.5/2 
+            r_max = 2.5 / 2
             rdf_list = []
             freud_rdf = freud.density.RDF(bins=bins, r_min=r_min, r_max=r_max)
-            for system in zip(np.asarray(traj.unitcell_vectors), traj.xyz[:, oxygen_indices, :]):
+            for system in zip(
+                np.asarray(traj.unitcell_vectors),
+                traj.xyz[:, oxygen_indices, :],
+            ):
                 freud_rdf.compute(system, reset=False)
-            np.savetxt("O-O_rdf.txt", np.vstack((freud_rdf.bin_centers, freud_rdf.rdf)).T)                
-            np.savetxt("O-O_cdf.txt", np.vstack((freud_rdf.bin_centers, freud_rdf.n_r)).T)
+            np.savetxt(
+                "O-O_rdf.txt",
+                np.vstack((freud_rdf.bin_centers, freud_rdf.rdf)).T,
+            )
+            np.savetxt(
+                "O-O_cdf.txt",
+                np.vstack((freud_rdf.bin_centers, freud_rdf.n_r)).T,
+            )
 
 
 if __name__ == "__main__":
