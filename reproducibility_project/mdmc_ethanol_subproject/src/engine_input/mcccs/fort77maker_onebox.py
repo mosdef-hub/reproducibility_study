@@ -352,7 +352,6 @@ def fort77writer(
             ),
         ):
 
-            print(liq[j+1][i])
             f.write(
                 "{0:24.12f}{1:24.12f}{2:24.12f}\n{3:24.12f}\n".format(
                     liq[j + 1][i][2],
