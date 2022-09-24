@@ -98,7 +98,7 @@ def fort77writer(
         for particle in current_molecule.particles():
             atom_list.append(particle.name)
             nbeads_list[-1] += 1
-            charge_list.append(0)
+            charge_list.append(particle.charge)
 
     AtomsBox = {}
 
