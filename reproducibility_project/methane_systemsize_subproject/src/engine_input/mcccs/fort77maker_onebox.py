@@ -16,50 +16,39 @@ from reproducibility_project.src.engine_input.mcccs.utils.fort77helpfun import (
 
 def fort77writer(
     molecules,
-    filled_boxes,
+    filled_box,
     output_file="config.new",
-    NBox=2,
-    xyz_file=["initial_structure_box1.xyz", "initial_structure_box2.xyz"],
+    NBox=1,
+    xyz_file="initial_structure.xyz",
 ):
     """Create a fort.77 (restart file for MCCCS-MN code) from a structure.
 
     Parameters
     ----------
-    molecules    : List of mBuild molecules
-    filled_boxes : List of mBuild filled boxes
-    output_file  : Name of the fort.77 file created
-    NBox         : Number of boxes in the simulation, currently only supports two box
-    xyz_file     : List of the names of the xyz files in which coordinates of the filled_box are stored
+    molecules : List of mBuild molecules
+    filled_box : mBuild filled box
+    output_file : Name of the fort.77 file created
+    NBox       : Number of boxes in the simulation, currently only supports one box
+    xyz_file : Name of the xyz file in which coordinates of the filled_box are stored
     """
     # preparing name_list (or element list from the names of the filled box)
     name_list = []
-    for particle in filled_boxes[0].particles():
+    for particle in filled_box.particles():
         name_list.append(particle.name)
-    initial_coord = filled_boxes[0].xyz * 10
-    xyzwriter(name_list, initial_coord, xyz_file[0])
-    name_list = []
-    for particle in filled_boxes[1].particles():
-        name_list.append(particle.name)
-    initial_coord = filled_boxes[1].xyz * 10
-    xyzwriter(name_list, initial_coord, xyz_file[1])
-    # high-precision xyz files written
+    initial_coord = filled_box.xyz * 10
+    xyzwriter(name_list, initial_coord, xyz_file)
+    # high-precision xyz file written
 
-    lengths1 = filled_boxes[0].box.lengths
-    lengths2 = filled_boxes[1].box.lengths
+    lengths = filled_box.box.lengths
     mols = []
-    for mol in filled_boxes[0].children:
+    for mol in filled_box.children:
         mols.append(mol.name)
-    num_each_moltype_box1 = list(Counter(mols).values())
-    mols = []
-    for mol in filled_boxes[1].children:
-        mols.append(mol.name)
-    num_each_moltype_box2 = list(Counter(mols).values())
+    num_each_moltype = list(Counter(mols).values())
 
     #######
-    lortho = [True, True]  # nbox elements
+    lortho = [True]  # nbox elements
     lconfig_file = [
-        False,
-        False,
+        False
     ]  ## are you providing any config file for your box, config file is written by MCCCS-MN
     CellVec = []
     CellLengths = []
@@ -78,12 +67,10 @@ def fort77writer(
     # in this example cellvec[0] is a 3x3 matrix as my zeolite box is non-ortho and I have to define 3x3 cell lengths as well
     # box 2 is isotropic liq, so it just needs celllengths (1x3)
     # change your cell vectors and cell sides here
-    CellLengths[0][0][0] = lengths1[0] * 10
-    CellLengths[0][0][1] = lengths1[1] * 10
-    CellLengths[0][0][2] = lengths1[2] * 10
-    CellLengths[1][0][0] = lengths2[0] * 10
-    CellLengths[1][0][1] = lengths2[1] * 10
-    CellLengths[1][0][2] = lengths2[2] * 10
+    CellLengths[0][0][0] = lengths[0] * 10
+    CellLengths[0][0][1] = lengths[1] * 10
+    CellLengths[0][0][2] = lengths[2] * 10
+
     ##########################################################
 
     atom_list = []
@@ -103,28 +90,24 @@ def fort77writer(
     AtomsBox = {}
 
     AtomsBox[1] = atom_list
-    AtomsBox[2] = atom_list
 
     MoleculesBox = {}
     MoleculesBox[1] = molecule_names
-    MoleculesBox[2] = molecule_names
+
     NBeadsBox = {}
     NBeadsBox[
         1
     ] = nbeads_list  # list that contains number of beads for each molecule type
-    NBeadsBox[2] = nbeads_list
 
     NMoleculesBox = {}
-    NMoleculesBox[1] = num_each_moltype_box1  # number of molecules
-    NMoleculesBox[2] = num_each_moltype_box2  # number of molecules
+    NMoleculesBox[1] = num_each_moltype  # number of molecules
+
     charge_Box = {}
     charge_Box[1] = charge_list
-    charge_Box[2] = charge_list
 
     ####Coordinate file names
     fileBox = {}
-    fileBox[1] = xyz_file[0]
-    fileBox[2] = xyz_file[1]
+    fileBox[1] = xyz_file
 
     #########config file names
     config_file = {}
@@ -298,7 +281,7 @@ def fort77writer(
                 "{0:24.12f}{1:24.12f}\n".format(0.1, 0.1)
             )  # fluctuating charges for molecule 7
 
-    volume_disp = [1] * NBox
+    volume_disp = [1000] * NBox
     for element in volume_disp:
 
         f.write(
@@ -370,7 +353,7 @@ def fort77writer(
         ):
 
             f.write(
-                "{0:24.16f}{1:24.16f}{2:24.16f}\n{3:24.16f}\n".format(
+                "{0:24.12f}{1:24.12f}{2:24.12f}\n{3:24.12f}\n".format(
                     liq[j + 1][i][2],
                     liq[j + 1][i][3],
                     liq[j + 1][i][4],

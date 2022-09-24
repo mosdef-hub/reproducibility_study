@@ -4,9 +4,9 @@
      nbox=           1
      nmolty=           1
      nchain=        NCHAIN
-     nstep=         80000
+     nstep=         40000
      lstop= F
-     iratio=          50000000
+     iratio=          500
      rmin=   1.00000000000000
      softcut=   100.000000000000
      linit= F
@@ -16,9 +16,9 @@
 
  &analysis
      iprint=         2500
-     imv=            10
+     imv=            1000
      iblock=         1000
-     iratp=           5
+     iratp=           500
      idiele=       10000
      iheatcapacity=        5000
      ianalyze=      1000
@@ -46,7 +46,7 @@
 
  &mc_volume
      tavol=  0.4
-     iratv=  5000000
+     iratv=  500
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
@@ -74,7 +74,7 @@
 
  &mc_cbmc
      rcutin=   5.00000000000000
-     pmcb=  0.34
+     pmcb=  0.3
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
      nchoi1=          12
@@ -108,6 +108,7 @@
 
 
  &mc_simple
+     pm_atom_tra = 0.35
      armtra=  1.000000000000000E-002
      rmtra=  0.300000000000000
      rmrot=  0.400000000000000
@@ -343,9 +344,11 @@ UNIFORM_BIASING_POTENTIALS
 0.0d0
 END UNIFORM_BIASING_POTENTIALS
 
-
 SPECIFIC_ATOM_TRANSL
 ! How many atoms should we be performing translations on?
+9
 ! What is the index of those atoms in their respective molecules?
+1 2 3 4 5 6 7 8 9
 ! What is the molecule type for each atom?
+1 1 1 1 1 1 1 1 1
 END SPECIFIC_ATOM_TRANSL
