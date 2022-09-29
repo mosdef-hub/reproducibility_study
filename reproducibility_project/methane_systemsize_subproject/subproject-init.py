@@ -162,25 +162,11 @@ for molecule in molecules:
         total_statepoints.append(statepoint)
 
 print(len(total_statepoints))
-indices_to_remove = set()
-for i, sp in enumerate(total_statepoints):
-    # filter gemc ensembles from md engines
-    if sp["ensemble"] == "NPT-flexOH" and sp["engine"] in md_engines:
-        indices_to_remove.add(i)
-
-    if (sp["temperature"] == 400 and sp["box_L_liq"] == 3.646) or (
-        sp["temperature"] < 400 and sp["box_L_liq"] == 3.833
-    ):
-        indices_to_remove.add(i)
-
 
 # now reverse sort the set and remove from inital list
 # must be reverse sorted to remove indices on the list in place
 # otherwise the list will change size and the indices would change
 # print(len(indices_to_remove))
-sorted_indicies_to_delete = sorted(list(indices_to_remove), reverse=True)
-for idx in sorted_indicies_to_delete:
-    del total_statepoints[idx]
 
 for sp in total_statepoints:
     pr.open_job(
