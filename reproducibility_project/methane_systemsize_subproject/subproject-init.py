@@ -67,7 +67,7 @@ N_vap_molecules = {
 }
 
 liq_box_lengths = {
-    "methaneUA": [33.00, 39.98 , 63.5] * u.angstrom,
+    "methaneUA": [33.00, 39.98, 63.5] * u.angstrom,
 }
 
 vap_box_lengths = {
@@ -99,7 +99,11 @@ for molecule in molecules:
         replica,
     ) in itertools.product(
         simulation_engines,
-        zip(ensembles[molecule], N_liq_molecules[molecule],liq_box_lengths[molecule]),
+        zip(
+            ensembles[molecule],
+            N_liq_molecules[molecule],
+            liq_box_lengths[molecule],
+        ),
         zip(temperatures[molecule], pressures[molecule]),
         N_vap_molecules[molecule],
         vap_box_lengths[molecule],
