@@ -120,7 +120,7 @@ def files_ready(job):
 
         return job.doc.files_ready
 
-    if job.sp.ensemble == "NPT":
+    if "NPT" in job.sp.ensemble:
         job.doc.files_ready = False
         file_names = ["melt", "cool", "equil", "prod"]
         keywords = [
@@ -202,7 +202,7 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return (job.doc.get("num_prod_replicates") == 4) and isinstance(
+    return (job.doc.get("num_prod_replicates") == 8) and isinstance(
         job.doc.get("prod_replicates_done"), int
     )
 
@@ -265,7 +265,7 @@ def equil_finished(job):
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 def log_exists(job):
     """Check if production log file has been generated."""
-    if job.sp.ensemble == "NPT":
+    if "NPT" in job.sp.ensemble:
         return job.isfile("log-npt.txt")
     elif job.sp.ensemble == "GEMC-NVT":
         return job.isfile("log-liquid.txt") and job.isfile("log-vapor.txt")
@@ -275,7 +275,7 @@ def log_exists(job):
 @Project.pre(lambda j: j.sp.engine == "mcccs")
 def traj_exists(job):
     """Check if production traj file has been generated."""
-    if job.sp.ensemble == "NPT":
+    if "NPT" in job.sp.ensemble:
         return job.isfile("trajectory-npt.gsd")
     elif job.sp.ensemble == "GEMC-NVT":
         # return job.isfile("trajectory-liquid.gsd") and job.isfile("trajectory-vapor.gsd" )
@@ -434,7 +434,7 @@ def system_equilibrated(job):
             )
             return False
 
-        if job.sp.ensemble == "NPT":
+        if "NPT" in job.sp.ensemble:
             equil_log = sanitize_npt_log("equil", job)
             # Now run pymbar on box length and box energy
             equil_status_density = is_equilibrated(
@@ -613,7 +613,7 @@ def prod_finished(job):
     lambda j: (
         j.isfile("init1.pdb")
         and j.isfile("init1.mol2")
-        and j.sp.ensemble == "NPT"
+        and "NPT" in job.sp.ensemble
     )
     or (
         (
@@ -675,7 +675,7 @@ def set_equil_replicates(job):
 def set_prod_replicates(job):
     """Copy the files for simulation from engine_input folder."""
     print("prod replicates set for job {}".format(job))
-    job.doc.num_prod_replicates = 4
+    job.doc.num_prod_replicates = 8
     job.doc.prod_replicates_done = 0
 
 
@@ -713,7 +713,7 @@ def copy_topmon(job):
 
 @ex
 @Project.operation
-@Project.pre(lambda j: j.sp.engine == "mcccs" and j.sp.ensemble == "NPT")
+@Project.pre(lambda j: j.sp.engine == "mcccs" and "NPT" in job.sp.ensemble)
 @Project.pre(has_fort_files)
 @Project.post(files_ready)
 def replace_keyword_fort_files_npt(job):
@@ -893,7 +893,7 @@ def make_restart_file(job):
         )
 
         return
-    elif job.sp.ensemble == "NPT":
+    elif "NPT" in job.sp.ensemble:
         # from fort77maker_onebox import fort77writer
         from reproducibility_project.src.engine_input.mcccs.fort77maker_onebox import (
             fort77writer,
@@ -1104,7 +1104,7 @@ def convert_to_txt(job):
             os.rename("prod_log_box1.txt", "log-liquid.txt")
             os.rename("prod_log_box2.txt", "log-vapor.txt")
 
-        elif job.sp.ensemble == "NPT":
+        elif "NPT" in job.sp.ensemble:
             prod_log = sanitize_npt_log("prod", job)
             os.rename("prod_log.txt", "log-npt.txt")
 
@@ -1177,7 +1177,7 @@ def convert_to_gsd(job):
             comb_traj = md.join(traj_list)
             comb_traj.save_gsd("trajectory-vapor.gsd")
 
-        elif job.sp.ensemble == "NPT":
+        elif "NPT" in job.sp.ensemble:
             traj_list = []
             traj_files = sorted(glob("box1movie1a*prod*xyz*"))
             print(traj_files)
