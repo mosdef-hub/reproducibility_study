@@ -55,7 +55,7 @@ temperatures = {
 }
 
 pressures = {
-    "methaneUA": [101.325] * u.kPa,
+    "methaneUA": [1318.0] * u.kPa,
 }
 
 N_liq_molecules = {
