@@ -38,17 +38,16 @@ def main():
 
         if molecule == "methaneUA" and ensemble == "NPT-medium":
             print(
-            molecule,
-            ensemble,
-            temperature,
-            pressure,
-            cutoff_style,
-            long_range_correction,
+                molecule,
+                ensemble,
+                temperature,
+                pressure,
+                cutoff_style,
+                long_range_correction,
             )
-            
+
             for job in group:
                 print(job.sp.replica, job)
-
 
 
 if __name__ == "__main__":
