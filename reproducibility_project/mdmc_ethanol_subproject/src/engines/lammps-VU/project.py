@@ -93,6 +93,15 @@ def lammps_equilibrated_npt(job):
 
 @Project.label
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
+def lammps_stopped_production(job):
+    """Check if the lammps production step has run for the job."""
+    return not job.isfile("production-npt.restart") and job.isfile(
+        "production-npt.xtc"
+    )
+
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
 def lammps_production_npt(job):
     """Check if the lammps production step has run for the job."""
     return job.isfile("production-npt.restart")
@@ -401,6 +410,22 @@ def lammps_prod_npt(job):
     ]
     sep = ","
     msg = f"sbatch --export='{sep.join(map(str,export_args))}' submit.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
+
+    return msg
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_stopped_production)
+@Project.post(lammps_production_npt)
+@flow.with_job
+@flow.cmd
+def lammps_extend_npt(job):
+    """Extend npt ensemble production."""
+    msg = f"sbatch --export=tprname=production extend_prod.sh"
     print("##############################")
     print("Submission Message ", msg)
     print("##############################")

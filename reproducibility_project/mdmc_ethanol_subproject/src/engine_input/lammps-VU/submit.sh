@@ -3,8 +3,8 @@
 #SBATCH --job-name=test_job
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
-#SBATCH --time=24:00:00
-#SBATCH --partition=day-long-std
+#SBATCH --time=96:00:00
+#SBATCH --partition=week-long-std
 #SBATCH --output=test_job_out.txt
 #SBATCH --export=ALL
 
