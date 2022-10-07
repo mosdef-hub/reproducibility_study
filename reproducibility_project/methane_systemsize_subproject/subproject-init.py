@@ -59,7 +59,7 @@ pressures = {
 }
 
 N_liq_molecules = {
-    "methaneUA": [450, 600, 900, 3600],
+    "methaneUA": [450, 600, 900, 1800],
 }
 
 N_vap_molecules = {
