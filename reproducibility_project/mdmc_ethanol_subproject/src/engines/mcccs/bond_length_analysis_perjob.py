@@ -49,10 +49,12 @@ def save_bl_dist(job):
                 os.remove(filePath)
                 print("{} deleted from {}".format(filePath, job))
             else:
-                print("Can not delete the file as it doesn't exists")
+                print("Can not delete the file as it doesn't exist")
 
             traj_filename = "trajectory-npt.gsd"
             traj = md.load(traj_filename, top="init1.mol2")
+            print("traj has {} frames".format(traj.n_frames))
+            traj = traj[::100]
             atoms_per_molecule = 9
             total_atoms = 4500
             total_molecules = int(total_atoms / atoms_per_molecule)

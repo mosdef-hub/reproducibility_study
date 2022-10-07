@@ -202,7 +202,7 @@ def equil_replicate_set(job):
 @Project.label
 def replicate_set(job):
     """Check if number of replicates for prod has been set."""
-    return (job.doc.get("num_prod_replicates") == 3) and isinstance(
+    return (job.doc.get("num_prod_replicates") == 4) and isinstance(
         job.doc.get("prod_replicates_done"), int
     )
 
@@ -675,7 +675,7 @@ def set_equil_replicates(job):
 def set_prod_replicates(job):
     """Copy the files for simulation from engine_input folder."""
     print("prod replicates set for job {}".format(job))
-    job.doc.num_prod_replicates = 3
+    job.doc.num_prod_replicates = 4
     job.doc.prod_replicates_done = 0
 
 
