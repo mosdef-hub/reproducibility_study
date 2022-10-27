@@ -1,4 +1,5 @@
 """Base code to find hbonding in trajectory files."""
+import math
 import os
 
 import freud
@@ -405,9 +406,10 @@ def calualateHBMap(
                         np.pi,
                     )
                     normal_angle = normal_angle - 1e-3
-
+                if math.isnan(normal_angle):
+                    continue
                 index_i = np.digitize(normal_angle, angles) - 1
-                # print("index_i is",index_i)
+                # print("index_i is",index_i, "and normal angle is", normal_angle, "atom_indices_are", original_Otail_index, original_H_index, original_Ohead_index)
                 intangle_prob[index_i] += 1.00
                 """ put into map """
                 maps[index_i, index_d] += 1.00
