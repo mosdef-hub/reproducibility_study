@@ -93,6 +93,7 @@ def main():
             n_hbond_list = []
 
             for job in group:
+                print("job = ", job)
                 os.chdir(job.ws)
 
                 map_output = np.loadtxt("map_output.csv", delimiter=",")

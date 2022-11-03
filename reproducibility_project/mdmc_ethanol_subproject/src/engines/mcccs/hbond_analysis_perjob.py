@@ -58,7 +58,7 @@ def hbond(job):
             nbins_r = 200
             nbins_a = 200
             r_cutoff = 0.75
-            skip_every_x_frames = 10
+            skip_every_x_frames = 5
             sel_oxygen_head = "name O"
             sel_hydrogen = "name H"
             sel_oxygen_tail = "name O"
