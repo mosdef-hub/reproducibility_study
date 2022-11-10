@@ -36,7 +36,7 @@ def main():
 
         print("-----------------------------------------------------")
 
-        if molecule == "methaneUA" and ensemble == "NPT":
+        if molecule == "ethanolAA":#  and ensemble == "NPT":
             print(
                 molecule,
                 ensemble,

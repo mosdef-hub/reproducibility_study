@@ -42,7 +42,7 @@ for key in molecules:
         r_cuts[key] = 10 * u.angstrom
 g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
 masses = {
-    "ethanolAA": [46.0684] * u.amu,
+    "ethanolAA": [46.068672] * u.amu,
 }
 init_density_liq = {
     "ethanolAA": [0.7893] * g_per_cm3,
