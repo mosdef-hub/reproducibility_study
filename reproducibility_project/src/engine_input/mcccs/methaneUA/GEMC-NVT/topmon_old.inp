@@ -13,6 +13,7 @@
     L_movie_pdb = T
  /
 
+
  &system
      lnpt= F
      lgibbs= T
@@ -34,7 +35,7 @@
      ltailc= F
      lshift= F
      ldual= T
-     L_Coul_CBMC= T
+     L_Coul_CBMC= F
      lneigh= F
      lexzeo= F
      lslit= F
@@ -44,7 +45,7 @@
      lelect_field= F
      lgaro= F
      lionic= F
-     L_Ewald_Auto= F
+     L_Ewald_Auto= T
      lmixlb= T
      lmixjo= F
      L_spline= F
@@ -57,8 +58,7 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-  4 1   98.0000  3.75000  0.0000  15.0350000 _CH3   #Tr-UA CH3 alkane
-  5 1   46.0000  3.95000  0.0000  14.0270000 _CH2   #Tr-UA CH2 alkane
+  4 1   148.000  3.73000  0.0000  16.0424600 _CH4   #Tr-UA CH4
 END ATOMS
 
 NONBOND
@@ -67,16 +67,13 @@ END NONBOND
 
 BONDS
 !i type(i) brvib(i) brvibk(i) [Angstrom]; type 1: U = brvibk * ( r_ij - brvib ) ^ 2
-  1 1 1.54000   0.00000
+  1 1 1.54000   0.00000 #CHx-CHy
 END BONDS
 
 ANGLES
 !i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
-  1 1 114.0000   31250.0
 END ANGLES
 
 DIHEDRALS
 !i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
-!===Begin TraPPE-UA alkane===
-  1 1  0.0  355.030  -68.190  791.320  0.0  0.0  0.0  0.0  0.0  0.0  #for linear segment (OPLS: Jorgensen, Madura, Swenson JACS 1984 106, 813)
 END DIHEDRALS
