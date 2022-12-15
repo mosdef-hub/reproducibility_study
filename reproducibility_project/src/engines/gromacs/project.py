@@ -60,23 +60,30 @@ def init_job(job):
     if job.sp.molecule == "benzeneUA":
         # Do something special with GMSO
         from gmso.external import from_parmed
+
         top = from_parmed(param_system)
         for angle in top.angles:
             # Apply restraint for angle
-            angle.restraint = {"theta_eq": angle.angle_type.parameters["theta_eq"],
-                               "k": 1000 * u.kJ / u.mol,
-                               "n": 1}
+            angle.restraint = {
+                "theta_eq": angle.angle_type.parameters["theta_eq"],
+                "k": 1000 * u.kJ / u.mol,
+                "n": 1,
+            }
         for dihedral in top.dihedrals:
             # Apply restraint for dihedral
-            dihedral.restraint = {"phi_eq": 0 * u.degree,
-                                  "delta_phi": 0 * u.degree,
-                                  "k": 1000 * u.kJ / (u.mol * u.rad ** 2)}
+            dihedral.restraint = {
+                "phi_eq": 0 * u.degree,
+                "delta_phi": 0 * u.degree,
+                "k": 1000 * u.kJ / (u.mol * u.rad**2),
+            }
 
-        top._scaling_factors = [[0, 0, 0], # lj
-                                [0, 0, 0]] # electrostatic
+        top._scaling_factors = [[0, 0, 0], [0, 0, 0]]  # lj  # electrostatic
         top.save("init.top", overwrite=True)
     else:
-        param_system.save("init.top", overwrite=True,)
+        param_system.save(
+            "init.top",
+            overwrite=True,
+        )
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
     lrcs = {"None": "no", "energy_pressure": "EnerPres"}
@@ -88,7 +95,7 @@ def init_job(job):
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
             "p3m-template": f"{mdp_abs_path}/em_template_p3m.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja", # Run nvt in place of em for water
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",  # Run nvt in place of em for water
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
             "data": {
