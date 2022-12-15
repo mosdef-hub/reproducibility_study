@@ -1,4 +1,5 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+
 import os
 import pathlib
 import sys
@@ -6,7 +7,7 @@ import sys
 import flow
 import panedr
 import unyt as u
-from flow.environment import DefaultPBSEnvironment
+from flow.environment import DefaultSlurmEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.utils.forcefields import load_ff
@@ -19,8 +20,8 @@ class Project(flow.FlowProject):
         super().__init__()
 
 
-class Rahman(DefaultPBSEnvironment):
-    """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
+class Rahman(DefaultSlurmEnvironment):
+    """Subclass of DefaultSlurmEnvironment for VU's Rahman cluster."""
 
     template = "rahman_gmx.sh"
 
@@ -56,11 +57,26 @@ def init_job(job):
     system[0].save(filename="init.gro", precision=8, overwrite=True)
     ff = load_ff(job.sp.forcefield_name)
     param_system = ff.apply(system[0])
-    param_system.save(
-        "init.top",
-        overwrite=True,
-    )
+    if job.sp.molecule == "benzeneUA":
+        # Do something special with GMSO
+        from gmso.external import from_parmed
+        top = from_parmed(param_system)
+        for angle in top.angles:
+            # Apply restraint for angle
+            angle.restraint = {"theta_eq": angle.angle_type.parameters["theta_eq"],
+                               "k": 1000 * u.kJ / u.mol,
+                               "n": 1}
+        for dihedral in top.dihedrals:
+            # Apply restraint for dihedral
+            dihedral.restraint = {"phi_eq": 0 * u.degree,
+                                  "delta_phi": 0 * u.degree,
+                                  "k": 1000 * u.kJ / (u.mol * u.rad ** 2)}
 
+        top._scaling_factors = [[0, 0, 0], # lj
+                                [0, 0, 0]] # electrostatic
+        top.save("init.top", overwrite=True)
+    else:
+        param_system.save("init.top", overwrite=True,)
     # Modify mdp files according to job statepoint parameters
     cutoff_styles = {"hard": "None", "shift": "Potential-shift"}
     lrcs = {"None": "no", "energy_pressure": "EnerPres"}
@@ -72,7 +88,7 @@ def init_job(job):
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
             "p3m-template": f"{mdp_abs_path}/em_template_p3m.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/em_template_water.mdp.jinja",
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja", # Run nvt in place of em for water
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
             "data": {
@@ -261,7 +277,7 @@ def gmx_nvt_prod(job):
 @Project.post(lambda j: equil_status(j, "nvt_prod", "Pressure"))
 @flow.with_job
 @flow.cmd
-def extend_gmx_nvt_prod_prod(job):
+def extend_gmx_nvt_prod(job):
     """Run GROMACS grompp for the nvt step."""
     # Extend the npt run by 1000 ps (1 ns)
     extend = "gmx convert-tpr -s nvt_prod.tpr -extend 1000 -o nvt_prod.tpr"
