@@ -162,4 +162,4 @@ rclone.sh
 *.o*
 
 #Local analysis
-analysis_data/
+#analysis_data/
