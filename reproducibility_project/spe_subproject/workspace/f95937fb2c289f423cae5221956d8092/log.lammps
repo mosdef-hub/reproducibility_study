@@ -1,0 +1,123 @@
+LAMMPS (5 Jun 2019)
+  using 16 OpenMP thread(s) per MPI task
+# Lammps script to read in mBuild topologies and perform energy minimization
+# Initialization
+units           real
+boundary        p p p
+atom_style      full
+
+# Assume ff info is included in data file
+pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut, add coul/long for spce/water
+pair_style     lj/cut/coul/cut 14.0
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  opls
+read_data box.lammps
+  triclinic box = (0 0 0) to (40.55 40.55 40.55) with tilt (0 0 0)
+  2 by 2 by 2 MPI processor grid
+  reading atoms ...
+  1500 atoms
+  scanning bonds ...
+  1 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  scanning dihedrals ...
+  2 = max dihedrals/atom
+  reading bonds ...
+  1200 bonds
+  reading angles ...
+  900 angles
+  reading dihedrals ...
+  600 dihedrals
+  2 = max # of 1-2 neighbors
+  2 = max # of 1-3 neighbors
+  2 = max # of 1-4 neighbors
+  4 = max # of special neighbors
+  special bonds CPU = 0.000760389 secs
+  read_data CPU = 0.0188244 secs
+# Line 12 for fix pppm option with spce water
+pair_modify shift no tail yes
+# Line 14 for fix shake option with spce water
+neighbor        2.5 bin #skin cutoff
+special_bonds lj/coul 0 0 0
+timestep ${tstep}
+timestep 2.0
+variable runtime equal 5e6/dt
+thermo 1
+pair_modify mix arithmetic
+
+variable tsample equal ${T} #kelvin, modified by job.sp.temperature
+variable tsample equal 372.0
+variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
+variable psample equal 1402.0/101.325
+# ________________________________________________________________________________________
+
+# Production
+fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 372 ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 372 372 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 372 372 100.0 iso 13.8366641993585 ${psample} 1000.0 pchain 10
+fix integrator all npt temp 372 372 100.0 iso 13.8366641993585 13.8366641993585 1000.0 pchain 10
+run 0
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 16.5
+  ghost atom cutoff = 16.5
+  binsize = 8.25, bins = 5 5 5
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut/coul/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton/tri
+      stencil: half/bin/3d/newton/tri
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 20.28 | 20.39 | 20.66 Mbytes
+Step Temp E_pair E_mol TotEng Press Volume
+       0            0    128522.73 1.4803359e-07    128522.73    557474.66    66676.466
+Loop time of 5.24663e-06 on 128 procs for 0 steps with 1500 atoms
+
+100.1% CPU use with 8 MPI tasks x 16 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Bond    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 5.247e-06  |            |       |100.00
+
+Nlocal:    187.5 ave 231 max 148 min
+Histogram: 1 1 1 1 1 0 1 0 0 2
+Nghost:    3511.25 ave 3682 max 3379 min
+Histogram: 1 0 3 0 1 0 1 1 0 1
+Neighs:    44190.6 ave 56313 max 30582 min
+Histogram: 1 0 1 1 0 2 0 2 0 1
+
+Total # of neighbors = 353525
+Ave neighs/atom = 235.683
+Ave special neighs/atom = 3.6
+Neighbor list builds = 0
+Dangerous builds = 0
+variable startstep equal step
+variable e equal etotal
+variable p equal pe
+variable k equal ke
+variable bon equal ebond
+variable ang equal eangle
+variable dih equal edihed
+variable vdw equal evdwl
+variable cou equal ecoul
+variable tai equal etail
+variable lon equal elong
+variable pai equal epair
+variable filename string "prlog-npt.txt"
+print "step etotal pe evdwl ecoul ebond eangle edihed etail elong epair" file ${filename}
+print "step etotal pe evdwl ecoul ebond eangle edihed etail elong epair" file prlog-npt.txt
+step etotal pe evdwl ecoul ebond eangle edihed etail elong epair
+print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append ${filename}
+print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append prlog-npt.txt
+0 128522.734259374 128522.734259374 128522.734259226 0 1.32366235187653e-07 1.49688681054339e-08 6.98484196350879e-10 -43.2858709522071 0 128522.734259226
+Total wall time: 0:00:00
