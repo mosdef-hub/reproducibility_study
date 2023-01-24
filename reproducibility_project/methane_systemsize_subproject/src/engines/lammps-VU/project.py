@@ -22,7 +22,7 @@ class Project(flow.FlowProject):
 class Rahman(DefaultSlurmEnvironment):
     """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
 
-    # template = "rahman_lmp.sh"
+    template = "rahman_lmp.sh"
 
 
 # ____________________________________________________________________________
@@ -80,15 +80,27 @@ def lammps_equilibrated_npt(job):
             latest_eqdata = file
     if latest_eqdata:
         data = np.genfromtxt(latest_eqdata.name, skip_header=1)
-        check_equil = [
-            is_equilibrated(data[:, 1])[0],
-            is_equilibrated(data[:, 2])[0],
-            is_equilibrated(data[:, 4])[0],
-            is_equilibrated(data[:, 6])[0],
-        ]
+        if len(data) > 100:
+            check_equil = [
+                is_equilibrated(data[:, 1])[0],
+                is_equilibrated(data[:, 2])[0],
+                is_equilibrated(data[:, 4])[0],
+                is_equilibrated(data[:, 6])[0],
+            ]
+        else:
+            check_equil = [False, False, False, False]
     else:
         check_equil = [False, False, False, False]
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
+
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+def lammps_stopped_production(job):
+    """Check if the lammps production step has run for the job."""
+    return not job.isfile("production-npt.restart") and job.isfile(
+        "production-npt.xtc"
+    )
 
 
 @Project.label
@@ -209,45 +221,18 @@ def lammps_em_nvt(job):
             in_script_name, "special_bonds lj/coul 0 0 0.5\n", 16
         )
         modify_engine_scripts(in_script_name, "pair_modify mix geometric\n", 20)
-    elif "UA" in job.sp.molecule:
-        modify_engine_scripts(
-            in_script_name, "special_bonds lj/coul 0 0 0\n", 16
-        )
-        modify_engine_scripts(
-            in_script_name, "pair_modify mix arithmetic\n", 20
-        )
-    if "benzeneUA" in job.sp.molecule:
-        define_benzene_molecules = [
-            "# Set lammps molecules\n",
-            f"change_box all ortho\n",
-            "variable nmols loop 400\n",
-            "label startloop\n",
-            "variable atomid equal (${nmols}-1)*6+1\n",
-            "variable atomid2 equal ${atomid}+5\n",
-            "set atom ${atomid}*${atomid2} mol ${nmols}\n",
-            "if '${nmols} == 400' then 'jump in.minimize endloop'\n",
-            "next nmols\n",
-            "jump in.minimize startloop\n",
-            "label endloop\n",
-            "fix integrator all rigid/nve/small molecule \n",
-            "run 10000\n",
-            "unfix integrator\n",
-            "fix integrator all rigid/nvt/small molecule temp ${tsample} ${tsample} 100.0\n",
-            "timestep ${tstep}\n",
-            "run 50000\n",
-            "unfix integrator\n",
-            "reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name\n",
-            "write_restart minimized.restart-*\n",
-        ]
-        start_line = 26
-        with open(in_script_name, "r") as f:
-            lines = f.readlines()
-        for i, new_line in enumerate(define_benzene_molecules):
+        if "NPT-fixOH" in job.sp.ensemble:
             modify_engine_scripts(
                 in_script_name,
-                new_line,
-                start_line + i,
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
+                14,
             )
+            for line in [27, 32, 36]:
+                modify_engine_scripts(
+                    in_script_name,
+                    "\n",
+                    line,
+                )
 
     export_args = [
         f"infile={in_script_name}",
@@ -306,7 +291,7 @@ def lammps_equil_npt(job):
         elif "NPT-fixOH" in job.sp.ensemble:
             modify_engine_scripts(
                 in_script_name,
-                "fix rigbond all shake 0.00001 20 0 b 1\n",
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
                 14,
             )
     elif "UA" in job.sp.molecule:
@@ -372,13 +357,13 @@ def lammps_prod_npt(job):
         if "SPCE" in job.sp.molecule:  # add SHAKE for SPCE
             modify_engine_scripts(
                 in_script_name,
-                "fix rigbod all shake 0.00001 20 0 b 1 a 1\n",
+                "fix rigbond all shake 0.00001 20 0 b 1\n",
                 14,
             )
         elif "NPT-fixOH" in job.sp.ensemble:
             modify_engine_scripts(
                 in_script_name,
-                "fix rigbond all shake 0.00001 20 0 b 1\n",
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
                 14,
             )
     elif "UA" in job.sp.molecule:
@@ -401,6 +386,22 @@ def lammps_prod_npt(job):
     ]
     sep = ","
     msg = f"sbatch --export='{sep.join(map(str,export_args))}' submit.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
+
+    return msg
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_stopped_production)
+@Project.post(lammps_production_npt)
+@flow.with_job
+@flow.cmd
+def lammps_extend_npt(job):
+    """Extend npt ensemble production."""
+    msg = f"sbatch --export=tprname=production extend_prod.sh"
     print("##############################")
     print("Submission Message ", msg)
     print("##############################")
