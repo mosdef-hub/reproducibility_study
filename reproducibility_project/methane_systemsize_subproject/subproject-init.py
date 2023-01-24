@@ -59,7 +59,7 @@ pressures = {
 }
 
 N_liq_molecules = {
-    "methaneUA": [450, 600, 900, 1800],
+    "methaneUA": [450, 600, 900, 1800, 3600],
 }
 
 N_vap_molecules = {
@@ -67,7 +67,7 @@ N_vap_molecules = {
 }
 
 liq_box_lengths = {
-    "methaneUA": [31.75, 34.94, 39.98, 50.4] * u.angstrom,
+    "methaneUA": [31.75, 34.94, 39.98, 50.4, 63.464] * u.angstrom,
 }
 
 vap_box_lengths = {
@@ -75,7 +75,7 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "methaneUA": ["NPT-exsmall", "NPT-small", "NPT-medium", "NPT-large"],
+    "methaneUA": ["NPT-exsmall", "NPT-small", "NPT-medium", "NPT-large", "NPT-exlarge"],
 }
 
 
