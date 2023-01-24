@@ -6,6 +6,7 @@ import sys
 import flow
 import numpy as np
 from flow import environments
+from flow.environment import DefaultSlurmEnvironment
 
 
 class Project(flow.FlowProject):
@@ -13,6 +14,15 @@ class Project(flow.FlowProject):
 
     def __init__(self):
         super().__init__()
+        current_path = pathlib.Path(os.getcwd()).absolute()
+        self.data_dir = current_path.parents[1] / "data"
+        self.ff_fn = self.data_dir / "forcefield.xml"
+
+
+class Rahman(DefaultSlurmEnvironment):
+    """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
+
+    # template = "rahman_lmp.sh"
 
 
 # ____________________________________________________________________________
