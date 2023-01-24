@@ -1,6 +1,7 @@
 integrator          = md
 nsteps              = {{  nsteps  }}
 dt                  = {{  dt  }}
+define              = -DDIHRES
 
 comm-mode           = Linear
 
@@ -32,6 +33,6 @@ pcoupl              = no
 DispCorr            = {{  lrc  }}
 
 constraint-algorithm = LINCS
-constraints         = all-angles
+constraints         = all-bonds
 lincs-order         = 4
 continuation        = no

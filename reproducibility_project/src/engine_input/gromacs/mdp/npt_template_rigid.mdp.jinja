@@ -1,6 +1,7 @@
 integrator               = md
 nsteps                   = {{  nsteps  }}
 dt                       = {{  dt  }}
+define              = -DDIHRES
 
 comm-mode                = Linear
 
@@ -31,12 +32,12 @@ pcoupl                   = parrinello-rahman
 pcoupltype               = isotropic
 nstpcouple               = -1
 tau-p                    = 10.0
-compressibility          = 4.5e-5
+compressibility          = 1.25e-4
 ref-p                    = {{  refp  }}
 
 DispCorr            = {{  lrc  }}
 
 constraint-algorithm = LINCS
-constraints         = all-angles
+constraints         = all-bonds
 lincs-order         = 4
 continuation        = no
