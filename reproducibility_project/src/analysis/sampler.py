@@ -5,6 +5,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+import pymbar
 import signac
 from pymbar import timeseries
 
@@ -18,6 +19,8 @@ def sample_job(
     variable: str = "potential_energy",
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    strict: bool = False,
+    monte_carlo_override: bool = False,
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
@@ -40,19 +43,34 @@ def sample_job(
         Fraction of data expected to be equilibrated.
     threshold_neff : int, optional, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
+    strict : bool, default=False
+        If strict, require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated'.
+    monte_carlo_override : bool, optional, default=False
+        Consider the entire data set passed in as production data that is fully equilibrated.
     """
     doc_name = f"{ensemble}/sampling_results"
+
+    data = np.genfromtxt(job.fn(filename), names=True)[variable]
+    data_shape = data.shape
+    if not monte_carlo_override:
+        start, stop, step, Neff = _decorr_sampling(
+            data,
+            threshold_fraction=threshold_fraction,
+            threshold_neff=threshold_neff,
+            strict=strict,
+        )
+    else:
+        start = 0
+        stop = data_shape[0] - 1
+        step = 1
+        Neff = data_shape[0]
+
     try:
         job.doc[doc_name]
     except KeyError:
         job.doc[doc_name] = {}
 
-    data = np.genfromtxt(job.fn(filename), names=True)[variable]
-    start, stop, step, Neff = _decorr_sampling(
-        data,
-        threshold_fraction=threshold_fraction,
-        threshold_neff=threshold_neff,
-    )
     if start is not None:
         job.doc[doc_name][variable] = {
             "start": start,
@@ -61,12 +79,17 @@ def sample_job(
             "Neff": Neff,
         }
     else:
-        warn(f"Property {variable} is not equilibrated.")
+        msg = f"""
+        Property {variable} is not equilibrated.
+        Additional information:
+        JOB_ID: {job.id}\tPROPERTY: {variable}\tMOLECULE: {job.sp.molecule}\tENGINE: {job.sp.engine}\tTEMP: {job.sp.temperature}\tPRESS: {job.sp.pressure}
+        """
+        warn(msg)
 
 
 def get_subsampled_values(
     job: signac.contrib.project.Job,
-    property: str,
+    prop: str,
     ensemble: str,
     property_filename: str = "log-npt.txt",
 ) -> None:
@@ -82,7 +105,7 @@ def get_subsampled_values(
     ----------
     job : signac.contrib.project.Job, required
         The signac job to operate on.
-    property : str, required
+    prop : str, required
         The property of interest to write out the subsampled data.
     ensemble : str, required
         The ensemble that the data was sampled from.
@@ -91,7 +114,7 @@ def get_subsampled_values(
 
     Examples
     --------
-    >>> arr = write_subsampled_values(job, property="potential_energy",
+    >>> arr = write_subsampled_values(job, prop="potential_energy",
                                 ensemble="npt",
                                 property_filename="log-npt.txt")
     >>> assert isinstance(arr, np.ndarray)
@@ -101,12 +124,12 @@ def get_subsampled_values(
             f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
         )
 
-    if property is None or property == "":
+    if prop is None or prop == "":
         raise ValueError(
-            f"Expected 'property' to be a name of a property, was provided {property}."
+            f"Expected 'prop' to be a name of a property, was provided {prop}."
         )
 
-    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{property}"]
+    sampling_dict = job.doc[f"{ensemble}/sampling_results"][f"{prop}"]
     start = sampling_dict["start"]
     stop = sampling_dict["stop"]
     step = sampling_dict["step"]
@@ -118,13 +141,20 @@ def get_subsampled_values(
         )
 
     with job:
-        df = pd.read_csv(
-            f"{property_filename}", delim_whitespace=True, header=0
-        )
-        return df[f"{property}"].to_numpy()[indices]
+        with open(f"{property_filename}", "r") as f:
+            line1 = f.readline()
+            df = pd.read_csv(
+                f, delim_whitespace=True, names=line1.replace("#", "").split()
+            )
+            if df.get(f"{prop}", None) is None:
+                return np.asarray([None] * len(indices))
+            else:
+                return df[f"{prop}"].to_numpy()[indices]
 
 
-def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
+def _decorr_sampling(
+    data, threshold_fraction=0.75, threshold_neff=100, strict=False
+):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
     Parameters
@@ -135,11 +165,15 @@ def _decorr_sampling(data, threshold_fraction=0.75, threshold_neff=100):
         Fraction of data expected to be equilibrated.
     threshold_neff : int, default=100
         Minimum amount of uncorrelated samples to be considered equilibrated
+    strict : bool, default=False
+        If strict, require both threshold_fraction and threshold_neff to be
+        true to evaluate as 'equilibrated'.
     """
     is_equil, prod_start, ineff, Neff = is_equilibrated(
         data,
         threshold_fraction=threshold_fraction,
         threshold_neff=threshold_neff,
+        strict=strict,
         nskip=1,
     )
     if is_equil:
@@ -166,25 +200,38 @@ def get_decorr_samples_using_max_t0(
     job: signac.contrib.Project.Job,
     ensemble: str,
     property_filename: str,
-    property: str,
+    prop: str,
     threshold_fraction: float = 0.75,
     threshold_neff: int = 100,
+    is_monte_carlo: bool = False,
 ) -> List[float]:
     """Return the subsamples of data according to maximum t0."""
     t0 = job.doc.get(f"{ensemble}/max_t0")
 
     if t0 is None:
         raise ValueError(
-            "Max t0 has not be calculated yet, refer to project-analysis.py"
+            "Max t0 has not been calculated yet, refer to project-analysis.py"
         )
 
     with job:
-        df = pd.read_csv(
-            f"{property_filename}", delim_whitespace=True, header=0
-        )
-        a_t = df[f"{property}"].to_numpy()[t0:]
-        uncorr_indices = timeseries.subsampleCorrelatedData(
-            A_t=a_t,
-            conservative=True,
-        )
-    return a_t[uncorr_indices]
+        with open(f"{property_filename}", "r") as f:
+            line1 = f.readline()
+            df = pd.read_csv(
+                f, delim_whitespace=True, names=line1.replace("#", "").split()
+            )
+            a_t = df[f"{prop}"].to_numpy()[t0:]
+            if is_monte_carlo:
+                uncorr_indices = [val for val in range(t0, len(a_t))]
+            else:
+                try:
+                    uncorr_indices = timeseries.subsampleCorrelatedData(
+                        A_t=a_t,
+                        conservative=True,
+                    )
+                except pymbar.utils.ParameterError as e:
+                    warn(
+                        f"This is a captured ParameterError from pymbar {e}, most likely due to zeroes being passed for the values. Returning the unsampled data"
+                    )
+                    uncorr_indices = [i for i in range(t0, len(a_t))]
+
+        return a_t[uncorr_indices]

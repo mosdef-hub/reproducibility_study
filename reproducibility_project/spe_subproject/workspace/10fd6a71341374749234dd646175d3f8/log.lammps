@@ -1,0 +1,111 @@
+LAMMPS (5 Jun 2019)
+  using 16 OpenMP thread(s) per MPI task
+# Lammps script to read in mBuild topologies and perform energy minimization
+# Initialization
+units           real
+boundary        p p p
+atom_style      full
+
+# Assume ff info is included in data file
+pair_style     lj/cut/coul/cut ${rcut} # read in from job.sp.r_cut, add coul/long for spce/water
+pair_style     lj/cut/coul/cut 14.0
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  opls
+read_data box.lammps
+  triclinic box = (0 0 0) to (39.98 39.98 39.98) with tilt (0 0 0)
+  2 by 2 by 2 MPI processor grid
+  reading atoms ...
+  900 atoms
+  0 = max # of 1-2 neighbors
+  0 = max # of 1-3 neighbors
+  0 = max # of 1-4 neighbors
+  1 = max # of special neighbors
+  special bonds CPU = 0.0010785 secs
+  read_data CPU = 0.0109414 secs
+# Line 12 for fix pppm option with spce water
+pair_modify shift no tail yes
+# Line 14 for fix shake option with spce water
+neighbor        2.5 bin #skin cutoff
+special_bonds lj/coul 0 0 0
+timestep ${tstep}
+timestep 2.0
+variable runtime equal 5e6/dt
+thermo 1
+pair_modify mix arithmetic
+
+variable tsample equal ${T} #kelvin, modified by job.sp.temperature
+variable tsample equal 140.0
+variable psample equal ${P}/101.325 #kPa to atm modified by job.sp.pressure
+variable psample equal 1318.0/101.325
+# ________________________________________________________________________________________
+
+# Production
+fix integrator all npt temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 140 ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 140 140 100.0 iso ${psample} ${psample} 1000.0 pchain 10
+fix integrator all npt temp 140 140 100.0 iso 13.007648655317 ${psample} 1000.0 pchain 10
+fix integrator all npt temp 140 140 100.0 iso 13.007648655317 13.007648655317 1000.0 pchain 10
+run 0
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 16.5
+  ghost atom cutoff = 16.5
+  binsize = 8.25, bins = 5 5 5
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut/coul/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton/tri
+      stencil: half/bin/3d/newton/tri
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 18.99 | 19.04 | 19.36 Mbytes
+Step Temp E_pair E_mol TotEng Press Volume
+       0            0    128284.79            0    128284.79     579252.6    63904.048
+Loop time of 4.86412e-06 on 128 procs for 0 steps with 900 atoms
+
+89.9% CPU use with 8 MPI tasks x 16 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Bond    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 4.864e-06  |            |       |100.00
+
+Nlocal:    112.5 ave 129 max 93 min
+Histogram: 1 1 0 0 1 1 2 0 1 1
+Nghost:    2159.38 ave 2250 max 2103 min
+Histogram: 2 2 0 1 0 1 1 0 0 1
+Neighs:    15253.8 ave 20416 max 10477 min
+Histogram: 1 0 1 2 1 0 2 0 0 1
+
+Total # of neighbors = 122030
+Ave neighs/atom = 135.589
+Ave special neighs/atom = 0
+Neighbor list builds = 0
+Dangerous builds = 0
+variable startstep equal step
+variable e equal etotal
+variable p equal pe
+variable k equal ke
+variable bon equal ebond
+variable ang equal eangle
+variable dih equal edihed
+variable vdw equal evdwl
+variable cou equal ecoul
+variable tai equal etail
+variable lon equal elong
+variable pai equal epair
+variable filename string "prlog-npt.txt"
+print "step etotal pe evdwl ecoul ebond eangle edihed etail elong epair" file ${filename}
+print "step etotal pe evdwl ecoul ebond eangle edihed etail elong epair" file prlog-npt.txt
+step etotal pe evdwl ecoul ebond eangle edihed etail elong epair
+print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append ${filename}
+print "${startstep} $e $p ${vdw} ${cou} ${bon} ${ang} ${dih} ${tai} ${lon} ${pai}" append prlog-npt.txt
+0 128284.78818671 128284.78818671 128284.78818671 0 0 0 0 -30.6480006424134 0 128284.78818671
+Total wall time: 0:00:00

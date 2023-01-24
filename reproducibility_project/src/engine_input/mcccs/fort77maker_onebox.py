@@ -85,7 +85,7 @@ def fort77writer(
         for particle in current_molecule.particles():
             atom_list.append(particle.name)
             nbeads_list[-1] += 1
-            charge_list.append(particle.charge)
+            charge_list.append(0)
 
     AtomsBox = {}
 
@@ -352,6 +352,7 @@ def fort77writer(
             ),
         ):
 
+            print(liq[j + 1][i])
             f.write(
                 "{0:24.12f}{1:24.12f}{2:24.12f}\n{3:24.12f}\n".format(
                     liq[j + 1][i][2],

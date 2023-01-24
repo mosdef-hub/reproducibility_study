@@ -54,12 +54,12 @@ for key in molecules:
         r_cuts[key] = 10 * u.angstrom
 g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
 masses = {
-    "methaneUA": [16.04] * u.amu,
-    "pentaneUA-flexible_bonds": [72.15] * u.amu,
-    "pentaneUA-constrain_bonds": [72.15] * u.amu,
-    "benzeneUA": [78.1118] * u.amu,
-    "waterSPCE": [18.0153] * u.amu,
-    "ethanolAA": [46.0684] * u.amu,
+    "methaneUA": [16.043] * u.amu,
+    "pentaneUA-flexible_bonds": [72.151] * u.amu,
+    "pentaneUA-constrain_bonds": [72.151] * u.amu,
+    "benzeneUA": [78.114] * u.amu,
+    "waterSPCE": [18.015324] * u.amu,
+    "ethanolAA": [46.068672] * u.amu,
 }
 init_density_liq = {
     "methaneUA": [0.3752] * g_per_cm3,

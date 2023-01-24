@@ -361,6 +361,16 @@ def modify_engine_scripts(filename, msg, line):
     return
 
 
+def modify_engine_scripts(filename, msg, line):
+    """Modify the submission scripts to include the job and simulation type in the header."""
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        lines[line] = msg
+    with open(filename, "w") as f:
+        f.writelines(lines)
+    return
+
+
 if __name__ == "__main__":
     pr = Project()
     pr.main()
