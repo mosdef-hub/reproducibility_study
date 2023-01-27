@@ -1,0 +1,2 @@
+potential_energy,vdw_energy,coul_energy,pair_energy,bonds_energy,angles_energy,dihedrals_energy,tail_energy,kspace_energy
+536743.5537731947,536743.5537731947,0.0,536743.5537731947,0.0,0.0,0.0,-128.23123468785766,0.0

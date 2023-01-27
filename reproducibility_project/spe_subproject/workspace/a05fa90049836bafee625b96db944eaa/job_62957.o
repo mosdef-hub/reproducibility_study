@@ -1,0 +1,15 @@
+methaneUA
+git commit: 24f2e964aa6684b55222a8e1a452a488057846bc
+
+Processing LJ and QQ
+No charged groups found, ignoring electrostatics
+Snapshot created
+box: (3.998, 3.998, 3.998, 0.0, 0.0, 0.0)
+<hoomd.md.pair.pair.LJ object at 0x7f9eb4a6c0d0> tail_correction set to True
+Running HOOMD version 3.0.0-beta.13
+HOOMD is running on GPU
+GPU api version 10.2
+mbuild version:  0.14.0
+foyer version:  0.11.0
+nlist exclusions:  _HOOMDList[]
+Finished
