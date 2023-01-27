@@ -25,7 +25,7 @@ class Project(flow.FlowProject):
 class Rahman(DefaultSlurmEnvironment):
     """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
 
-    # template = "rahman_lmp.sh"
+    template = "rahman_lmp.sh"
 
 
 @Project.operation.with_directives({"walltime": 200})
@@ -138,9 +138,4 @@ def save_bl_dist(job):
 
 if __name__ == "__main__":
     pr = Project()
-    for job in pr.find_jobs():
-        if job.sp.long_range_correction == None:
-            pr.update_statepoint(
-                job, {"long_range_correction": "None"}, overwrite=True
-            )
     pr.main()

@@ -24,19 +24,19 @@ class Project(flow.FlowProject):
         self.ff_fn = self.data_dir / "forcefield.xml"
 
 
-class Metropolis(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
-    """Subclass of DefaultSlurmEnvironment for Siepmann group cluster."""
+class Rahman(DefaultSlurmEnvironment):
+    """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
 
-    # metropolis.chem.umn.edu
-    hostname_pattern = r".*\.chem\.umn\.edu"
-    template = "metropolis.sh"
+    template = "rahman_lmp.sh"
 
 
 ex = Project.make_group(name="ex")
 
 
 @Project.operation.with_directives({"walltime": 200})
-@Project.pre(lambda j: j.sp.engine == "mcccs")
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lambda j: j.isfile("trajectory-npt.gsd"))
+@Project.post(lambda j: j.isfile("n_hbond.txt"))
 def hbond(job):
     """Save bl distribution for 4 types of bonds."""
     import os
@@ -47,14 +47,8 @@ def hbond(job):
     with job:
         if job.sp.molecule == "ethanolAA":
             filePath = "map_output.csv"
-            if os.path.exists(filePath):
-                os.remove(filePath)
-                print("{} deleted from {}".format(filePath, job))
-            else:
-                print("Can not delete the file as it doesn't exists")
-
             traj_filename = "trajectory-npt.gsd"
-            traj = md.load(traj_filename, top="init1.mol2")
+            traj = md.load(traj_filename, top="box.gro")
             nbins_r = 200
             nbins_a = 200
             r_cutoff = 0.75
@@ -114,15 +108,8 @@ def hbond(job):
             np.savetxt("theta.csv", inter_output[0], delimiter=",")
             print(np.mean(hbond_time))
             np.savetxt("n_hbond.txt", np.array([np.mean(hbond_time)]))
-            print(os.getcwd())
-            print(os.listdir())
 
 
 if __name__ == "__main__":
     pr = Project()
-    for job in pr.find_jobs():
-        if job.sp.long_range_correction == None:
-            pr.update_statepoint(
-                job, {"long_range_correction": "None"}, overwrite=True
-            )
     pr.main()
