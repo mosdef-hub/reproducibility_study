@@ -4,6 +4,7 @@
 *.xyz
 *.pdb
 *.ipynb
+*.pdf
 
 # Signac
 .signac_sp_cache.json.gz
@@ -24,6 +25,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.vscode/
 .Python
 build/
 develop-eggs/
@@ -43,6 +45,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.bundles/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -148,6 +151,7 @@ dmypy.json
 # Signac workspace
 workspace/
 view/
+local_archive/
 
 # Pycharm
 .idea/

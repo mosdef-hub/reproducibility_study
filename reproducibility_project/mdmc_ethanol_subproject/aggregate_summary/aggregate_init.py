@@ -15,26 +15,13 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = [
-    "methaneUA",
-    "pentaneUA-flexible_bonds",
-    "pentaneUA-constrain_bonds",
-    "benzeneUA",
-    "waterSPCE",
-    "ethanolAA",
-]
-replicas = range(16)
+molecules = ["ethanolAA"]
 simulation_engines = [
-    "cassandra",
     "mcccs",
-    "gomc",
-    "gromacs",
-    "hoomd",
     "lammps-VU",
-    # "lammps-UD",
 ]
-md_engines = ["gromacs", "hoomd", "lammps-VU"]  # , "lammps-UD"]
-mc_engines = ["cassandra", "mcccs", "gomc"]
+md_engines = ["lammps-VU"]
+mc_engines = ["mcccs"]
 forcefields = {}
 r_cuts = {}
 cutoff_styles = ["hard"]
@@ -54,90 +41,40 @@ for key in molecules:
         r_cuts[key] = 10 * u.angstrom
 g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
 masses = {
-    "methaneUA": [16.043] * u.amu,
-    "pentaneUA-flexible_bonds": [72.151] * u.amu,
-    "pentaneUA-constrain_bonds": [72.151] * u.amu,
-    "benzeneUA": [78.114] * u.amu,
-    "waterSPCE": [18.015324] * u.amu,
     "ethanolAA": [46.068672] * u.amu,
 }
 init_density_liq = {
-    "methaneUA": [0.3752] * g_per_cm3,
-    "pentaneUA-flexible_bonds": [0.5390] * g_per_cm3,
-    "pentaneUA-constrain_bonds": [0.5390] * g_per_cm3,
-    "benzeneUA": [0.692] * g_per_cm3,
-    "waterSPCE": [0.998] * g_per_cm3,
     "ethanolAA": [0.7893] * g_per_cm3,
 }
 init_density_vap = {
-    "methaneUA": [0.0117] * g_per_cm3,
-    "pentaneUA-flexible_bonds": [0.019] * g_per_cm3,
-    "pentaneUA-constrain_bonds": [0.019] * g_per_cm3,
-    "benzeneUA": [None],
-    "waterSPCE": [None],
     "ethanolAA": [None],
 }
 temperatures = {
-    "methaneUA": [140.0] * u.K,
-    "pentaneUA-flexible_bonds": [372.0] * u.K,
-    "pentaneUA-constrain_bonds": [372.0] * u.K,
-    "benzeneUA": [450.0] * u.K,
-    "waterSPCE": [280.0, 300.0, 320.0] * u.K,
-    "ethanolAA": [280.0, 300.0, 320.0] * u.K,
+    "ethanolAA": [280.0, 300.0, 320.0, 400.0] * u.K,
 }
 
 pressures = {
-    "methaneUA": [1318.0] * u.kPa,
-    "pentaneUA-flexible_bonds": [1402.0] * u.kPa,
-    "pentaneUA-constrain_bonds": [1402.0] * u.kPa,
-    "benzeneUA": [2260.0] * u.kPa,
-    "waterSPCE": [101.325, 101.325, 101.325] * u.kPa,
-    "ethanolAA": [101.325, 101.325, 101.325] * u.kPa,
+    "ethanolAA": [101.325, 101.325, 101.325, 3000] * u.kPa,
 }
 
 N_liq_molecules = {
-    "methaneUA": [900],
-    "pentaneUA-flexible_bonds": [300],
-    "pentaneUA-constrain_bonds": [300],
-    "benzeneUA": [400],
-    "waterSPCE": [1100, 1100, 1100],
-    "ethanolAA": [500, 500, 500],
+    "ethanolAA": [500],
 }
 
 N_vap_molecules = {
-    "methaneUA": [100],
-    "pentaneUA-flexible_bonds": [100],
-    "pentaneUA-constrain_bonds": [100],
-    "benzeneUA": [None],
-    "waterSPCE": [None],
     "ethanolAA": [None],
 }
 
 liq_box_lengths = {
-    "methaneUA": [39.98] * u.angstrom,
-    "pentaneUA-flexible_bonds": [40.55] * u.angstrom,
-    "pentaneUA-constrain_bonds": [40.55] * u.angstrom,
-    "benzeneUA": [42.17] * u.angstrom,
-    "waterSPCE": [32.07] * u.angstrom,
-    "ethanolAA": [36.46] * u.angstrom,
+    "ethanolAA": [36.46, 38.33] * u.angstrom,
 }
 
 vap_box_lengths = {
-    "methaneUA": [61.06] * u.angstrom,
-    "pentaneUA-flexible_bonds": [85.75] * u.angstrom,
-    "pentaneUA-constrain_bonds": [85.75] * u.angstrom,
-    "benzeneUA": [None],
-    "waterSPCE": [None],
-    "ethanolAA": [None],
+    "ethanolAA": [None, None],
 }
 
 ensembles = {
-    "methaneUA": ["NPT", "GEMC-NVT"],
-    "pentaneUA-flexible_bonds": ["NPT", "GEMC-NVT"],
-    "pentaneUA-constrain_bonds": ["NPT", "GEMC-NVT"],
-    "benzeneUA": ["NPT", None],
-    "waterSPCE": ["NPT", None],
-    "ethanolAA": ["NPT", None],
+    "ethanolAA": ["NPT-fixOH", "NPT-flexOH"],
 }
 
 
@@ -160,7 +97,6 @@ for molecule in molecules:
         mass,
         lrc,
         cutoff_style,
-        replica,
     ) in itertools.product(
         simulation_engines,
         ensembles[molecule],
@@ -173,12 +109,10 @@ for molecule in molecules:
         masses[molecule],
         long_range_correction,
         cutoff_styles,
-        replicas,
     ):
         statepoint = {
             "molecule": molecule,
             "engine": engine,
-            "replica": replica,
             "temperature": np.round(
                 temp.to_value("K"),
                 decimals=3,
@@ -223,29 +157,15 @@ for molecule in molecules:
         }
         total_statepoints.append(statepoint)
 
-# print(len(total_statepoints))
+print(len(total_statepoints))
 indices_to_remove = set()
 for i, sp in enumerate(total_statepoints):
     # filter gemc ensembles from md engines
-    if sp["ensemble"] == "GEMC-NVT" and sp["engine"] in md_engines:
+    if sp["ensemble"] == "NPT-flexOH" and sp["engine"] in md_engines:
         indices_to_remove.add(i)
 
-    if sp["ensemble"] == "NPT":
-        sp["N_vap"] = None
-        sp["box_L_vap"] = None
-        sp["init_vap_den"] = None
-
-    if sp["ensemble"] is None:
-        indices_to_remove.add(i)
-
-    if (
-        sp["engine"] in mc_engines
-        and sp["molecule"] == "pentaneUA-flexible_bonds"
-    ):
-        indices_to_remove.add(i)
-    if (
-        "lammps" in sp["engine"]
-        and sp["molecule"] == "pentaneUA-constrain_bonds"
+    if (sp["temperature"] == 400 and sp["box_L_liq"] == 3.646) or (
+        sp["temperature"] < 400 and sp["box_L_liq"] == 3.833
     ):
         indices_to_remove.add(i)
 
