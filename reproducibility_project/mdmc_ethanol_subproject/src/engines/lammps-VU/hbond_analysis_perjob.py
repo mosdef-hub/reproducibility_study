@@ -47,8 +47,9 @@ def hbond(job):
     with job:
         if job.sp.molecule == "ethanolAA":
             filePath = "map_output.csv"
-            traj_filename = "trajectory-npt.gsd"
-            traj = md.load(traj_filename, top="box.gro")
+            traj_filename = "prod-npt.xtc"
+            traj = md.load(traj_filename, top="box.mol2")
+            assert traj.top.n_bonds > 0
             nbins_r = 200
             nbins_a = 200
             r_cutoff = 0.75
@@ -106,7 +107,7 @@ def hbond(job):
             )
             np.savetxt("r.csv", rdf_output[0], delimiter=",")
             np.savetxt("theta.csv", inter_output[0], delimiter=",")
-            print(np.mean(hbond_time))
+            print(f"Job {job.id[:4]} has hbonds of {np.mean(hbond_time):.2f}")
             np.savetxt("n_hbond.txt", np.array([np.mean(hbond_time)]))
 
 

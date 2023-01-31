@@ -281,13 +281,13 @@ def calualateHBMap(
     )
     traj.top = top
     top = traj.top
-    print("traj as {} bonds".format(top.n_bonds))
+    # print("traj as {} bonds".format(top.n_bonds))
     radii, dr = np.linspace(0, r_cutoff, nbins_r + 1, retstep=True)
 
     angles, da = np.linspace(0, np.pi, nbins_a + 1, retstep=True)
 
-    print("da", da)
-    print("dr", dr)
+    # print("da", da)
+    # print("dr", dr)
     volume_shells = np.zeros(nbins_r)
     for i in range(0, nbins_r):
         volume_shells[i] = (4 / 3) * np.pi * (radii[i + 1] ** 3 - radii[i] ** 3)
@@ -308,7 +308,7 @@ def calualateHBMap(
         local_frame = traj[frame]
         ans = np.array([]).reshape(0, 3)
         frames_calculated += 1
-        print("working on {}".format(frame))
+        # print("working on {}".format(frame))
 
         L = traj[frame].unitcell_lengths
         # print(L)
@@ -400,11 +400,11 @@ def calualateHBMap(
                 )[0][0]
                 if normal_angle > np.pi:
 
-                    print(
-                        "Angle is {} radians greater than {}",
-                        normal_angle - np.pi,
-                        np.pi,
-                    )
+                    # print(
+                    #    "Angle is {} radians greater than {}",
+                    #    normal_angle - np.pi,
+                    #    np.pi,
+                    # )
                     normal_angle = normal_angle - 1e-3
                 if math.isnan(normal_angle):
                     continue

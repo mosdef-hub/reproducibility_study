@@ -54,7 +54,7 @@ def find_O_O_rdf(job):
                 print("Can not delete the file as it doesn't exists")
 
             traj_filename = "trajectory-npt.gsd"
-            traj = md.load(traj_filename, top="box.gro")
+            traj = md.load(traj_filename, top="box.mol2")
             oxygen_indices = traj.top.select("name O")
             bins = 250
             r_min = 0
