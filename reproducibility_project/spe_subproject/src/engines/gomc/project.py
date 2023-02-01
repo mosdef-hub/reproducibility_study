@@ -48,7 +48,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
 gomc_binary_path = (
-    "/Users/brad/Programs/GOMC/GOMC_dev_zero_point_energy_2_28_22/bin"
+    "/home/brad/Programs/GOMC/GOMC_2_76/bin"
 )
 
 # force field (FF) file for all simulations in that job
