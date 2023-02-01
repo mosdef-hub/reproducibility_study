@@ -1,0 +1,84 @@
+!*******************************************************************************
+!Molecular connectivity file
+!*******************************************************************************
+!species1.mcf - created by mBuild
+
+!Atom Format
+!index type element mass charge vdw_type parameters
+!vdw_type="LJ", parms=epsilon sigma
+!vdw_type="Mie", parms=epsilon sigma repulsion_exponent dispersion_exponent
+
+# Atom_Info
+5
+1    CH2_sp3_s1    EP    14.027    0.00000000    LJ    46.000    3.950
+2    CH2_sp3_s1    EP    14.027    0.00000000    LJ    46.000    3.950
+3    CH2_sp3_s1    EP    14.027    0.00000000    LJ    46.000    3.950
+4    CH3_sp3_s1    EP    15.035    0.00000000    LJ    98.000    3.750
+5    CH3_sp3_s1    EP    15.035    0.00000000    LJ    98.000    3.750
+
+!Bond Format
+!index i j type parameters
+!type="fixed", parms=bondLength
+
+# Bond_Info
+4
+1     1     2     fixed     1.540
+2     3     2     fixed     1.540
+3     4     1     fixed     1.540
+4     5     3     fixed     1.540
+
+!Angle Format
+!index i j k type parameters
+!type="fixed", parms=equilibrium_angle
+!type="harmonic", parms=force_constant equilibrium_angle
+
+# Angle_Info
+3
+1     1     2     3     harmonic   31250.0    114.00
+2     2     1     4     harmonic   31250.0    114.00
+3     2     3     5     harmonic   31250.0    114.00
+
+!Dihedral Format
+!index i j k l type parameters
+!type="none"
+!type="CHARMM", parms=a0 a1 delta
+!type="OPLS", parms=c0 c1 c2 c3
+!type="harmonic", parms=force_constant equilibrium_dihedral
+
+# Dihedral_Info
+2
+1     1     2     3     5     OPLS     0.000    2.952   -0.567    6.579 
+2     3     2     1     4     OPLS     0.000    2.952   -0.567    6.579 
+
+!Improper Format
+!index i j k l type parameters
+!type="harmonic", parms=force_constant equilibrium_improper
+
+# Improper_Info
+0
+
+!Fragment Format
+!index number_of_atoms_in_fragment branch_point other_atoms
+
+# Fragment_Info
+3
+1    3    1    2    4
+2    3    2    1    3
+3    3    3    2    5
+
+
+# Fragment_Connectivity
+2
+1    1    2
+2    2    3
+
+!Intra Scaling
+!vdw_scaling    1-2 1-3 1-4 1-N
+!charge_scaling 1-2 1-3 1-4 1-N
+
+# Intra_Scaling
+0. 0. 0.0000 1.
+0. 0. 0.0000 1.
+
+
+END
