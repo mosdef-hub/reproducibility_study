@@ -8,8 +8,11 @@ import freud
 import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
+import pandas as pd
 import signac
 from scipy import stats
+
+from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 def main():
@@ -89,24 +92,11 @@ def main():
             for job in group:
                 os.chdir(job.ws)
                 # print(job)
-                prod_run_files = sorted(glob("run*prod*"))
-                if len(prod_run_files) < 4:
-                    print(
-                        "warning, only {}  prod cycles complete for {} {} {} {} {} {} {}".format(
-                            len(prod_run_files),
-                            job,
-                            molecule,
-                            ensemble,
-                            temperature,
-                            pressure,
-                            cutoff_style,
-                            long_range_correction,
-                        )
-                    )
-                density_list.append(avg_one_seed_density_box1(prod_run_files))
+                density_list.append(avg_one_seed_density_box1(job))
 
-                # print(density_list)
-            filtered_density_list = list(filter(None, density_list))
+            filtered_density_list = list(
+                filter(lambda x: x is not None, density_list)
+            )
             output_string = "The average density is {} g/ml with SEM {} from {} samples".format(
                 np.mean(filtered_density_list),
                 np.std(filtered_density_list)
@@ -119,99 +109,25 @@ def main():
                 text_file.write(output_string)
             text_file.close()
 
-        elif ensemble == "GEMC-NVT":  # and molecule == "methaneUA":
-            density_list_box1 = []
-            density_list_box2 = []
-            for job in group:
-                # print("This is GEMC ",job)
-                os.chdir(job.ws)
-                prod_run_files = sorted(glob("run*prod*"))
-                if len(prod_run_files) < 4:
-                    print(
-                        "warning, only {}  prod cycles complete for {} {} {} {} {} {} {}".format(
-                            len(prod_run_files),
-                            job,
-                            molecule,
-                            ensemble,
-                            temperature,
-                            pressure,
-                            cutoff_style,
-                            long_range_correction,
-                        )
-                    )
-                density_list_box1.append(
-                    avg_one_seed_density_box1(prod_run_files)
-                )
-                density_list_box2.append(
-                    avg_one_seed_density_box2(prod_run_files)
-                )
-
-                # print(density_list)
-            filtered_density_list_box1 = list(filter(None, density_list_box1))
-            filtered_density_list_box2 = list(filter(None, density_list_box2))
-
-            output_string_box1 = "Box1 The average density is {} g/ml with SEM {} from {} samples".format(
-                np.mean(filtered_density_list_box1),
-                np.std(filtered_density_list_box1)
-                / np.sqrt(len(filtered_density_list_box1)),
-                len(filtered_density_list_box1),
-            )
-            output_string_box2 = "Box2 The average density is {} g/ml with SEM {} from {} samples".format(
-                np.mean(filtered_density_list_box2),
-                np.std(filtered_density_list_box2)
-                / np.sqrt(len(filtered_density_list_box2)),
-                len(filtered_density_list_box2),
-            )
-            print(output_string_box1)
-            print(output_string_box2)
-            os.chdir(base_dir)
-            with open("density_results.txt", "w") as text_file:
-                text_file.write(output_string_box1 + "\n" + output_string_box2)
-            text_file.close()
-
         os.chdir("..")
 
 
-def avg_one_seed_density_box1(prod_run_files):
+def avg_one_seed_density_box1(job):
     """For a one particular seed, read all the prod run files and provide the average density (g/ml) for one seed."""
-    if len(prod_run_files) == 0:
+    try:
+        data = pd.read_csv(job.ws + "/log-npt.txt", delimiter=" ", header=0)
+    except:
         return None
-    os.system(
-        "grep 'specific density                        ' run.prod* | awk '{print $6}' > temp_density.txt"
-    )
-    # os.system("grep 'specific density                        ' run.prod* | awk '{print $6}' ")
-    if os.path.exists("temp_density.txt"):
-        try:
-            density_list_one_seed = np.genfromtxt("temp_density.txt")
-        except Exception as e:
-            raise e
-        finally:
-            # now delete the temp file
-            os.remove("temp_density.txt")
-        return np.mean(density_list_one_seed)
-    else:
-        return None
+    attr = "density"
+    passed, start, step, neff = is_equilibrated(data[attr], 0.2, 1)
+    if passed:
+        temp = job.sp.temperature
+        thresh_frac = round((len(data) - start) / len(data), 3)
+        started_data = data[attr][start:]
+        # uncorr_data = started_data[0::math.ceil(step)]
+        uncorr_data = started_data[0::]
 
-
-def avg_one_seed_density_box2(prod_run_files):
-    """For a one particular seed, read all the prod run files and provide the average density (g/ml) for one seed."""
-    if len(prod_run_files) == 0:
-        return None
-    os.system(
-        "grep 'specific density                        ' run.prod* | awk '{print $7}' > temp_density.txt"
-    )
-    # os.system("grep 'specific density                        ' run.prod* | awk '{print $6}' ")
-    if os.path.exists("temp_density.txt"):
-        try:
-            density_list_one_seed = np.genfromtxt("temp_density.txt")
-        except Exception as e:
-            raise e
-        finally:
-            # now delete the temp file
-            os.remove("temp_density.txt")
-        return np.mean(density_list_one_seed)
-    else:
-        return None
+        return np.mean(uncorr_data)
 
 
 if __name__ == "__main__":

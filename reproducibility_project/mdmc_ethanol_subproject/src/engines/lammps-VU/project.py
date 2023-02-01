@@ -463,6 +463,36 @@ def lammps_create_gsd(job):
     return
 
 
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_created_gsd)
+@Project.post(lambda j: j.isfile("box.mol2"))
+@flow.with_job
+def lammps_write_mol2(job):
+    """Create a mol2 for use with mdtraj bond info."""
+    import foyer
+    from mbuild.formats.lammpsdata import write_lammpsdata
+
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
+
+    if "benzeneUA" == job.sp.molecule:
+        system = construct_system(
+            job.sp, scale_liq_box=2, fix_orientation=True
+        )[0]
+    else:
+        system = construct_system(job.sp)[0]
+    parmed_structure = system.to_parmed()
+    ff = load_ff(job.sp.forcefield_name)
+    system.save(
+        "box.mol2"
+    )  # save the compound as a mol2 object for reading back in to mbuild
+
+    return
+
+
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
     with open("submit.sh", "r") as f:
