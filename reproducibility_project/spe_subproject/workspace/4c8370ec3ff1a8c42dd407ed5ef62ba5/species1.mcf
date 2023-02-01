@@ -47,8 +47,8 @@
 
 # Dihedral_Info
 2
-1     1     2     3     5     OPLS     0.000    2.952   -0.567    6.579 
-2     3     2     1     4     OPLS     0.000    2.952   -0.567    6.579 
+1     1     2     3     5     OPLS     0.000    2.952   -0.567    6.579
+2     3     2     1     4     OPLS     0.000    2.952   -0.567    6.579
 
 !Improper Format
 !index i j k l type parameters

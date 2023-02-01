@@ -13,61 +13,61 @@ Info: Total Ram: 193077.0MB
 Info: Used Ram: 9802.1MB
 Info: Working in the current directory: /home/brad/Programs/GIT_repositories/reproduciblity_project/reproducibility_study/reproducibility_project/spe_subproject/workspace/3a324d88bf4834dd8fb4e1a0a9c7334c
 Info: GOMC COMPILED TO RUN ISOBARIC-ISOTHERMAL ENSEMBLE.
-Info: Number of threads                  1 
+Info: Number of threads                  1
 Info: Compiled with OpenMP Version       4.5
 
 Reading Input File:                      production_run.conf
-Info: Restart simulation                 Active 
+Info: Restart simulation                 Active
 Warning: Unknown input RestartCheckpoint!
-Info: Expert Mode                        Inactive 
-Info: Integer seed                       Active 
-Info: Constant seed                      Active 
-Info: PARAMETER file                     CHARMM format! 
+Info: Expert Mode                        Inactive
+Info: Integer seed                       Active
+Info: Constant seed                      Active
+Info: PARAMETER file                     CHARMM format!
 Info: Input Temperature                  450.0000 K
 Info: Input Pressure                     22.6000 bar
 Info: Volume change using constant ratio.
-Info: Non-truncated potential            Active 
-Info: Long Range Correction              Active 
+Info: Non-truncated potential            Active
+Info: Long Range Correction              Active
 Info: Cutoff                             14.0000 A
 Info: Short Range Cutoff                 1.0000 A
-Info: Exclude                            ONE-THREE 
-Info: Cache Ewald Fourier                Inactive 
-Info: Ewald Summation Tolerance          1.000E-05 
-Info: Pressure calculation frequency     1 
-Info: Total number of steps              2 
-Info: Number of equilibration steps      1 
-Info: Move adjustment frequency          1 
-Info: Displacement move frequency        0.4900 
-Info: Rotation move frequency            0.5000 
-Info: Intra-Swap move frequency          0.0000 
+Info: Exclude                            ONE-THREE
+Info: Cache Ewald Fourier                Inactive
+Info: Ewald Summation Tolerance          1.000E-05
+Info: Pressure calculation frequency     1
+Info: Total number of steps              2
+Info: Number of equilibration steps      1
+Info: Move adjustment frequency          1
+Info: Displacement move frequency        0.4900
+Info: Rotation move frequency            0.5000
+Info: Intra-Swap move frequency          0.0000
 Warning: Unknown input SwapFreq!
-Info: Regrowth move frequency            0.0000 
-Info: Crank-Shaft move frequency         0.0000 
-Info: Volume move frequency              0.0100 
-Info: Multi-Particle move frequency      0.0000 
+Info: Regrowth move frequency            0.0000
+Info: Crank-Shaft move frequency         0.0000
+Info: Volume move frequency              0.0100
+Info: Multi-Particle move frequency      0.0000
 Warning: Unknown input MEMC-1Freq!
 Warning: Unknown input MEMC-2Freq!
 Warning: Unknown input MEMC-3Freq!
-Info: CBMC First atom trials             12   
-Info: CBMC Secondary atom trials         10   
-Info: CBMC Angle trials                  50   
-Info: CBMC Dihedral trials               50   
-Info: Output name                        production_run 
-Info: Restart frequency                  1 
-Info: Checkpoint frequency               1 
-Info: Printing coordinate                Inactive 
-Info: DCD frequency                      1 
-Info: Console output frequency           1 
-Info: Average output frequency           1 
+Info: CBMC First atom trials             12
+Info: CBMC Secondary atom trials         10
+Info: CBMC Angle trials                  50
+Info: CBMC Dihedral trials               50
+Info: Output name                        production_run
+Info: Restart frequency                  1
+Info: Checkpoint frequency               1
+Info: Printing coordinate                Inactive
+Info: DCD frequency                      1
+Info: Console output frequency           1
+Info: Average output frequency           1
 Warning: Unknown input HistogramFreq!
 Warning: Unknown input DistName!
 Warning: Unknown input HistName!
 Warning: Unknown input RunNumber!
 Warning: Unknown input RunLetter!
 Warning: Unknown input SampleFreq!
-Default: Multi-Particle Brownian move frequency 0.0000 
-Default: Intra-MEMC move frequency       0.0000 
-Default: Targeted-Swap move frequency    0.0000 
+Default: Multi-Particle Brownian move frequency 0.0000
+Default: Intra-MEMC move frequency       0.0000
+Default: Targeted-Swap move frequency    0.0000
 Warning: 1-4 Electrostatic scaling set, but will be ignored.
 Warning: Cell dimension set, but will be ignored in restart mode.
 Finished Reading Input File:             production_run.conf
@@ -92,53 +92,53 @@ Idx	name	type	charge	mass
 5	C6	A	0.0000	13.0190
 
 Bonds:
-[4 5] [3 4] [2 3] [1 2] [0 1] [0 5] 
+[4 5] [3 4] [2 3] [1 2] [0 1] [0 5]
 
 Angles:
-[0 1 2] [0 5 4] [1 0 5] [1 2 3] [2 3 4] [3 4 5] 
+[0 1 2] [0 5 4] [1 0 5] [1 2 3] [2 3 4] [3 4 5]
 
 Dihedrals:
-[0 1 2 3] [0 5 4 3] [1 0 5 4] [1 2 3 4] [2 1 0 5] 
-[2 3 4 5] 
+[0 1 2 3] [0 5 4 3] [1 0 5 4] [1 2 3 4] [2 1 0 5]
+[2 3 4 5]
 
 Impropers:
 
 Bonds parameter:
-Atom Types                             Kb(K)           b0(A) 
-A	A	                         FIX           1.4000 
+Atom Types                             Kb(K)           b0(A)
+A	A	                         FIX           1.4000
 
 Angles parameter:
-Atom Types                         Ktheta(K)         theta0(degree) 
-A	A	A	                 FIX         120.0000 
+Atom Types                         Ktheta(K)         theta0(degree)
+A	A	A	                 FIX         120.0000
 
 Dihedrals parameter:
-Atom Types                           Kchi(K)    n    delta(degree) 
-A	A	A	A	      0.0000    0     90.0000 
-A	A	A	A	      0.0000    1    180.0000 
-A	A	A	A	      0.0000    2      0.0000 
-A	A	A	A	      0.0000    3    180.0000 
-A	A	A	A	      0.0000    4      0.0000 
-A	A	A	A	      0.0000    5    180.0000 
+Atom Types                           Kchi(K)    n    delta(degree)
+A	A	A	A	      0.0000    0     90.0000
+A	A	A	A	      0.0000    1    180.0000
+A	A	A	A	      0.0000    2      0.0000
+A	A	A	A	      0.0000    3    180.0000
+A	A	A	A	      0.0000    4      0.0000
+A	A	A	A	      0.0000    5    180.0000
 
 NonBonded 1-4 parameters:
-Type1  Type2             Epsilon(K)    Sigma(A)       N 
-A      A                     0.0000      3.6950   12.00 
+Type1  Type2             Epsilon(K)    Sigma(A)       N
+A      A                     0.0000      3.6950   12.00
 
 NonBonded parameters:
-Type1  Type2             Epsilon(K)    Sigma(A)       N 
-A      A                    50.5000      3.6950   12.00 
+Type1  Type2             Epsilon(K)    Sigma(A)       N
+A      A                    50.5000      3.6950   12.00
 
-Info: Reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc 
+Info: Reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc
 
-Info: Finished reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc 
+Info: Finished reading extended system file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.xsc
 
 Info: Reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.coor
 
 Info: Finished reading from binary file ../../src/system_snapshots/gomc_NPT_percise_coordinates/benzeneUA/mosdef_gomc_zero_point_energy_box_0_restart.coor
 
-Info: Box  0:  Periodic Cell Basis 1     42.170   0.000   0.000 
-Info: Box  0:  Periodic Cell Basis 2      0.000  42.170   0.000 
-Info: Box  0:  Periodic Cell Basis 3      0.000   0.000  42.170 
+Info: Box  0:  Periodic Cell Basis 1     42.170   0.000   0.000
+Info: Box  0:  Periodic Cell Basis 2      0.000  42.170   0.000
+Info: Box  0:  Periodic Cell Basis 3      0.000   0.000  42.170
 
 Minimum coordinates in box 0: x =    2.002, y =    1.995, z =    2.000
 Maximum coordinates in box 0: x =   40.170, y =   40.165, z =   40.171
@@ -164,9 +164,9 @@ STAT_0:             0       7.49912863e+04       5.60874992e+05       1.69247044
 
      STITLE:     STEP               VOLUME             PRESSURE      COMPRESSIBILITY             ENTHALPY             TOTALMOL          TOT_DENSITY
 
-Opening DCD coordinate file: production_run_BOX_0.dcd 
-Writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
-Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
+Opening DCD coordinate file: production_run_BOX_0.dcd
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
 MOVE_0:             1                    0                    0       0.00000000e+00       1.00000000e-10                    1                    0       0.00000000e+00       7.85398163e-01                    0                    0       0.00000000e+00       5.00000000e+02
 
 ENER_0:             1       4.67786183e+07       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       4.68087536e+07      -3.01352873e+04       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00
@@ -175,10 +175,10 @@ STAT_0:             1       7.49912863e+04       5.60874992e+05       1.69247044
 
 PRES_0:             1       5.70995177e+05       5.48962566e+05       5.62005902e+05
 
-Writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
-Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1 
-Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1 
-Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1 
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 1
 Printed combined psf to file production_run_merged.psf
 Writing checkpoint to file production_run_restart.chk at step 1
 Checkpoint saved to production_run_restart.chk
@@ -190,18 +190,18 @@ STAT_0:             2       7.49912863e+04       5.60874992e+05       1.69247044
 
 PRES_0:             2       5.70995177e+05       5.48962566e+05       5.62005902e+05
 
-Writing DCD coordinate to file production_run_BOX_0.dcd at step 2 
-Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 2 
-Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2 
-Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2 
+Writing DCD coordinate to file production_run_BOX_0.dcd at step 2
+Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 2
+Writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2
+Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2
 Writing checkpoint to file production_run_restart.chk at step 2
 Checkpoint saved to production_run_restart.chk
 Simulation Time (total): 1.31257057e-01 sec.
 
-Move Type                Mol. Kind      BOX_0      
-% Accepted Displacement        benz     0.00000 
-% Accepted Rotation            benz     0.00000 
-% Accepted Volume-Transfer              0.00000 
+Move Type                Mol. Kind      BOX_0
+% Accepted Displacement        benz     0.00000
+% Accepted Rotation            benz     0.00000
+% Accepted Volume-Transfer              0.00000
 
 Displacement:                            0.0000    sec.
 Rotation:                                0.0016    sec.

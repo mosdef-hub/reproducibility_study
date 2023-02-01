@@ -1,10 +1,10 @@
 PSF
 
-       2 !NTITLE 
+       2 !NTITLE
  REMARKS Restart PSF produced by GOMC
  REMARKS Contains Geometry data for molecules in Box 0
 
-    4500 !NATOM 
+    4500 !NATOM
        1 SYS  1    etha C1   A     -0.180000       12.0108           0
        2 SYS  1    etha C2   E      0.145000       12.0108           0
        3 SYS  1    etha O1   C     -0.683000       15.9994           0
@@ -4506,7 +4506,7 @@ PSF
     4499 SYS  500  etha H5   B      0.060000        1.0079           0
     4500 SYS  500  etha H6   B      0.060000        1.0079           0
 
-    4000 !NBOND: bonds 
+    4000 !NBOND: bonds
        3       4       2       3       2       5       2       6
        1       2       1       7       1       8       1       9
       12      13      11      12      11      14      11      15
@@ -5509,7 +5509,7 @@ PSF
     4492    4493    4492    4498    4492    4499    4492    4500
 
 
-    6500 !NTHETA: angles 
+    6500 !NTHETA: angles
        1       2       3       1       2       5       1       2       6
        2       1       7       2       1       8       2       1       9
        2       3       4       3       2       5       3       2       6
@@ -7678,7 +7678,7 @@ PSF
     4494    4493    4497    4496    4493    4497    4498    4492    4499
     4498    4492    4500    4499    4492    4500
 
-    6000 !NPHI: dihedrals 
+    6000 !NPHI: dihedrals
        1       2       3       4       3       2       1       7
        3       2       1       8       3       2       1       9
        4       3       2       5       4       3       2       6
@@ -10681,16 +10681,16 @@ PSF
     4497    4493    4492    4499    4497    4493    4492    4500
 
 
-       0 !NIMPHI: impropers 
+       0 !NIMPHI: impropers
 
 
-       0 !NDON: donors 
+       0 !NDON: donors
 
 
-       0 !NACC: acceptors 
+       0 !NACC: acceptors
 
 
-       0 !NNB 
+       0 !NNB
 
 
-       0 !NGRP 
+       0 !NGRP
