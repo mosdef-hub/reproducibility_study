@@ -1,10 +1,10 @@
 PSF
 
-       2 !NTITLE 
+       2 !NTITLE
  REMARKS Combined PSF produced by GOMC
  REMARKS Contains Geometry data for molecules in ALL boxes in the system
 
-     900 !NATOM 
+     900 !NATOM
        1 SYS  1    meth C1   A      0.000000       16.0430           0
        2 SYS  2    meth C1   A      0.000000       16.0430           0
        3 SYS  3    meth C1   A      0.000000       16.0430           0
@@ -906,25 +906,25 @@ PSF
      899 SYS  899  meth C1   A      0.000000       16.0430           0
      900 SYS  900  meth C1   A      0.000000       16.0430           0
 
-       0 !NBOND: bonds 
+       0 !NBOND: bonds
 
 
-       0 !NTHETA: angles 
+       0 !NTHETA: angles
 
 
-       0 !NPHI: dihedrals 
+       0 !NPHI: dihedrals
 
 
-       0 !NIMPHI: impropers 
+       0 !NIMPHI: impropers
 
 
-       0 !NDON: donors 
+       0 !NDON: donors
 
 
-       0 !NACC: acceptors 
+       0 !NACC: acceptors
 
 
-       0 !NNB 
+       0 !NNB
 
 
-       0 !NGRP 
+       0 !NGRP

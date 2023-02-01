@@ -13,7 +13,7 @@
 
 * masses
 
-!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)  
+!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)
 *  A		16.043000	! CH4_methaneUA
 
 NONBONDED

@@ -1,10 +1,10 @@
 PSF
 
-       2 !NTITLE 
+       2 !NTITLE
  REMARKS Restart PSF produced by GOMC
  REMARKS Contains Geometry data for molecules in Box 0
 
-    3300 !NATOM 
+    3300 !NATOM
        1 SYS  1    wate OW1  A     -0.847600       15.9994           0
        2 SYS  1    wate HW11 B      0.423800        1.0079           0
        3 SYS  1    wate HW21 B      0.423800        1.0079           0
@@ -3306,7 +3306,7 @@ PSF
     3299 SYS  1100 wate HW11 B      0.423800        1.0079           0
     3300 SYS  1100 wate HW21 B      0.423800        1.0079           0
 
-    2200 !NBOND: bonds 
+    2200 !NBOND: bonds
        1       2       1       3       4       5       4       6
        7       8       7       9      10      11      10      12
       13      14      13      15      16      17      16      18
@@ -3859,7 +3859,7 @@ PSF
     3295    3296    3295    3297    3298    3299    3298    3300
 
 
-    1100 !NTHETA: angles 
+    1100 !NTHETA: angles
        2       1       3       5       4       6       8       7       9
       11      10      12      14      13      15      17      16      18
       20      19      21      23      22      24      26      25      27
@@ -4228,19 +4228,19 @@ PSF
     3287    3286    3288    3290    3289    3291    3293    3292    3294
     3296    3295    3297    3299    3298    3300
 
-       0 !NPHI: dihedrals 
+       0 !NPHI: dihedrals
 
 
-       0 !NIMPHI: impropers 
+       0 !NIMPHI: impropers
 
 
-       0 !NDON: donors 
+       0 !NDON: donors
 
 
-       0 !NACC: acceptors 
+       0 !NACC: acceptors
 
 
-       0 !NNB 
+       0 !NNB
 
 
-       0 !NGRP 
+       0 !NGRP

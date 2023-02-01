@@ -1,10 +1,10 @@
 PSF
 
-       2 !NTITLE 
+       2 !NTITLE
  REMARKS Combined PSF produced by GOMC
  REMARKS Contains Geometry data for molecules in ALL boxes in the system
 
-    2400 !NATOM 
+    2400 !NATOM
        1 SYS  1    benz C1   A      0.000000       13.0190           0
        2 SYS  1    benz C2   A      0.000000       13.0190           0
        3 SYS  1    benz C3   A      0.000000       13.0190           0
@@ -2406,7 +2406,7 @@ PSF
     2399 SYS  400  benz C5   A      0.000000       13.0190           0
     2400 SYS  400  benz C6   A      0.000000       13.0190           0
 
-    2400 !NBOND: bonds 
+    2400 !NBOND: bonds
        5       6       4       5       3       4       2       3
        1       2       1       6      11      12      10      11
        9      10       8       9       7       8       7      12
@@ -3009,7 +3009,7 @@ PSF
     2397    2398    2396    2397    2395    2396    2395    2400
 
 
-    2400 !NTHETA: angles 
+    2400 !NTHETA: angles
        1       2       3       1       6       5       2       1       6
        2       3       4       3       4       5       4       5       6
        7       8       9       7      12      11       8       7      12
@@ -3812,7 +3812,7 @@ PSF
     2396    2397    2398    2397    2398    2399    2398    2399    2400
 
 
-    2400 !NPHI: dihedrals 
+    2400 !NPHI: dihedrals
        1       2       3       4       1       6       5       4
        2       1       6       5       2       3       4       5
        3       2       1       6       3       4       5       6
@@ -5015,16 +5015,16 @@ PSF
     2397    2396    2395    2400    2397    2398    2399    2400
 
 
-       0 !NIMPHI: impropers 
+       0 !NIMPHI: impropers
 
 
-       0 !NDON: donors 
+       0 !NDON: donors
 
 
-       0 !NACC: acceptors 
+       0 !NACC: acceptors
 
 
-       0 !NNB 
+       0 !NNB
 
 
-       0 !NGRP 
+       0 !NGRP

@@ -15,7 +15,7 @@
 
 * masses
 
-!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)  
+!atom_types 	mass 		  atomTypeForceFieldName_ResidueName (i.e., atoms_type_per_utilized_FF)
 *  A		15.999430	! opls-116_waterSPCE
 *  B		1.007947	! opls-117_waterSPCE
 
@@ -37,7 +37,7 @@ ANGLES * harmonic
 !Ktheta: kcal/mole/rad**2
 !Theta0: degrees
 !
-! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.		
+! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.
 !
 !atom_types 		Ktheta		Theta0			  atoms_types_per_utilized_FF
 B	A	B	999999999999		109.47000		! opls-117_waterSPCE	opls-116_waterSPCE	opls-117_waterSPCE
