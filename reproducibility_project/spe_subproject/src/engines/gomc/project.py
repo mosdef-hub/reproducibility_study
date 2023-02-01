@@ -47,9 +47,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = (
-    "/home/brad/Programs/GOMC/GOMC_2_76/bin"
-)
+gomc_binary_path = "/home/brad/Programs/GOMC/GOMC_2_76/bin"
 
 # force field (FF) file for all simulations in that job
 # Note: do not add extensions
