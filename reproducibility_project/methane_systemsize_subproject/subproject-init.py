@@ -75,7 +75,13 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "methaneUA": ["NPT-exsmall", "NPT-small", "NPT-medium", "NPT-large", "NPT-exlarge"],
+    "methaneUA": [
+        "NPT-exsmall",
+        "NPT-small",
+        "NPT-medium",
+        "NPT-large",
+        "NPT-exlarge",
+    ],
 }
 
 

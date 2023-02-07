@@ -5,21 +5,25 @@ import shutil
 from glob import glob
 
 import freud
+import matplotlib
 import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
 import signac
 from scipy import stats
-import matplotlib
+
 matplotlib.use("pdf")
-from matplotlib.ticker import MaxNLocator
-from matplotlib.ticker import StrMethodFormatter, NullFormatter, MultipleLocator
-
-
 from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-rc('font',**{'family':'serif','serif':['Times']})
-#rc('text', usetex=True)
+from matplotlib.ticker import (
+    MaxNLocator,
+    MultipleLocator,
+    NullFormatter,
+    StrMethodFormatter,
+)
+
+# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+rc("font", **{"family": "serif", "serif": ["Times"]})
+# rc('text', usetex=True)
 
 
 def main():
@@ -48,7 +52,7 @@ def main():
         pressure,
         cutoff_style,
         long_range_correction,
-        ensemble
+        ensemble,
     ), group in project.groupby(
         (
             "molecule",
@@ -107,7 +111,11 @@ def main():
         )
 
         base_dir = os.getcwd()
-        if "NPT" in ensemble and molecule == "methaneUA" and ensemble != "NPT-exlarge":
+        if (
+            "NPT" in ensemble
+            and molecule == "methaneUA"
+            and ensemble != "NPT-exlarge"
+        ):
             rdf_list = []
             cdf_list = []
             for job in group:
@@ -146,24 +154,27 @@ def main():
             plt.close()
         os.chdir("..")
 
-    fig, axs = plt.subplots(1, 1, sharex=False, sharey=False,figsize=(3,3))
+    fig, axs = plt.subplots(1, 1, sharex=False, sharey=False, figsize=(3, 3))
     ax1 = axs
     for key in ["NPT-exsmall", "NPT-small", "NPT-medium", "NPT-large"]:
-        ax1.plot(rdfs[key][:,0], rdfs[key][:,1], label = "$N={}$".format(ensemble2N[key]))
+        ax1.plot(
+            rdfs[key][:, 0],
+            rdfs[key][:, 1],
+            label="$N={}$".format(ensemble2N[key]),
+        )
     ax1.set_xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
     ax1.set_ylabel(r"$g(r)$")
-    ax1.set_xlim([2,12])
-    ax1.set_ylim([0.6,1.2])
+    ax1.set_xlim([2, 12])
+    ax1.set_ylim([0.6, 1.2])
 
     plt.title("C-C RDF")
     plt.tight_layout()
     plt.legend()
-    #adjusting ticks
+    # adjusting ticks
 
-    for ax  in [ax1]:
+    for ax in [ax1]:
         ax.xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(2))
         ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(2))
-
 
     plt.savefig("C-C_rdf_comparison.pdf")
 
