@@ -33,7 +33,6 @@ def main():
             "long_range_correction",
         )
     ):
-
         print("-----------------------------------------------------")
 
         if molecule == "ethanolAA":  #  and ensemble == "NPT":

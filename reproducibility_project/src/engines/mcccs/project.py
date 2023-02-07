@@ -248,7 +248,6 @@ def cool_finished(job):
 def equil_finished(job):
     """Check if equil stage is finished."""
     try:
-
         step = "equil" + str(job.doc.equil_replicates_done - 1)
     except (KeyError, AttributeError):
         step = "equil" + "0"
@@ -425,7 +424,6 @@ def system_equilibrated(job):
         files = glob("fort*12*{}*".format("equil"))
 
         if len(files) < 2:  # at least do two loops of equilibration
-
             print(
                 "equils done is less than 2 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
@@ -595,7 +593,6 @@ def system_equilibrated(job):
 def prod_finished(job):
     """Check if prod stage is finished."""
     try:
-
         step = "prod" + str(job.doc.prod_replicates_done - 1)
     except (KeyError, AttributeError):
         step = "prod" + "0"
@@ -966,7 +963,6 @@ def run_cool(job):
     print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
-
         shutil.copyfile("fort.4.{}".format(step), "fort.4")
         process = Popen(
             execommand,
