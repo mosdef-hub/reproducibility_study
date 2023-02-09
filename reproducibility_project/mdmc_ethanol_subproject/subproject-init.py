@@ -164,10 +164,6 @@ for molecule in molecules:
 print(len(total_statepoints))
 indices_to_remove = set()
 for i, sp in enumerate(total_statepoints):
-    # filter gemc ensembles from md engines
-    if sp["ensemble"] == "NPT-flexOH" and sp["engine"] in md_engines:
-        indices_to_remove.add(i)
-
     if (sp["temperature"] == 400 and sp["box_L_liq"] == 3.646) or (
         sp["temperature"] < 400 and sp["box_L_liq"] == 3.833
     ):

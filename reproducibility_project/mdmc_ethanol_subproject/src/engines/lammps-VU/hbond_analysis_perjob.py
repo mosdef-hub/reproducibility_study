@@ -35,6 +35,7 @@ ex = Project.make_group(name="ex")
 
 @Project.operation.with_directives({"walltime": 200})
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lambda j: j.sp.ensemble == "NPT-flexOH")
 @Project.pre(lambda j: j.isfile("trajectory-npt.gsd"))
 @Project.post(lambda j: j.isfile("n_hbond.txt"))
 def hbond(job):

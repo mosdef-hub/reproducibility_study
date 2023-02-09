@@ -1,17 +1,17 @@
 ;
 ;   File init.top  was generated
 ;   By user: quachcd (501)
-;   On host: Cos-MacBook-Pro.local
-;   At date: Mon. March  1 15:02:07 2022
+;   On host: Cos-NMacBook-Pro.local
+;   At date: Wed. February  3 12:00:44 2023
 ;
 ;   This is a standalone topology file
 ;
 ;   Created by:
 ;   ParmEd:       project.py, VERSION 3.4.3
 ;   Executable:   project.py
-;   Library dir:  /Users/quachcd/mambaforge/envs/mosdef-study38/share/gromacs/top
+;   Library dir:  /usr/local/gromacs/share/gromacs/top
 ;   Command line:
-;     project.py run -o LoadSystemSnapShot -p
+;     project.py run
 ;
 
 [ defaults ]
@@ -39,7 +39,7 @@ RES          3
 
 [ bonds ]
 ;    ai     aj funct         c0         c1         c2         c3
-      1      2     1   0.15400 502416.000000
+      2      1     1   0.15400 502416.000000
       3      2     1   0.15400 502416.000000
       4      1     1   0.15400 502416.000000
       5      3     1   0.15400 502416.000000

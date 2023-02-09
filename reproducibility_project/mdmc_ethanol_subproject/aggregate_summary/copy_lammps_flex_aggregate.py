@@ -17,13 +17,15 @@ def copy_lammps_etoh_flex():
     for job in main_aggregate_project.find_jobs(
         {"engine": "lammps-VU", "molecule": "ethanolAA"}
     ):
-        shutil.copytree(job.ws, f"{mdmc_aggregate_project.workspace}/{job.id}")
+        shutil.copytree(
+            job.ws, f"{mdmc_aggregate_project.workspace()}/{job.id}"
+        )
 
     job_ids = set()
     for job in mdmc_aggregate_project.find_jobs(
         {"engine": "lammps-VU", "ensemble": "NPT"}
     ):
-        set.add(job.id)
+        job_ids.add(job.id)
         job.update_statepoint({"ensemble": "NPT-flexOH"}, overwrite=True)
 
     new_job_ids = set()
