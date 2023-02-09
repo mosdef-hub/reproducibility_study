@@ -1,6 +1,8 @@
 """Plotting code for ethanol subproject."""
+import glob
 import itertools
 import textwrap
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -424,6 +426,196 @@ def create_density_with_sem_plots(
         plt.close()
 
 
+def create_hbond_plots():
+    """Create hbonds plot for LAMMPS/MCCCS-MN."""
+    fig, ax = plt.subplots(figsize=figsize)
+
+    mcccs_hbonds = list()
+    for path in glob.glob("../src/engines/mcccs/hbond_analysis_data/*"):
+        mcccs_hbonds.append(Path(path))
+
+    lammps_hbonds = list()
+    for path in glob.glob("../src/engines/lammps-VU/hbond_analysis_data/*"):
+        lammps_hbonds.append(Path(path))
+
+    molecules = [
+        "ethanolAA",
+    ]
+    hbonds = dict((molecule, dict()) for molecule in molecules)
+    for lmp, mcccs in zip(sorted(mcccs_hbonds), sorted(lammps_hbonds)):
+        lmp_meta = lmp.name.split("_")
+        mcccs_meta = mcccs.name.split("_")
+
+        assert lmp_meta == mcccs_meta
+        molecule = lmp_meta[0]
+        bcond = "fix" if "NPT-fixOH" in lmp_meta[1] else "flex"
+        sp = f"{lmp_meta[2]}, {mcccs_meta[3]}"
+
+        with open(f"{lmp.absolute()}/nhbond.txt") as f:
+            lmp_hbond = np.loadtxt(f, unpack=True)
+
+        with open(f"{mcccs.absolute()}/nhbond.txt") as f:
+            mcccs_hbond = np.loadtxt(f, unpack=True)
+
+        if sp not in hbonds[molecule]:
+            hbonds[molecule][sp] = dict()
+        hbonds[molecule][sp][bcond] = {
+            "lammps-VU": lmp_hbond,
+            "mcccs": mcccs_hbond,
+        }
+
+    molecules = [
+        "ethanolAA",
+    ]
+    for molecule in molecules:
+        statepoints = sorted(set(hbonds[molecule]))
+        xticks = list()
+        sps_positions = list()
+        for n_sp, sp in enumerate(statepoints):
+            sp_position = list()
+            for engine in engines:
+                for i, bcond in enumerate(["fix", "flex"]):
+                    try:
+                        ax.errorbar(
+                            1 * n_sp + 0.1 * i,
+                            hbonds[molecule][sp][bcond][engine][0],
+                            marker=symbols[engine],
+                            yerr=hbonds[molecule][sp][bcond][engine][1],
+                            color=colors[bcond],
+                            ls="",
+                            label=engine + bcond,
+                        )
+                    except:
+                        continue
+                    sp_position.append(
+                        1 * n_sp + 0.1 * i,
+                    )
+                sps_positions.append(np.mean(sp_position))
+                xticks.append(sp)
+
+            ax.set_xlabel("State point")
+            ax.set_xticks([pos for pos in sps_positions])
+            ax.set_xticklabels([sp for sp in xticks])
+            ax.set_ylabel("$n_{HB}$")
+            wrap_labels(ax, 10)
+
+        # get handles
+        # wrap_labels(ax, 10)
+        handles, labels = ax.get_legend_handles_labels()
+
+        # Sorting handles and labels:
+        labels_handles = dict()
+        for handle, label in zip(handles, labels):
+            labels_handles[label] = handle
+
+        sorted_handles = [
+            labels_handles[engine + bcond]
+            for engine, bcond in itertools.product(engines, ["flex", "fix"])
+        ]
+        sorted_labels = [
+            pretty_names[engine + bcond]
+            for engine, bcond in itertools.product(engines, ["flex", "fix"])
+        ]
+
+        plt.legend(
+            sorted_handles,
+            sorted_labels,
+            facecolor="white",
+            loc="best",
+            ncol=2,
+            prop={"size": 12},
+        )
+        plt.tight_layout()
+        plt.grid(alpha=0.0, axis="x")
+
+        plt.savefig(f"figures/ethanol_hbonds.pdf", dpi=500)
+
+
+def create_rdfs_and_cdfs_plots(engine):
+    """Create rdf and cdf plot LAMMPS/MCCCS."""
+    rdfs = dict()
+    cdfs = dict()
+    paths = list()
+    for path in glob.glob(f"../src/engines/{engine}/rdf_analysis_data/*"):
+        path = Path(path)
+        meta = path.name.split("_")
+        molecule = meta[0]
+        bcond = "fix" if meta[1] == "NPT-fixOH" else "flex"
+        statepoint = f"{meta[2]}, {meta[3]}"
+
+        if statepoint not in rdfs:
+            rdfs[statepoint] = {
+                "molecule": molecule,
+            }
+        if statepoint not in cdfs:
+            cdfs[statepoint] = {
+                "molecule": molecule,
+            }
+
+        with open(f"{path.absolute()}/avg_rdf.txt") as f:
+            rdf = np.loadtxt(f, unpack=True)
+        with open(f"{path.absolute()}/avg_cdf.txt") as f:
+            cdf = np.loadtxt(f, unpack=True)
+
+        rdfs[statepoint][bcond] = rdf
+        cdfs[statepoint][bcond] = cdf
+
+    figsize = (20, 8)
+    for sp in rdfs:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+
+        try:
+            for bcond in ["fix", "flex"]:
+                ax1.plot(
+                    rdfs[sp][bcond][0],
+                    rdfs[sp][bcond][1],
+                    label=f"{bcond}OH",
+                    color=colors[bcond],
+                )
+                ax2.plot(
+                    cdfs[sp][bcond][0],
+                    cdfs[sp][bcond][1],
+                    label=f"{bcond}OH",
+                    color=colors[bcond],
+                )
+
+        except:
+            ax1.plot(
+                rdfs[sp]["fix"][0],
+                rdfs[sp]["fix"][1],
+                label=f"fixOH",
+                color=colors["fix"],
+            )
+            ax2.plot(
+                cdfs[sp]["fix"][0],
+                cdfs[sp]["fix"][1],
+                label=f"fixOH",
+                color=colors["fix"],
+            )
+
+        # Set x and y lim
+        ax1.set_xlim((2, 7))
+        ax1.set_ylim((0, 5.2))
+        ax2.set_xlim((2, 4))
+        ax2.set_ylim((0, 2.5))
+
+        # Set x and y label
+        ax1.set_xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
+        ax1.set_ylabel(r"$g(r)$")
+
+        ax2.set_xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
+        ax2.set_ylabel(r"$n(r)$")
+        plt.tight_layout()
+        ax1.grid(alpha=0.0, axis="x")
+        ax2.grid(alpha=0, axis="x")
+        ax1.legend()
+        ax2.legend()
+
+        meta = sp.split(",")
+
+        plt.savefig(f"figures/{engine}_ethanol_{sp}_rdfs_cdfs.pdf", dpi=500)
+
+
 if __name__ == "__main__":
     import os
 
@@ -461,3 +653,7 @@ if __name__ == "__main__":
         summary_df=summary_df,
         group_key=group_key,
     )
+
+    create_hbond_plots()
+    create_rdfs_and_cdfs_plots("lammps-VU")
+    create_rdfs_and_cdfs_plots("mcccs")
