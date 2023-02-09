@@ -152,7 +152,6 @@ def create_bond_dict(
 
     if bonded_pdb_provided == False:
         for OxygenTail_index in OxygenTail:
-
             OxygenTail_bond_diction[OxygenTail_index] = []
 
         frame = 0
@@ -181,14 +180,11 @@ def create_bond_dict(
         return OxygenTail_bond_diction, top
 
     for OxygenTail_index in OxygenTail:
-
         OxygenTail_bond_diction[OxygenTail_index] = []
         for bond in top.bonds:
-
             if (bond.atom1.index == OxygenTail_index) or (
                 bond.atom2.index == OxygenTail_index
             ):
-
                 if bond.atom1.name in Hydrogen_atom_names:
                     bonded_H_index = bond.atom1.index
 
@@ -369,7 +365,6 @@ def calualateHBMap(
                 continue
             else:
                 for bonded_H in bond_diction[original_Otail_index]:
-
                     triplets_analyzed.append(
                         [original_Otail_index, bonded_H, original_Ohead_index]
                     )
@@ -379,7 +374,6 @@ def calualateHBMap(
             # now check if tail is connected to a H
             # print(bond_diction)
             for bonded_H in bond_diction[original_Otail_index]:
-
                 original_H_index = bonded_H
 
                 # print("{}-{} is bonded to {}-{}".format(original_Otail_index,bond.atom1.name, original_H_index,bond.atom2.name))
@@ -399,7 +393,6 @@ def calualateHBMap(
                     ),
                 )[0][0]
                 if normal_angle > np.pi:
-
                     # print(
                     #    "Angle is {} radians greater than {}",
                     #    normal_angle - np.pi,
