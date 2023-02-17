@@ -95,7 +95,8 @@ def init_job(job):
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
             "p3m-template": f"{mdp_abs_path}/em_template_p3m.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",  # Run nvt in place of em for water
+            # Run nvt in place of em for water
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
             "data": {
