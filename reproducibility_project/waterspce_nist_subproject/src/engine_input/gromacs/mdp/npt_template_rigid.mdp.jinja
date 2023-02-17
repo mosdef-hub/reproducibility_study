@@ -1,0 +1,43 @@
+integrator               = md
+nsteps                   = {{  nsteps  }}
+dt                       = {{  dt  }}
+define              = -DDIHRES
+
+comm-mode                = Linear
+
+nstxout                  = 10000
+nstvout                  = 10000
+nstenergy                = 1000
+nstlog                   = 1000
+
+cutoff-scheme            = Verlet
+ns-type                  = grid
+nstlist                  = 10
+pbc                      = xyz
+
+vdwtype         = Cut-off
+vdw-modifier    = {{  cutoff_style  }}
+rvdw            = {{  r_cut  }}
+
+coulombtype             = Cut-off
+coulomb-modifier        = {{  cutoff_style  }}
+rcoulomb                = {{  r_cut }}
+
+tcoupl                   = nose-hoover
+tc-grps                  = System
+tau-t                    = 1.0
+ref-t                    = {{ temp }}
+
+pcoupl                   = parrinello-rahman
+pcoupltype               = isotropic
+nstpcouple               = -1
+tau-p                    = 10.0
+compressibility          = 1.25e-4
+ref-p                    = {{  refp  }}
+
+DispCorr            = {{  lrc  }}
+
+constraint-algorithm = LINCS
+constraints         = all-bonds
+lincs-order         = 4
+continuation        = no

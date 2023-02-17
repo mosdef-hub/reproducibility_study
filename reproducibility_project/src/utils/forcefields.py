@@ -34,6 +34,7 @@ def load_ff(
             str(os.path.dirname(os.path.abspath(xmls.__file__)))
             + "/waterSPCE_nist.xml"
         )
+        return foyer.Forcefield(forcefield_files=ff_path)
     elif name == "benzene-ua":
         from reproducibility_project.src import xmls
 
@@ -67,7 +68,16 @@ def get_ff_path(
         from reproducibility_project.src import xmls
 
         ff_path = (
-            str(os.path.dirname(os.path.abspath(xmls.__file__))) + "/spce.xml"
+            str(os.path.dirname(os.path.abspath(xmls.__file__)))
+            + "/waterSPCE_gromacs.xml"
+        )
+        return ff_path
+    elif name == "spce_nist":
+        from reproducibility_project.src import xmls
+
+        ff_path = (
+            str(os.path.dirname(os.path.abspath(xmls.__file__)))
+            + "/waterSPCE_nist.xml"
         )
         return ff_path
     elif name == "benzene-ua":
