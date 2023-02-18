@@ -160,6 +160,10 @@ def init_job(job):
 
     for op, mdp in mdps.items():
         if job.sp.molecule == "waterSPCE":
+            if not mdp["data"].get("nsteps"):
+                mdp["data"]["nsteps"] = 5000000
+                mdp["data"]["dt"] = 0.001
+
             _setup_mdp(
                 fname=mdp["fname"],
                 template=mdp["water-template"],
