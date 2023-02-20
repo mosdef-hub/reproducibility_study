@@ -64,7 +64,6 @@ def main():
             "ensemble",
         )
     ):
-
         print("-----------------------------------------------------")
         print(
             molecule,
@@ -86,7 +85,6 @@ def main():
                 ensemble,
             )
         ):
-
             os.makedirs(
                 "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
                     molecule,
