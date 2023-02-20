@@ -37,7 +37,7 @@ for key in molecules:
             forcefields[key] = "benzene-ua"
         r_cuts[key] = 14.0 * u.angstrom
     elif "SPCE" in key:
-        forcefields[key] = "spce_nist"
+        forcefields[key] = "spce_original"
         r_cuts[key] = 9 * u.angstrom
     else:
         forcefields[key] = "oplsaa"
