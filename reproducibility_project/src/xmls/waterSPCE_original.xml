@@ -15,7 +15,29 @@
  </HarmonicAngleForce>
  <NonbondedForce coulomb14scale="0.5" lj14scale="0.5">
    <!-- https://doi.org/10.1021/j100308a038 -->
-  <Atom type="opls-116" charge="-0.8476" sigma="0.316555789" epsilon="0.650165504466"/>
+   <!-- Calculating sigma and epsilon from original SPCE paper with python
+    #U = -(A/r)^6+(B/r)^12
+    #that makes
+    #sigma = B^2/A and epsilon = (1/4)*(A/B)^12
+
+    from decimal import *
+    A = Decimal(0.37122)# ((kJ/mol)^1/6)nm
+    B = Decimal(0.3428) #(kJ/mol)^1/12nm
+    kB = Decimal(1.380649 *1e-23)# J/K
+    NA = Decimal(6.02214076*1e23) #1/mol
+
+    sigma = B**2/A #nm
+    epsilon_kJmol = Decimal(0.25)*(A/B)**12 #kJ/mol
+
+    epsilon_kcalmol = epsilon_kJmol/Decimal(4.184)
+
+    epsilon_K = Decimal(1000)*epsilon_kJmol/(NA*kB)
+
+
+    print("sigma is {} nm".format(sigma))
+    print("epsilon is {} kJ/mol = {} kcal/mol = {} K".format(epsilon_kJmol, epsilon_kcalmol, epsilon_K))
+    -->
+  <Atom type="opls-116" charge="-0.8476" sigma="0.3165557890199881401361442585" epsilon="0.6501695808187480926657690985"/>
   <Atom type="opls-117" charge="0.4238" sigma="0.0" epsilon="0.0"/>
  </NonbondedForce>
 </ForceField>
