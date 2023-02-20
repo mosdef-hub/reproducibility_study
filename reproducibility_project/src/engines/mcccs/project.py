@@ -248,7 +248,6 @@ def cool_finished(job):
 def equil_finished(job):
     """Check if equil stage is finished."""
     try:
-
         step = "equil" + str(job.doc.equil_replicates_done - 1)
     except (KeyError, AttributeError):
         step = "equil" + "0"
@@ -288,6 +287,7 @@ def sanitize_npt_log(step, job):
     import numpy as np
 
     mw = job.sp.mass
+    temp = job.sp.temperature
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
     for filecurrent in files:
@@ -308,6 +308,7 @@ def sanitize_npt_log(step, job):
     volume = volume.reshape(volume.shape[0], 1)
     density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
     temperature = 0 * np.copy(volume)
+    temperature = (temperature + 1) * temp
     arrays = np.append(arrays, density_array, axis=1)  # density molcules/nm3
     arrays = np.append(arrays, timestep, axis=1)  # timestep
     arrays = np.append(arrays, volume, axis=1)  # volume nm3
@@ -347,7 +348,10 @@ def sanitize_gemc_log(step, job):
     arrays_box1[:, 4] = arrays_box1[:, 4]  # Pressure kPa to kPa
     density_array = arrays_box1[:, 5] / (arrays_box1[:, 0]) ** 3
     density_array = density_array.reshape(density_array.shape[0], 1)
-    timestep = np.arange(stop=density_array.shape[0])
+    timestep = np.copy(density_array)
+    for i in range(timestep.shape[0]):
+        timestep[i] = i
+
     volume = arrays_box1[:, 0] * arrays_box1[:, 1] * arrays_box1[:, 2]
     volume = volume.reshape(volume.shape[0], 1)
     density_gml = density_array * (mw * 1e-23 / 6.02214086) / (1e-21)
@@ -420,7 +424,6 @@ def system_equilibrated(job):
         files = glob("fort*12*{}*".format("equil"))
 
         if len(files) < 2:  # at least do two loops of equilibration
-
             print(
                 "equils done is less than 2 for {} molecule = {}, ensemble = {}, temperature= {} K, pressure = {} kPa.".format(
                     job,
@@ -590,7 +593,6 @@ def system_equilibrated(job):
 def prod_finished(job):
     """Check if prod stage is finished."""
     try:
-
         step = "prod" + str(job.doc.prod_replicates_done - 1)
     except (KeyError, AttributeError):
         step = "prod" + "0"
@@ -961,7 +963,6 @@ def run_cool(job):
     print_running_string(job, step)
     execommand = mc3s_exec()
     with job:
-
         shutil.copyfile("fort.4.{}".format(step), "fort.4")
         process = Popen(
             execommand,

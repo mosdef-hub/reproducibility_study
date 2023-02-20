@@ -4,10 +4,9 @@ import os
 import shutil
 from glob import glob
 
-import freud
 import matplotlib.pyplot as plt
-import mdtraj as md
 import numpy as np
+import pandas as pd
 import signac
 from scipy import stats
 
@@ -41,7 +40,6 @@ def main():
             "long_range_correction",
         )
     ):
-
         print("-----------------------------------------------------")
         print(
             molecule,
@@ -61,7 +59,6 @@ def main():
                 str(long_range_correction),
             )
         ):
-
             os.makedirs(
                 "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
                     molecule,
@@ -98,58 +95,74 @@ def main():
                 bond_energy = get_bond()
                 angle_energy = get_angle()
                 dihedral_energy = get_torsion()
-                print(potential_energy)
-                print(lj_inter_energy)
-                print(lj_intra_energy)
-                print(tail_correction)
-                print(coulomb_energy)
-                print(bond_energy)
-                print(angle_energy)
-                print(dihedral_energy)
-
-                print(job)
+                print("working on ", job)
                 csv_pe = potential_energy
-                csv_lj_energy = (
-                    lj_inter_energy + lj_intra_energy + tail_correction
-                )
+                csv_lj_energy = lj_inter_energy + lj_intra_energy
                 csv_tail_energy = tail_correction
-                csv_coulomb_energy = coulomb_energy
-                # csv_kspace_energy = float("NaN")
-                csv_kspace_energy = 0
-                csv_pair_energy = csv_lj_energy + csv_coulomb_energy
+                csv_coulomb_energy = float("NaN")
+                csv_kspace_energy = float("NaN")
+                # csv_kspace_energy = 0
+                csv_total_coulombic = coulomb_energy
+                csv_pair_energy = csv_lj_energy + csv_total_coulombic
                 csv_bond_energy = bond_energy
                 csv_angle_energy = angle_energy
                 csv_dihedral_energy = dihedral_energy
-                csv_intermolecular_energy = lj_inter_energy
-                csv_intramolecular_energy = lj_intra_energy
-                csv_total_coulombic = coulomb_energy
-                csv_short_range = lj_inter_energy + lj_intra_energy
+                csv_mol_energy = bond_energy + angle_energy + dihedral_energy
+                csv_intramolecular_energy = float("NaN")
+                csv_intermolecular_energy = float("NaN")
 
-            output_string = ""
+                # csv_intermolecular_energy = lj_inter_energy
+                # csv_intramolecular_energy = lj_intra_energy
+                # csv_short_range = lj_inter_energy + lj_intra_energy
 
-            print(output_string)
-            os.chdir(base_dir)
-            energies = 0.00831441001625545 * np.array(
-                [
+                output_string = ""
+
+                print(output_string)
+                energies = 0.00831441001625545 * np.array(
                     [
-                        csv_pe,
-                        csv_lj_energy,
-                        csv_tail_energy,
-                        csv_coulomb_energy,
-                        csv_kspace_energy,
-                        csv_pair_energy,
-                        csv_bond_energy,
-                        csv_angle_energy,
-                        csv_dihedral_energy,
-                        csv_intramolecular_energy,
-                        csv_intermolecular_energy,
-                        csv_total_coulombic,
-                        csv_short_range,
+                        [
+                            csv_pe,
+                            csv_lj_energy,
+                            csv_tail_energy,
+                            csv_total_coulombic,
+                            csv_coulomb_energy,
+                            csv_kspace_energy,
+                            csv_pair_energy,
+                            csv_bond_energy,
+                            csv_angle_energy,
+                            csv_dihedral_energy,
+                            csv_mol_energy,
+                            csv_intramolecular_energy,
+                            csv_intermolecular_energy,
+                        ]
                     ]
-                ]
-            )
-            header = "potential_energy \t vdw_energy \t tail_energy \t coul_energy \t kspace_energy \t pair_energy \t bonds_energy \t angles_energy \t dihedrals_energy \t intramolecular_lj_energy \t intermolecular_lj_energy \t total_coulombic_energy \t short_range_energy"
-            np.savetxt("log-spe.txt", energies, header=header, delimiter="\t")
+                )
+                header = "potential_energy \t tot_vdw_energy \t tail_energy \t tot_electrostatics \t short_range_electrostatics \t long_range_electrostatics \t tot_pair_energy \t bonds_energy \t angles_energy \t dihedrals_energy \t tot_bonded_energy \t intramolecular_energy \t intermolecular_energy"
+
+                df = pd.DataFrame(
+                    energies,
+                    columns=[
+                        "potential_energy",
+                        "tot_vdw_energy",
+                        "tail_energy",
+                        "tot_electrostatics",
+                        "short_range_electrostatics",
+                        "long_range_electrostatics",
+                        "tot_pair_energy",
+                        "bonds_energy",
+                        "angles_energy",
+                        "dihedrals_energy",
+                        "tot_bonded_energy",
+                        "intramolecular_energy",
+                        "intermolecular_energy",
+                    ],
+                )
+                df.to_csv("log-spe.txt", header=True, index=False, sep=",")
+
+                os.chdir(base_dir)
+                np.savetxt(
+                    "log-spe.txt", energies, header=header, delimiter="\t"
+                )
 
         os.chdir("..")
 

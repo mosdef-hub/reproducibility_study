@@ -1,0 +1,3 @@
+project = aggregate_lrc_summary
+workspace_dir = workspace
+schema_version = 1

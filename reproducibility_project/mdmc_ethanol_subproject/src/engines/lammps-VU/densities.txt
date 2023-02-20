@@ -1,0 +1,543 @@
+ethanol_fixbonds_subproject
+24
+ethanolAA 384b9e1041b6374d85435e475a1a4e07
+
+Step size is: 7.896441459655762
+Starting Frame: 156
+Number of Effective Frames: 613.6941528320312
+Threshold Fraction is 0.969
+0.795671772067639 0.007119729763368693
+Length of usable data  606
+
+______________________________
+
+ethanolAA 8660fdeeb4387530b60193100a5ed9a8
+
+Step size is: 8.902239799499512
+Starting Frame: 0
+Number of Effective Frames: 561.8810424804688
+Threshold Fraction is 1.0
+0.7955505114794814 0.007232950161336835
+Length of usable data  556
+
+______________________________
+
+ethanolAA 8a0b9ab621a6b04f4a9f12810e795730
+
+Step size is: 6.311319828033447
+Starting Frame: 22
+Number of Effective Frames: 789.0584106445312
+Threshold Fraction is 0.996
+0.7955113369755523 0.007144298850231181
+Length of usable data  712
+
+______________________________
+
+ethanolAA 2e6934c3d634cff274f85b122b2f9b55
+
+Step size is: 9.939753532409668
+Starting Frame: 7
+Number of Effective Frames: 502.5275573730469
+Threshold Fraction is 0.999
+0.7960944006996016 0.007149345811945041
+Length of usable data  500
+
+______________________________
+
+ethanolAA 8b5ac4bd322b26682b02ae7c2de849a4
+
+Step size is: 6.672316074371338
+Starting Frame: 0
+Number of Effective Frames: 749.6647338867188
+Threshold Fraction is 1.0
+0.7954244767899298 0.007196318129177354
+Length of usable data  715
+
+______________________________
+
+ethanolAA 7a2e9182e47470f256aea6c7ef930be6
+
+Step size is: 8.347091674804688
+Starting Frame: 0
+Number of Effective Frames: 599.2506103515625
+Threshold Fraction is 1.0
+0.79525143409429 0.007372207068992221
+Length of usable data  556
+
+______________________________
+
+ethanolAA d2ee9a3857aa5e36169c3520a858bf84
+
+Step size is: 6.929262161254883
+Starting Frame: 52
+Number of Effective Frames: 714.3617553710938
+Threshold Fraction is 0.99
+0.7951546532091746 0.0071471511374230755
+Length of usable data  707
+
+______________________________
+
+ethanolAA b53ff6f8594fcbc29976a87aaf0c524e
+
+Step size is: 7.9965434074401855
+Starting Frame: 8
+Number of Effective Frames: 624.5198364257812
+Threshold Fraction is 0.998
+0.7955348273033062 0.007158993359321024
+Length of usable data  625
+
+______________________________
+
+ethanolAA 00a19903f90b32e2e4b8214fec5718cc
+
+Step size is: 6.612076282501221
+Starting Frame: 0
+Number of Effective Frames: 756.49462890625
+Threshold Fraction is 1.0
+0.7951902550339947 0.007127933846607497
+Length of usable data  715
+
+______________________________
+
+ethanolAA dff302f0fd5c0deebeb6f220c612d335
+
+Step size is: 6.508358478546143
+Starting Frame: 226
+Number of Effective Frames: 733.8255615234375
+Threshold Fraction is 0.955
+0.7952506250945408 0.007186562683683111
+Length of usable data  683
+
+______________________________
+
+ethanolAA c2fd15b4459a6dc6d55ac3e72def6956
+
+Step size is: 8.970565795898438
+Starting Frame: 48
+Number of Effective Frames: 552.2505493164062
+Threshold Fraction is 0.99
+0.7951905346256793 0.007253919181329149
+Length of usable data  551
+
+______________________________
+
+ethanolAA 43ae90567b6de20783054242840dc99b
+
+Step size is: 6.794208526611328
+Starting Frame: 14
+Number of Effective Frames: 734.1546630859375
+Threshold Fraction is 0.997
+0.7953539943053073 0.007161525301983226
+Length of usable data  713
+
+______________________________
+
+ethanolAA d84fe3db073c3aff1f9f96916c1623b9
+
+Step size is: 7.031493663787842
+Starting Frame: 401
+Number of Effective Frames: 654.341796875
+Threshold Fraction is 0.92
+0.7958754748522125 0.007161943467773326
+Length of usable data  575
+
+______________________________
+
+ethanolAA eac4e442b89968943d70709a8a43c745
+
+Step size is: 6.434134006500244
+Starting Frame: 99
+Number of Effective Frames: 762.029541015625
+Threshold Fraction is 0.98
+0.7952287889561066 0.007065026900621853
+Length of usable data  701
+
+______________________________
+
+ethanolAA 9c582d8e61a32d8c50dbfa008d8ed8e0
+
+Step size is: 6.629161834716797
+Starting Frame: 219
+Number of Effective Frames: 721.509033203125
+Threshold Fraction is 0.956
+0.7949700166117359 0.0072944200924413335
+Length of usable data  684
+
+______________________________
+
+ethanolAA 96caec0d2ef0320eabb9021d7e18a82a
+
+Step size is: 5.193516254425049
+Starting Frame: 118
+Number of Effective Frames: 940.4033203125
+Threshold Fraction is 0.976
+0.7956793732028242 0.007149583978902004
+Length of usable data  814
+
+______________________________
+
+ethanolAA 0ef44440b2ede1978918f4ae9691d34f
+
+Step size is: 9.610095024108887
+Starting Frame: 7
+Number of Effective Frames: 519.7659301757812
+Threshold Fraction is 0.999
+0.8156948338075246 0.00673733909525459
+Length of usable data  500
+
+______________________________
+
+ethanolAA d3ed346992415e2d61f423fec807a235
+
+Step size is: 7.3473639488220215
+Starting Frame: 92
+Number of Effective Frames: 668.2669067382812
+Threshold Fraction is 0.982
+0.8160742449470667 0.006723793420223955
+Length of usable data  614
+
+______________________________
+
+ethanolAA 77b5900c440e2e986e6008b2dffd155b
+
+Step size is: 6.666024208068848
+Starting Frame: 156
+Number of Effective Frames: 726.9700317382812
+Threshold Fraction is 0.969
+0.8159204917206101 0.006468370062141437
+Length of usable data  693
+
+______________________________
+
+ethanolAA 0dcde55f5c1db693974b0362c817bd8d
+
+Step size is: 7.119324207305908
+Starting Frame: 179
+Number of Effective Frames: 677.4519653320312
+Threshold Fraction is 0.964
+0.8161648834108696 0.006688451008514632
+Length of usable data  603
+
+______________________________
+
+ethanolAA 0687813fc12155287567e8da911ce128
+
+Step size is: 5.575187683105469
+Starting Frame: 11
+Number of Effective Frames: 895.2164916992188
+Threshold Fraction is 0.998
+0.8160160843979366 0.006583556467866763
+Length of usable data  832
+
+______________________________
+
+ethanolAA 7c939437dd686c6aa34beedc50469a43
+
+Step size is: 10.044466018676758
+Starting Frame: 0
+Number of Effective Frames: 497.98565673828125
+Threshold Fraction is 1.0
+0.8150988101347555 0.006721149349629717
+Length of usable data  455
+
+______________________________
+
+ethanolAA 1c3916710b938c29e7656292b8679814
+
+Step size is: 6.6592864990234375
+Starting Frame: 0
+Number of Effective Frames: 751.1315307617188
+Threshold Fraction is 1.0
+0.8165594307395169 0.006666569029675686
+Length of usable data  715
+
+______________________________
+
+ethanolAA 993fdfcb5e302f975ae6c430a4cf70a5
+
+Step size is: 8.979925155639648
+Starting Frame: 354
+Number of Effective Frames: 517.5989990234375
+Threshold Fraction is 0.929
+0.816205383118632 0.006729939163093778
+Length of usable data  517
+
+______________________________
+
+Density is:  0.8159825428633913 0.0004145830863367242
+Minimum Threshhold is: 0.92 id: d84fe3db073c3aff1f9f96916c1623b9
+Density is:  0.7954261498927873 0.0002762695889232426
+Minimum Threshhold is: 0.92 id: d84fe3db073c3aff1f9f96916c1623b9
+Density is:  nan nan
+Minimum Threshhold is: 0.92 id: d84fe3db073c3aff1f9f96916c1623b9
+Density is:  nan nan
+Minimum Threshhold is: 0.92 id: d84fe3db073c3aff1f9f96916c1623b9
+ethanol_fixbonds_subproject
+24
+ethanolAA 384b9e1041b6374d85435e475a1a4e07
+
+Step size is: 7.896441459655762
+Starting Frame: 156
+Number of Effective Frames: 613.6941528320312
+Threshold Fraction is 0.969
+0.795671772067639 0.007119729763368693
+Length of usable data  606
+
+______________________________
+
+ethanolAA 8660fdeeb4387530b60193100a5ed9a8
+
+Step size is: 8.902239799499512
+Starting Frame: 0
+Number of Effective Frames: 561.8810424804688
+Threshold Fraction is 1.0
+0.7955505114794814 0.007232950161336835
+Length of usable data  556
+
+______________________________
+
+ethanolAA 8a0b9ab621a6b04f4a9f12810e795730
+
+Step size is: 6.311319828033447
+Starting Frame: 22
+Number of Effective Frames: 789.0584106445312
+Threshold Fraction is 0.996
+0.7955113369755523 0.007144298850231181
+Length of usable data  712
+
+______________________________
+
+ethanolAA 2e6934c3d634cff274f85b122b2f9b55
+
+Step size is: 9.939753532409668
+Starting Frame: 7
+Number of Effective Frames: 502.5275573730469
+Threshold Fraction is 0.999
+0.7960944006996016 0.007149345811945041
+Length of usable data  500
+
+______________________________
+
+ethanolAA 8b5ac4bd322b26682b02ae7c2de849a4
+
+Step size is: 6.672316074371338
+Starting Frame: 0
+Number of Effective Frames: 749.6647338867188
+Threshold Fraction is 1.0
+0.7954244767899298 0.007196318129177354
+Length of usable data  715
+
+______________________________
+
+ethanolAA 7a2e9182e47470f256aea6c7ef930be6
+
+Step size is: 8.347091674804688
+Starting Frame: 0
+Number of Effective Frames: 599.2506103515625
+Threshold Fraction is 1.0
+0.79525143409429 0.007372207068992221
+Length of usable data  556
+
+______________________________
+
+ethanolAA d2ee9a3857aa5e36169c3520a858bf84
+
+Step size is: 6.929262161254883
+Starting Frame: 52
+Number of Effective Frames: 714.3617553710938
+Threshold Fraction is 0.99
+0.7951546532091746 0.0071471511374230755
+Length of usable data  707
+
+______________________________
+
+ethanolAA b53ff6f8594fcbc29976a87aaf0c524e
+
+Step size is: 7.9965434074401855
+Starting Frame: 8
+Number of Effective Frames: 624.5198364257812
+Threshold Fraction is 0.998
+0.7955348273033062 0.007158993359321024
+Length of usable data  625
+
+______________________________
+
+ethanolAA 00a19903f90b32e2e4b8214fec5718cc
+
+Step size is: 6.612076282501221
+Starting Frame: 0
+Number of Effective Frames: 756.49462890625
+Threshold Fraction is 1.0
+0.7951902550339947 0.007127933846607497
+Length of usable data  715
+
+______________________________
+
+ethanolAA dff302f0fd5c0deebeb6f220c612d335
+
+Step size is: 6.508358478546143
+Starting Frame: 226
+Number of Effective Frames: 733.8255615234375
+Threshold Fraction is 0.955
+0.7952506250945408 0.007186562683683111
+Length of usable data  683
+
+______________________________
+
+ethanolAA c2fd15b4459a6dc6d55ac3e72def6956
+
+Step size is: 8.970565795898438
+Starting Frame: 48
+Number of Effective Frames: 552.2505493164062
+Threshold Fraction is 0.99
+0.7951905346256793 0.007253919181329149
+Length of usable data  551
+
+______________________________
+
+ethanolAA 43ae90567b6de20783054242840dc99b
+
+Step size is: 6.794208526611328
+Starting Frame: 14
+Number of Effective Frames: 734.1546630859375
+Threshold Fraction is 0.997
+0.7953539943053073 0.007161525301983226
+Length of usable data  713
+
+______________________________
+
+ethanolAA d84fe3db073c3aff1f9f96916c1623b9
+
+Step size is: 7.031493663787842
+Starting Frame: 401
+Number of Effective Frames: 654.341796875
+Threshold Fraction is 0.92
+0.7958754748522125 0.007161943467773326
+Length of usable data  575
+
+______________________________
+
+ethanolAA eac4e442b89968943d70709a8a43c745
+
+Step size is: 6.434134006500244
+Starting Frame: 99
+Number of Effective Frames: 762.029541015625
+Threshold Fraction is 0.98
+0.7952287889561066 0.007065026900621853
+Length of usable data  701
+
+______________________________
+
+ethanolAA 9c582d8e61a32d8c50dbfa008d8ed8e0
+
+Step size is: 6.629161834716797
+Starting Frame: 219
+Number of Effective Frames: 721.509033203125
+Threshold Fraction is 0.956
+0.7949700166117359 0.0072944200924413335
+Length of usable data  684
+
+______________________________
+
+ethanolAA 96caec0d2ef0320eabb9021d7e18a82a
+
+Step size is: 5.193516254425049
+Starting Frame: 118
+Number of Effective Frames: 940.4033203125
+Threshold Fraction is 0.976
+0.7956793732028242 0.007149583978902004
+Length of usable data  814
+
+______________________________
+
+ethanolAA 0ef44440b2ede1978918f4ae9691d34f
+
+Step size is: 9.610095024108887
+Starting Frame: 7
+Number of Effective Frames: 519.7659301757812
+Threshold Fraction is 0.999
+0.8156948338075246 0.00673733909525459
+Length of usable data  500
+
+______________________________
+
+ethanolAA d3ed346992415e2d61f423fec807a235
+
+Step size is: 7.3473639488220215
+Starting Frame: 92
+Number of Effective Frames: 668.2669067382812
+Threshold Fraction is 0.982
+0.8160742449470667 0.006723793420223955
+Length of usable data  614
+
+______________________________
+
+ethanolAA 77b5900c440e2e986e6008b2dffd155b
+
+Step size is: 6.666024208068848
+Starting Frame: 156
+Number of Effective Frames: 726.9700317382812
+Threshold Fraction is 0.969
+0.8159204917206101 0.006468370062141437
+Length of usable data  693
+
+______________________________
+
+ethanolAA 0dcde55f5c1db693974b0362c817bd8d
+
+Step size is: 7.119324207305908
+Starting Frame: 179
+Number of Effective Frames: 677.4519653320312
+Threshold Fraction is 0.964
+0.8161648834108696 0.006688451008514632
+Length of usable data  603
+
+______________________________
+
+ethanolAA 0687813fc12155287567e8da911ce128
+
+Step size is: 5.575187683105469
+Starting Frame: 11
+Number of Effective Frames: 895.2164916992188
+Threshold Fraction is 0.998
+0.8160160843979366 0.006583556467866763
+Length of usable data  832
+
+______________________________
+
+ethanolAA 7c939437dd686c6aa34beedc50469a43
+
+Step size is: 10.044466018676758
+Starting Frame: 0
+Number of Effective Frames: 497.98565673828125
+Threshold Fraction is 1.0
+0.8150988101347555 0.006721149349629717
+Length of usable data  455
+
+______________________________
+
+ethanolAA 1c3916710b938c29e7656292b8679814
+
+Step size is: 6.6592864990234375
+Starting Frame: 0
+Number of Effective Frames: 751.1315307617188
+Threshold Fraction is 1.0
+0.8165594307395169 0.006666569029675686
+Length of usable data  715
+
+______________________________
+
+ethanolAA 993fdfcb5e302f975ae6c430a4cf70a5
+
+Step size is: 8.979925155639648
+Starting Frame: 354
+Number of Effective Frames: 517.5989990234375
+Threshold Fraction is 0.929
+0.816205383118632 0.006729939163093778
+Length of usable data  517
+
+______________________________
+
+Density is:  0.8159825428633913 0.0004145830863367242  at T=280.0
+Density is:  0.7954261498927873 0.0002762695889232426  at T=300.0
+Minimum Threshhold is: 0.92 id: d84fe3db073c3aff1f9f96916c1623b9

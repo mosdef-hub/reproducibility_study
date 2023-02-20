@@ -7,7 +7,7 @@ dependencies:
   - constrainmol
   - ele
   - foyer>=0.9.4
-  - freud
+  - freud=2.6.2
   - gmso
   - gromacs=2020.6
   - gsd
@@ -25,7 +25,7 @@ dependencies:
   - pandas
   - panedr
   - parmed>=3.4.3
-  - pymbar
+  - pymbar=3.0.5
   - pytest
   - python=3.8
   - rdkit

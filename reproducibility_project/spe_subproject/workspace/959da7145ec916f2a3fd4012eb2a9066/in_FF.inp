@@ -1,5 +1,5 @@
-*  mosdef_gomc_zero_point_energy_box_0 - created by mBuild using the on 2022-03-01 12:56:31.287544
-*  parameters from the {'waterSPCE': '/Users/brad/Programs/GIT_repositories/reproduciblity/reproducibility_study/reproducibility_project/src/xmls/spce.xml'} force field(s) via MoSDef
+*  mosdef_gomc_zero_point_energy_box_0 - created by mBuild using the on 2023-01-30 12:51:44.304155
+*  parameters from the {'waterSPCE': '/home/brad/Programs/GIT_repositories/reproduciblity_project/reproducibility_study/reproducibility_project/src/xmls/spce.xml'} force field(s) via MoSDef
 *  1-4 coulombic scaling = {'waterSPCE': 0.5}, and 1-4 LJ scaling = {'waterSPCE': 0.5}
 
 *  3300 atoms

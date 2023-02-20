@@ -10,7 +10,8 @@
 signac_project_document.json
 signac_statepoints.json
 workspace*
-
+water_*
+ethanol_*
 # MacOS/finder file
 .DS_Store
 
@@ -161,4 +162,4 @@ rclone.sh
 *.o*
 
 #Local analysis
-analysis_data/
+#analysis_data/
