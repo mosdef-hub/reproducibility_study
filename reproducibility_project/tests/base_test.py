@@ -11,7 +11,7 @@ from reproducibility_project.tests.utils import create_gsd
 
 class BaseTest:
     @pytest.fixture(scope="session")
-    def spceff(self, name="spce.xml"):
+    def spceff(self, name="waterSPCE_gromacs.xml"):
         abs_path = os.path.dirname(os.path.abspath(xmls.__file__))
         return foyer.Forcefield(forcefield_files=str(abs_path) + "/" + name)
 
