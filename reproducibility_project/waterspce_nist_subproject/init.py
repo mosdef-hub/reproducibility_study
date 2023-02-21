@@ -77,7 +77,7 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "waterSPCE": ["NPT", None],
+    "waterSPCE": ["NPT"],
 }
 
 
