@@ -15,9 +15,7 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = [
-    "waterSPCE",
-]
+molecules = ["waterSPCE", "waterSPCE_lammps"]
 replicas = range(16)
 simulation_engines = [
     "gromacs",
@@ -37,7 +35,10 @@ for key in molecules:
             forcefields[key] = "benzene-ua"
         r_cuts[key] = 14.0 * u.angstrom
     elif "SPCE" in key:
-        forcefields[key] = "spce_original"
+        if "lammps" in key:
+            forcefields[key] = "spce_lammps"
+        else:
+            forcefields[key] = "spce_original"
         r_cuts[key] = 9 * u.angstrom
     else:
         forcefields[key] = "oplsaa"
@@ -88,6 +89,11 @@ pr = signac.get_project(pr_root)
 # filter the list of dictionaries
 total_statepoints = list()
 for molecule in molecules:
+    if molecule == "waterSPCE_lammps":
+        ff_for_molecule = molecule
+        molecule = "waterSPCE"
+    else:
+        ff_for_molecule = molecule
     for (
         engine,
         ensemble,
@@ -153,7 +159,7 @@ for molecule in molecules:
                 mass.to_value("amu"),
                 decimals=3,
             ).item(),
-            "forcefield_name": forcefields[molecule],
+            "forcefield_name": forcefields[ff_for_molecule],
             "cutoff_style": cutoff_style,
             "long_range_correction": lrc,
             "r_cut": np.round(
