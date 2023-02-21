@@ -78,7 +78,7 @@ vap_box_lengths = {
 }
 
 ensembles = {
-    "waterSPCE": ["NPT", None],
+    "waterSPCE": ["NPT"],
 }
 
 
@@ -168,6 +168,21 @@ for molecule in molecules:
             ).item(),
         }
         total_statepoints.append(statepoint)
+
+indices_to_remove = set()
+for i, sp in enumerate(total_statepoints):
+    if sp["forcefield_name"] == "spce_lammps":
+        if sp["temperature"] in [280, 320]:
+            indices_to_remove.add(i)
+
+
+# now reverse sort the set and remove from inital list
+# must be reverse sorted to remove indices on the list in place
+# otherwise the list will change size and the indices would change
+# print(len(indices_to_remove))
+sorted_indicies_to_delete = sorted(list(indices_to_remove), reverse=True)
+for idx in sorted_indicies_to_delete:
+    del total_statepoints[idx]
 
 for sp in total_statepoints:
     pr.open_job(
