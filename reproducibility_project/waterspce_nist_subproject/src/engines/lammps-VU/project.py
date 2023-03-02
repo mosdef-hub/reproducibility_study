@@ -322,7 +322,8 @@ def lammps_equil_npt(job):
     print("Submission Message ", msg)
     print("##############################")
 
-    return msg
+    # return msg
+    return f"lmp -in {in_script_name} -var seed {job.sp.replica+1} -var T {job.sp.temperature} -var P {job.sp.pressure} -var rcut {r_cut} -var tstep {tstep}"
 
 
 @Project.operation
@@ -393,7 +394,8 @@ def lammps_prod_npt(job):
     print("Submission Message ", msg)
     print("##############################")
 
-    return msg
+    # return msg
+    return f"lmp -in {in_script_name} -var seed {job.sp.replica+1} -var T {job.sp.temperature} -var P {job.sp.pressure} -var rcut {r_cut} -var tstep {tstep}"
 
 
 @Project.operation
