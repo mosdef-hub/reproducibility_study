@@ -1,0 +1,38 @@
+<ForceField version="0.0.1" name="SPC/E Water" combining_rule="geometric">
+ <AtomTypes>
+   <Type name="opls-116" class="OW" element="O" mass="15.99940" def="[O;X2](H)(H)" desc="SPC/E Oxygen"/>
+   <Type name="opls-117" class="HW" element="H" mass="1.00800" def="[H;X1][O;X2](H)" desc="SPC/E Hydrogen"/>
+ </AtomTypes>
+ <HarmonicBondForce>
+   <!-- https://docs.lammps.org/Howto_spc.html -->
+   <Bond class1="OW" class2="HW" length="0.100" k="345000.0"/>
+ </HarmonicBondForce>
+ <HarmonicAngleForce>
+   <!-- https://docs.lammps.org/Howto_spc.html -->
+   <!-- numpy.deg2rad(109.47).round(8) -->
+   <!-- numpy.__version__ 1.21.1 -->
+   <Angle class1="HW" class2="OW" class3="HW" angle="1.91061193" k="383.0"/>
+ </HarmonicAngleForce>
+ <NonbondedForce coulomb14scale="0.5" lj14scale="0.5">
+   <!-- https://docs.lammps.org/Howto_spc.html -->
+   <!-- Calculating sigma and epsilon from LAMMPS SPCE documentation with python
+    from decimal import *
+    kB = Decimal(1.380649 *1e-23)# J/K
+    NA = Decimal(6.02214076*1e23) #1/mol
+
+    epsilon_lammpskcal = Decimal(0.1553) #kCal/mol
+    epsilon_lammpskJ = epsilon_lammpskcal * Decimal(4.184) #kJ/mol
+    epsilon_lammpsK = epsilon_lammpskJ / kB / NA * Decimal(1000) #K
+
+    print(f"lammps values are {epsilon_lammpsK} K  and {epsilon_lammpskJ} kJ/mol")
+
+
+    sigma_lammpsang = Decimal(3.166) #angstroms
+    sigma_lammpsnm = sigma_lammpsang * Decimal(0.1) #nm
+    print(f"lammps sigma values are {sigma_lammpsang} ang  and {sigma_lammpsnm} nm")
+
+    -->
+  <Atom type="opls-116" charge="-0.8476" sigma="0.3166" epsilon="0.6498"/>
+  <Atom type="opls-117" charge="0.4238" sigma="0.0" epsilon="0.0"/>
+ </NonbondedForce>
+</ForceField>

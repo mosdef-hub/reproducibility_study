@@ -157,6 +157,8 @@ slurm*
 *.out
 *.err
 rclone.sh
+*.bundles
+test_job_out.txt
 
 # UGE
 *.o*

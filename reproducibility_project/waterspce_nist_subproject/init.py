@@ -15,9 +15,7 @@ def dict_product(dd):
         yield dict(zip(keys, element))
 
 
-molecules = [
-    "waterSPCE",
-]
+molecules = ["waterSPCE", "waterSPCE_lammps"]
 replicas = range(16)
 simulation_engines = [
     "gromacs",
@@ -37,7 +35,10 @@ for key in molecules:
             forcefields[key] = "benzene-ua"
         r_cuts[key] = 14.0 * u.angstrom
     elif "SPCE" in key:
-        forcefields[key] = "spce_original"
+        if "lammps" in key:
+            forcefields[key] = "spce_lammps"
+        else:
+            forcefields[key] = "spce_original"
         r_cuts[key] = 9 * u.angstrom
     else:
         forcefields[key] = "oplsaa"
@@ -88,6 +89,11 @@ pr = signac.get_project(pr_root)
 # filter the list of dictionaries
 total_statepoints = list()
 for molecule in molecules:
+    if molecule == "waterSPCE_lammps":
+        ff_for_molecule = molecule
+        molecule = "waterSPCE"
+    else:
+        ff_for_molecule = molecule
     for (
         engine,
         ensemble,
@@ -153,7 +159,7 @@ for molecule in molecules:
                 mass.to_value("amu"),
                 decimals=3,
             ).item(),
-            "forcefield_name": forcefields[molecule],
+            "forcefield_name": forcefields[ff_for_molecule],
             "cutoff_style": cutoff_style,
             "long_range_correction": lrc,
             "r_cut": np.round(
@@ -162,6 +168,21 @@ for molecule in molecules:
             ).item(),
         }
         total_statepoints.append(statepoint)
+
+indices_to_remove = set()
+for i, sp in enumerate(total_statepoints):
+    if sp["forcefield_name"] == "spce_lammps":
+        if sp["temperature"] in [280, 320]:
+            indices_to_remove.add(i)
+
+
+# now reverse sort the set and remove from inital list
+# must be reverse sorted to remove indices on the list in place
+# otherwise the list will change size and the indices would change
+# print(len(indices_to_remove))
+sorted_indicies_to_delete = sorted(list(indices_to_remove), reverse=True)
+for idx in sorted_indicies_to_delete:
+    del total_statepoints[idx]
 
 for sp in total_statepoints:
     pr.open_job(

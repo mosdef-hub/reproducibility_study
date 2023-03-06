@@ -1,4 +1,5 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+# python project.py submit -o lammps_em_nvt -n 72 --bundle 3
 import os
 import pathlib
 import sys
@@ -6,6 +7,7 @@ import sys
 import flow
 import numpy as np
 from flow import environments
+from flow.environment import DefaultSlurmEnvironment
 
 
 class Project(flow.FlowProject):
@@ -16,6 +18,12 @@ class Project(flow.FlowProject):
         current_path = pathlib.Path(os.getcwd()).absolute()
         self.data_dir = current_path.parents[1] / "data"
         self.ff_fn = self.data_dir / "forcefield.xml"
+
+
+class Rahman(DefaultSlurmEnvironment):
+    """Subclass of DefaultPBSEnvironment for VU's Rahman cluster."""
+
+    template = "rahman_lmp.sh"
 
 
 # ____________________________________________________________________________
@@ -34,7 +42,7 @@ def lammps_created_box(job):
 def lammps_copy_files(job):
     """Check if the submission scripts have been copied over for the job."""
     return (
-        job.isfile("submit.pbs")
+        job.isfile("submit.sh")
         and job.isfile("in.minimize")
         and job.isfile("in.equilibration")
         and job.isfile("in.production-npt")
@@ -73,15 +81,27 @@ def lammps_equilibrated_npt(job):
             latest_eqdata = file
     if latest_eqdata:
         data = np.genfromtxt(latest_eqdata.name, skip_header=1)
-        check_equil = [
-            is_equilibrated(data[:, 1])[0],
-            is_equilibrated(data[:, 2])[0],
-            is_equilibrated(data[:, 4])[0],
-            is_equilibrated(data[:, 6])[0],
-        ]
+        if len(data) > 100:
+            check_equil = [
+                is_equilibrated(data[:, 1])[0],
+                is_equilibrated(data[:, 2])[0],
+                is_equilibrated(data[:, 4])[0],
+                is_equilibrated(data[:, 6])[0],
+            ]
+        else:
+            check_equil = [False, False, False, False]
     else:
         check_equil = [False, False, False, False]
     return job.isfile("equilibrated-npt.restart") and np.all(check_equil)
+
+
+@Project.label
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+def lammps_stopped_production(job):
+    """Check if the lammps production step has run for the job."""
+    return not job.isfile("production-npt.restart") and job.isfile(
+        "production-npt.xtc"
+    )
 
 
 @Project.label
@@ -163,7 +183,7 @@ def built_lammps(job):
 @flow.cmd
 def lammps_cp_files(job):
     """Copy over run files for lammps and the PBS scheduler."""
-    lmps_submit_path = "../../src/engine_input/lammps-VU/submit.pbs"
+    lmps_submit_path = "../../src/engine_input/lammps-VU/submit.sh"
     lmps_run_path = "../../src/engine_input/lammps-VU/in.*"
     msg = f"cp {lmps_submit_path} {lmps_run_path} ./"
     return msg
@@ -173,11 +193,12 @@ def lammps_cp_files(job):
 @Project.pre(lambda j: j.sp.engine == "lammps-VU")
 @Project.pre(lammps_copy_files)
 @Project.post(lammps_minimized_equilibrated_nvt)
+@Project.pre(lambda j: j.sp.ensemble == "NPT")
 @flow.with_job
 @flow.cmd
 def lammps_em_nvt(job):
     """Run energy minimization and nvt ensemble."""
-    in_script_name = "submit.pbs"
+    in_script_name = "submit.sh"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.minimize"
     r_cut = job.sp.r_cut * 10
@@ -202,49 +223,35 @@ def lammps_em_nvt(job):
             in_script_name, "special_bonds lj/coul 0 0 0.5\n", 16
         )
         modify_engine_scripts(in_script_name, "pair_modify mix geometric\n", 20)
-    elif "UA" in job.sp.molecule:
-        modify_engine_scripts(
-            in_script_name, "special_bonds lj/coul 0 0 0\n", 16
-        )
-        modify_engine_scripts(
-            in_script_name, "pair_modify mix arithmetic\n", 20
-        )
-    if "benzeneUA" in job.sp.molecule:
-        define_benzene_molecules = [
-            "# Set lammps molecules\n",
-            f"change_box all ortho\n",
-            "variable nmols loop 400\n",
-            "label startloop\n",
-            "variable atomid equal (${nmols}-1)*6+1\n",
-            "variable atomid2 equal ${atomid}+5\n",
-            "set atom ${atomid}*${atomid2} mol ${nmols}\n",
-            "if '${nmols} == 400' then 'jump in.minimize endloop'\n",
-            "next nmols\n",
-            "jump in.minimize startloop\n",
-            "label endloop\n",
-            "fix integrator all rigid/nve/small molecule \n",
-            "run 10000\n",
-            "unfix integrator\n",
-            "fix integrator all rigid/nvt/small molecule temp ${tsample} ${tsample} 100.0\n",
-            "timestep ${tstep}\n",
-            "run 50000\n",
-            "unfix integrator\n",
-            "reset_timestep 0 #reset timestep so the first minimize restart file has a consistent name\n",
-            "write_restart minimized.restart-*\n",
-        ]
-        start_line = 26
-        with open(in_script_name, "r") as f:
-            lines = f.readlines()
-        for i, new_line in enumerate(define_benzene_molecules):
+        if "NPT-fixOH" in job.sp.ensemble:
             modify_engine_scripts(
                 in_script_name,
-                new_line,
-                start_line + i,
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
+                14,
             )
+            for line in [27, 32, 36]:
+                modify_engine_scripts(
+                    in_script_name,
+                    "\n",
+                    line,
+                )
 
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    export_args = [
+        f"infile={in_script_name}",
+        f"seed={job.sp.replica+1}",
+        f"T={job.sp.temperature}",
+        f"P={job.sp.pressure}",
+        f"rcut={r_cut}",
+        f"tstep={tstep}",
+    ]
+    sep = ","
+    msg = f"sbatch --export='{sep.join(map(str,export_args))}' submit.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
 
-    return msg
+    # return msg
+    return f"lmp -in {in_script_name} -var seed {job.sp.replica+1} -var T {job.sp.temperature} -var P {job.sp.pressure} -var rcut {r_cut} -var tstep {tstep}"
 
 
 @Project.operation
@@ -255,7 +262,7 @@ def lammps_em_nvt(job):
 @flow.cmd
 def lammps_equil_npt(job):
     """Run npt ensemble equilibration."""
-    in_script_name = "submit.pbs"
+    in_script_name = "submit.sh"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.equilibration"
     r_cut = job.sp.r_cut * 10
@@ -284,6 +291,12 @@ def lammps_equil_npt(job):
                 "fix rigbod all shake 0.00001 20 0 b 1 a 1\n",
                 14,
             )
+        elif "NPT-fixOH" in job.sp.ensemble:
+            modify_engine_scripts(
+                in_script_name,
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
+                14,
+            )
     elif "UA" in job.sp.molecule:
         modify_engine_scripts(
             in_script_name, "special_bonds lj/coul 0 0 0\n", 16
@@ -295,9 +308,22 @@ def lammps_equil_npt(job):
         fixrigid = "fix integrator all rigid/npt/small molecule temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10\n"
         modify_engine_scripts(in_script_name, fixrigid, 36)
 
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    export_args = [
+        f"infile={in_script_name}",
+        f"seed={job.sp.replica+1}",
+        f"T={job.sp.temperature}",
+        f"P={job.sp.pressure}",
+        f"rcut={r_cut}",
+        f"tstep={tstep}",
+    ]
+    sep = ","
+    msg = f"sbatch --export='{sep.join(map(str,export_args))}' submit.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
 
-    return msg
+    # return msg
+    return f"lmp -in {in_script_name} -var seed {job.sp.replica+1} -var T {job.sp.temperature} -var P {job.sp.pressure} -var rcut {r_cut} -var tstep {tstep}"
 
 
 @Project.operation
@@ -308,7 +334,7 @@ def lammps_equil_npt(job):
 @flow.cmd
 def lammps_prod_npt(job):
     """Run npt ensemble production."""
-    in_script_name = "submit.pbs"
+    in_script_name = "submit.sh"
     modify_submit_scripts(in_script_name, job.id)
     in_script_name = "in.production-npt"
     r_cut = job.sp.r_cut * 10
@@ -335,7 +361,13 @@ def lammps_prod_npt(job):
         if "SPCE" in job.sp.molecule:  # add SHAKE for SPCE
             modify_engine_scripts(
                 in_script_name,
-                "fix rigbod all shake 0.00001 20 0 b 1 a 1\n",
+                "fix rigbond all shake 0.00001 20 0 b 1\n",
+                14,
+            )
+        elif "NPT-fixOH" in job.sp.ensemble:
+            modify_engine_scripts(
+                in_script_name,
+                "fix rigbond all shake 0.00001 20 0 b 3\n",
                 14,
             )
     elif "UA" in job.sp.molecule:
@@ -348,8 +380,36 @@ def lammps_prod_npt(job):
     if job.sp.molecule == "benzeneUA":
         fixrigid = "fix integrator all rigid/npt/small molecule temp ${tsample} ${tsample} 100.0 iso ${psample} ${psample} 1000.0 pchain 10\n"
         modify_engine_scripts(in_script_name, fixrigid, 37)
+    export_args = [
+        f"infile={in_script_name}",
+        f"seed={job.sp.replica+1}",
+        f"T={job.sp.temperature}",
+        f"P={job.sp.pressure}",
+        f"rcut={r_cut}",
+        f"tstep={tstep}",
+    ]
+    sep = ","
+    msg = f"sbatch --export='{sep.join(map(str,export_args))}' submit.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
 
-    msg = f"qsub -v 'infile={in_script_name}, seed={job.sp.replica+1}, T={job.sp.temperature}, P={job.sp.pressure}, rcut={r_cut}, tstep={tstep}' submit.pbs"
+    # return msg
+    return f"lmp -in {in_script_name} -var seed {job.sp.replica+1} -var T {job.sp.temperature} -var P {job.sp.pressure} -var rcut {r_cut} -var tstep {tstep}"
+
+
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_stopped_production)
+@Project.post(lammps_production_npt)
+@flow.with_job
+@flow.cmd
+def lammps_extend_npt(job):
+    """Extend npt ensemble production."""
+    msg = f"sbatch --export=tprname=production extend_prod.sh"
+    print("##############################")
+    print("Submission Message ", msg)
+    print("##############################")
 
     return msg
 
@@ -408,12 +468,42 @@ def lammps_create_gsd(job):
     return
 
 
+@Project.operation
+@Project.pre(lambda j: j.sp.engine == "lammps-VU")
+@Project.pre(lammps_created_gsd)
+@Project.post(lambda j: j.isfile("box.mol2"))
+@flow.with_job
+def lammps_write_mol2(job):
+    """Create a mol2 for use with mdtraj bond info."""
+    import foyer
+    from mbuild.formats.lammpsdata import write_lammpsdata
+
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
+
+    if "benzeneUA" == job.sp.molecule:
+        system = construct_system(
+            job.sp, scale_liq_box=2, fix_orientation=True
+        )[0]
+    else:
+        system = construct_system(job.sp)[0]
+    parmed_structure = system.to_parmed()
+    ff = load_ff(job.sp.forcefield_name)
+    system.save(
+        "box.mol2"
+    )  # save the compound as a mol2 object for reading back in to mbuild
+
+    return
+
+
 def modify_submit_scripts(filename, jobid, cores=8):
     """Modify the submission scripts to include the job and simulation type in the header."""
-    with open("submit.pbs", "r") as f:
+    with open("submit.sh", "r") as f:
         lines = f.readlines()
-        lines[1] = "#PBS -N {}\n".format(jobid)
-    with open("submit.pbs", "w") as f:
+        lines[2] = "#SBATCH -J {}\n".format(jobid[0:3])
+    with open("submit.sh", "w") as f:
         f.writelines(lines)
 
 
