@@ -67,9 +67,9 @@ analysis = Project.make_group(name="analysis")
 
 
 def _aggregate_statistics(val, n):
-    avg = np.mean(avg_vals)
-    std = np.std(avg_vals)
-    sem = std / np.sqrt(num_replicas)
+    avg = np.mean(val)
+    std = np.std(val)
+    sem = std / np.sqrt(n)
     pass
 
 

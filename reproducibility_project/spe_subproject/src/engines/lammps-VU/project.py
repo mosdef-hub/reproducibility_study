@@ -168,20 +168,35 @@ def FormatTextFile(job):
     ]
     new_titles_list = [
         "potential_energy",
-        "vdw_energy",
-        "coul_energy",
+        "tot_vdw_energy",
+        "short_range_electrostatics",
         "pair_energy",
         "bonds_energy",
         "angles_energy",
         "dihedrals_energy",
         "tail_energy",
-        "kspace_energy",
+        "long_range_electrostatics",
     ]
     # convert units
     KCAL_TO_KJ = 4.184  # kcal to kj
     df_in = df_in * KCAL_TO_KJ
     df_out = df_in[attr_list]
     df_out.columns = new_titles_list
+    # calculate new values
+    df_out["tot_electrostatics"] = (
+        df_out["short_range_electrostatics"]
+        + df_out["long_range_electrostatics"]
+    )
+    df_out["tot_bonded_energy"] = (
+        df_out["bonds_energy"]
+        + df_out["angles_energy"]
+        + df_out["dihedrals_energy"]
+    )
+    df_out["tot_pair_energy"] = (
+        df_out["tot_vdw_energy"] + df_out["tot_electrostatics"]
+    )
+    df_out["intramolecular_energy"] = None
+    df_out["intermolecular_energy"] = None
     df_out.to_csv("log-spe.txt", header=True, index=False, sep=",")
 
 

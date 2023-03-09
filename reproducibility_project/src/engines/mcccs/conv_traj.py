@@ -19,7 +19,6 @@ def main():
     # os.makedirs(data_path)
     # delete the folder manually
     if not os.path.isdir(data_path):
-
         os.makedirs(data_path)
 
     os.chdir(data_path)
@@ -38,7 +37,6 @@ def main():
         if not os.path.isdir(
             "{}_{}_{}K_{}kPa".format(molecule, ensemble, temperature, pressure)
         ):
-
             os.makedirs(
                 "{}_{}_{}K_{}kPa".format(
                     molecule, ensemble, temperature, pressure

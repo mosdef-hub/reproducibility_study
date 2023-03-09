@@ -82,8 +82,8 @@ lines.linewidth   : 2.0     # line width in points
 #lines.linestyle   : -       # solid line
 #lines.color       : blue    # has no affect on plot(); see axes.prop_cycle
 #lines.marker      : None    # the default marker
-lines.markeredgewidth  : 0.5     # the line width around the marker symbol
-lines.markersize  : 9            # markersize, in points
+lines.markeredgewidth  : 1     # the line width around the marker symbol
+lines.markersize  : 12            # markersize, in points
 #lines.dash_joinstyle : miter        # miter|round|bevel
 #lines.dash_capstyle : butt          # butt|round|projecting
 #lines.solid_joinstyle : miter       # miter|round|bevel

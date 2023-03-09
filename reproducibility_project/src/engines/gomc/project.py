@@ -140,6 +140,7 @@ ff_info_dict = {
 # signac and GOMC-MOSDEF code (start)
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # create some initial variable to be store in each jobs
@@ -385,6 +386,7 @@ def mosdef_input_written(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # check if GOMC control file was written (start)
@@ -471,6 +473,7 @@ def part_2d_production_control_file_written(job):
 # check if GOMC control file was written (end)
 # ******************************************************
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
@@ -573,6 +576,7 @@ def part_3d_output_production_run_started(job):
 # check if GOMC simulation are completed properly (start)
 # ******************************************************
 # ******************************************************
+
 
 # function for checking if GOMC simulations are completed properly
 def gomc_sim_completed_properly(job, control_filename_str):
@@ -694,6 +698,7 @@ def part_5b_avg_std_dev_of_replicates_analysis_completed(*jobs):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # build system, with option to write the force field (force field (FF)), pdb, psf files.
@@ -769,6 +774,7 @@ def build_charmm(job, write_files=True):
 # build system, with option to write the force field (FF), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (end)
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
@@ -1826,6 +1832,7 @@ def build_psf_pdb_ff_gomc_conf(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # melt_NVT -starting the GOMC simulation (start)
@@ -1875,6 +1882,7 @@ def run_melt_equilb_NVT_gomc_command(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # equilb_NVT - starting the GOMC simulation (start)
@@ -1923,6 +1931,7 @@ def run_equilb_NVT_gomc_command(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # Use pymbar to evaluate if the system came to equilibrium based on
@@ -1946,7 +1955,6 @@ def test_pymbar_stabilized_equilb_design_ensemble(job):
                 str(job.doc.equilb_design_ensemble_number)
             ]["output_name_control_file_name"],
         ):
-
             box_0_filename = "Blk_{}_BOX_0.dat".format(
                 job.doc.equilb_design_ensemble_dict[
                     str(job.doc.equilb_design_ensemble_number)
@@ -2136,6 +2144,7 @@ def pymbar_stabilized_equilb_design_ensemble(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # equilb NPT or GEMC-NVT - starting the GOMC simulation (start)
@@ -2187,7 +2196,6 @@ def run_equilb_ensemble_gomc_command(job):
             job.doc.stable_equilb_design_ensemble is False
             and job.doc.equilb_design_ensemble_max_number_under_limit is True
         ):
-
             control_file_name_str = job.doc.equilb_design_ensemble_dict[
                 str(job.doc.equilb_design_ensemble_number)
             ]["output_name_control_file_name"]
@@ -2213,7 +2221,6 @@ def run_equilb_ensemble_gomc_command(job):
                     str(job.doc.equilb_design_ensemble_number)
                 ]["output_name_control_file_name"],
             ):
-
                 test_pymbar_stabilized_equilb_design_ensemble(job)
 
                 if job.doc.stable_equilb_design_ensemble is False:
@@ -2231,6 +2238,7 @@ def run_equilb_ensemble_gomc_command(job):
 # equilb NPT or GEMC-NVT - starting the GOMC simulation (end)
 # ******************************************************
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
@@ -2333,8 +2341,7 @@ def part_5a_individial_simulations_analysis(*jobs):
     if os.path.isfile(f"src/engines/gomc/setAverages.txt"):
         os.remove(f"src/engines/gomc/setAverages.txt")
     for job in jobs:
-        with (job):
-
+        with job:
             dataFileName_1 = str(
                 "Blk_" + production_control_file_name_str + "_BOX_0.dat"
             )
@@ -2440,7 +2447,6 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
         gomc_sim_completed_properly(job, production_control_file_name_str)
         for job in jobs
     ):
-
         moreDateHere = open(
             "src/engines/gomc/averagesWithinReplicatez.txt", "a+"
         )
@@ -2501,7 +2507,7 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
         replicateAverageOptions2 = []
 
         for job in jobs:
-            with (job):
+            with job:
                 dataFileName_1 = str(
                     "Blk_" + production_control_file_name_str + "_BOX_0.dat"
                 )
@@ -2773,7 +2779,6 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
                 setMeanZ2[i] /= replicaCount
 
         for i in range(len(replicateAverageEnergy)):
-
             setStdEnergy[replicateAverageName[i]] += (
                 replicateAverageEnergy[i]
                 - setMeanEnergy[replicateAverageName[i]]
@@ -2794,7 +2799,6 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
             str("Blk_" + production_control_file_name_str + "_BOX_1.dat")
         ):
             for i in range(len(replicateAverageEnergy2)):
-
                 setStdEnergy2[replicateAverageName2[i]] += (
                     replicateAverageEnergy2[i]
                     - setMeanEnergy2[replicateAverageName2[i]]
@@ -2812,7 +2816,6 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
                 ) ** 2
 
         for i in np.unique(replicateAverageName):
-
             setStdEnergy[i] = (setStdEnergy[i] / (replicaCount - 1)) ** 0.5
             setStdPressure[i] = (setStdPressure[i] / (replicaCount - 1)) ** 0.5
             setStdDensity[i] = (setStdDensity[i] / (replicaCount - 1)) ** 0.5

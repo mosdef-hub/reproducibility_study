@@ -1,4 +1,4 @@
-Program started at 2022-02-22 13:53:21.852
+Program started at 2023-03-03 15:21:35.481
 Number of processors: 1
 Threads per processor: 1
 
@@ -150,7 +150,7 @@ CHARGE INCLUSION TABLE
 
 PAIRWISE LJ AND COULOMB INTERACTIONS
     i    j         q0(i)         q0(j)     vvdW_1     vvdW_2 ...
-  117  117     -0.847600     -0.847600   312.79       3.1656
+  117  117     -0.847600     -0.847600   312.80       3.1656
   117  118     -0.847600      0.423800   0.0000       0.0000
   118  117      0.423800     -0.847600   0.0000       0.0000
   118  118      0.423800      0.423800   0.0000       0.0000
@@ -287,9 +287,9 @@ ibox:      calp  kmaxl  kmaxm  kmaxn         rcut
  sumup control
  number of chains        1100
 number of chains of type    1 undefined     1100
- inter lj energy    9219691.49494508
+ inter lj energy    9220583.67581096
  intra lj energy   0.000000000000000E+000
- Tail correction   -33151.2196699790
+ Tail correction   -33153.4061774192
  bond vibration    0.000000000000000E+000
  bond bending      0.000000000000000E+000
  torsional         0.000000000000000E+000
@@ -297,12 +297,12 @@ number of chains of type    1 undefined     1100
  coulombic energy  -2343960.93078272
  fluc Q energy     0.000000000000000E+000
  well energy       0.000000000000000E+000
- total energy       6875730.56416237
+ total energy       6876622.74502824
 
- box             1  initial v   =    6875730.56416237
- surf. tension :   box 1 =   63140.56477
- pressure check:   box 1 =   17450059.28
- compress factor:  box 1 =     126.32713
+ box             1  initial v   =    6876622.74502824
+ surf. tension :   box 1 =   63145.94968
+ pressure check:   box 1 =   17451733.36
+ compress factor:  box 1 =     126.33925
 
  +++++ start of markov chain +++++
 
@@ -351,9 +351,9 @@ molecule  1:   0.00000000
  sumup control
  number of chains        1100
 number of chains of type    1 undefined     1100
- inter lj energy    9219691.49494508
+ inter lj energy    9220583.67581096
  intra lj energy   0.000000000000000E+000
- Tail correction   -33151.2196699790
+ Tail correction   -33153.4061774192
  bond vibration    0.000000000000000E+000
  bond bending      0.000000000000000E+000
  torsional         0.000000000000000E+000
@@ -361,11 +361,11 @@ number of chains of type    1 undefined     1100
  coulombic energy  -2343960.93078272
  fluc Q energy     0.000000000000000E+000
  well energy       0.000000000000000E+000
- total energy       6875730.56416237
+ total energy       6876622.74502824
 
- vstart       =      6875730.5641623652
- vend         =      6875730.5641623652
- vbox         =      6875730.5641623652
+ vstart       =      6876622.7450282415
+ vend         =      6876622.7450282415
+ vbox         =      6876622.7450282415
 
  Averages and fluctuations                                  Box  1
 
@@ -400,4 +400,4 @@ number of chains of type    1 undefined     1100
 
  type  box       vinter       vintra         vtor        vbend        vtail
     1    1      0.00000      0.00000      0.00000      0.00000      0.00000
- Program ended at 2022-02-22 13:53:23.471
+ Program ended at 2023-03-03 15:21:36.481

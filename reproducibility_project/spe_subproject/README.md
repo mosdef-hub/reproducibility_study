@@ -18,7 +18,7 @@ The following energy definitions are calculated using the [lammps thermo](https:
 * potential_energy = pe </br>
 * tot_vdw_energy = evdwl </br>
 * tail_energy = etail </br>
-* tot_electrostatics = elong </br>
+* tot_electrostatics = elong + ecoul</br>
 * short_range_electrostatics = ecoul </br>
 * long_range_electrostatics = elong </br>
 * tot_pair_energy = epair </br>

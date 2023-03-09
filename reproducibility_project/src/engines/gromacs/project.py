@@ -95,7 +95,8 @@ def init_job(job):
             "fname": "em.mdp",
             "template": f"{mdp_abs_path}/em_template.mdp.jinja",
             "p3m-template": f"{mdp_abs_path}/em_template_p3m.mdp.jinja",
-            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",  # Run nvt in place of em for water
+            # Run nvt in place of em for water
+            "water-template": f"{mdp_abs_path}/nvt_template_water.mdp.jinja",
             "bconstraints-template": f"{mdp_abs_path}/em_template_constraints.mdp.jinja",
             "rigid-template": f"{mdp_abs_path}/em_template_rigid.mdp.jinja",
             "data": {
@@ -159,6 +160,10 @@ def init_job(job):
 
     for op, mdp in mdps.items():
         if job.sp.molecule == "waterSPCE":
+            if not mdp["data"].get("nsteps"):
+                mdp["data"]["nsteps"] = 5000000
+                mdp["data"]["dt"] = 0.001
+
             _setup_mdp(
                 fname=mdp["fname"],
                 template=mdp["water-template"],

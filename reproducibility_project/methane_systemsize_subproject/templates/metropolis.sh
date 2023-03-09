@@ -2,9 +2,10 @@
 {% block header %}
 #!/bin/sh
 #SBATCH --job-name="{{ id }}"
-#SBATCH -t 199:59:59
+#SBATCH -t 23:59:59
 #SBATCH --ntasks=1
-#SBATCH --mem=2g
+#SBATCH --mem=1g
+#SBATCH --partition=debug
 module purge
 conda --version
 source /home/rs/anaconda3/etc/profile.d/conda.sh

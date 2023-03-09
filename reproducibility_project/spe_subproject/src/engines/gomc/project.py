@@ -110,6 +110,7 @@ ff_info_dict = {
 # signac and GOMC-MOSDEF code (start)
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # create some initial variable to be store in each jobs
@@ -261,6 +262,7 @@ def initial_parameters(job):
 # ******************************************************
 # ******************************************************
 
+
 # check if GOMC-MOSDEF wrote the gomc files
 # @Project.pre(select_production_ensemble)
 @Project.label
@@ -307,6 +309,7 @@ def mosdef_input_written(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # check if GOMC control file was written (start)
@@ -349,6 +352,7 @@ def part_2a_production_control_file_written(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # check if GOMC simulations started (start)
@@ -390,6 +394,7 @@ def part_3a_output_production_run_started(job):
 # check if GOMC simulation are completed properly (start)
 # ******************************************************
 # ******************************************************
+
 
 # function for checking if GOMC simulations are completed properly
 def gomc_sim_completed_properly(job, control_filename_str):
@@ -535,6 +540,7 @@ def build_charmm(job, write_files=True):
 # build system, with option to write the force field (FF), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (end)
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
