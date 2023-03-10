@@ -11,4 +11,3 @@
 conda activate mosdef-study38
 
 rsync -av /home/rs/space/projects/final_repro_methane/reproducibility_study/reproducibility_project/methane_systemsize_subproject4/* .
-

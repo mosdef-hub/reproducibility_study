@@ -1,16 +1,19 @@
 """Compute benzene molecule planarity."""
 import warnings
+
 warnings.filterwarnings("ignore")
-import mbuild as mb 
-import signac 
-import parmed as pmd
+import matplotlib
+import mbuild as mb
 import mdtraj as md
-import matplotlib 
+import numpy as np
+import parmed as pmd
+import signac
 from matplotlib import pyplot as plt
-import numpy as np 
+
 from reproducibility_project.src.molecules.system_builder import (
-        construct_system
+    construct_system,
 )
+
 font = {'family': 'serif',
         'color':  'darkred',
         'weight': 'normal',
@@ -73,37 +76,37 @@ def rmsd_from_plane(points, plane_coeffs):
     return rmsd
 
 
-project = signac.get_project() 
-benzene_jobs = list() 
+project = signac.get_project()
+benzene_jobs = list()
 for job in project.find_jobs({"molecule": "benzeneUA", "engine": "mcccs"}):
     print(job)
     benzene_jobs.append(job)
 
-assert len(benzene_jobs) > 0 
+assert len(benzene_jobs) > 0
 skip = 10
 """
 for job in benzene_jobs:
     gsd_path = f"{job.ws}/trajectory-npt.gsd"
     mol2_path = f"{job.ws}/init.mol2"
-    
-    comp = construct_system(job.sp)[0]  
+
+    comp = construct_system(job.sp)[0]
     structure = comp.to_parmed()
-    
+
     traj = md.load(gsd_path)
     traj = traj[::skip]
-    print("This traj has {} frames".format(traj.n_frames))    
+    print("This traj has {} frames".format(traj.n_frames))
     break
-# Measure angles fluctuation 
-# Total 6 angles per benzene 
-# Measure dihedral fluctuation 
+# Measure angles fluctuation
+# Total 6 angles per benzene
+# Measure dihedral fluctuation
 # Total 6 dihedrals per benzene
 # Measure planarity --> using plane of best fit (?)
 for particle, atom in zip(comp.particles(), structure.atoms):
     assert particle.name == atom.name
     assert np.isclose(particle.pos[0], atom.xx/10)
-    assert np.isclose(particle.pos[1], atom.xy/10) 
+    assert np.isclose(particle.pos[1], atom.xy/10)
     assert np.isclose(particle.pos[2], atom.xz/10)
-mapping = dict() 
+mapping = dict()
 for particle, atom in zip(
     comp.particles(), traj.topology.atoms):
     mapping[particle] = atom
@@ -112,10 +115,10 @@ for child in comp.children:
     original_positions[child] = [
         particle.pos for particle in child.particles()
         ]
-    
+
 updated_positions = dict()
 for child in comp.children:
-    updated_positions[child] = list() 
+    updated_positions[child] = list()
     for i in range(traj.n_frames):
         updated_positions[child].append(
             [traj.xyz[i][mapping[particle].index]
@@ -138,7 +141,7 @@ rmsds = list()
 for i in range(traj.n_frames):
     rmsds_per_frame = list()
     for child in comp.children:
-        coords = [traj.xyz[i][mapping[particle].index] 
+        coords = [traj.xyz[i][mapping[particle].index]
                   for particle in child.particles()]
         plane = calculate_plane_of_best_fit(coords)
         rmsds_per_frame.append(rmsd_from_plane(coords, plane))
@@ -158,14 +161,14 @@ for job in benzene_jobs:
     print(job)
     gsd_path = f"{job.ws}/trajectory-npt.gsd"
     mol2_path = f"{job.ws}/init.mol2"
-    
-    comp = construct_system(job.sp)[0]  
+
+    comp = construct_system(job.sp)[0]
     structure = comp.to_parmed()
-    
+
     traj = md.load(gsd_path)
     traj = traj[::skip]
-    print("This traj has {} frames".format(traj.n_frames))    
-    mapping = dict() 
+    print("This traj has {} frames".format(traj.n_frames))
+    mapping = dict()
     for particle, atom in zip(
         comp.particles(), traj.topology.atoms):
         mapping[particle] = atom
@@ -178,7 +181,7 @@ for job in benzene_jobs:
         ]
         plane = calculate_plane_of_best_fit(coords)
         original_rmsd.append(rmsd_from_plane(coords, plane))
-        
+
     fig = plt.Figure()
     plt.plot(original_rmsd)
     plt.ylabel("RMSD, $nm$", fontdict=font)
@@ -187,16 +190,16 @@ for job in benzene_jobs:
                 bbox_inches='tight',
                 dpi=500)
     plt.close()
-    
+
     for i in range(traj.n_frames):
         rmsds_per_frame = list()
         for child in comp.children:
-            coords = [traj.xyz[i][mapping[particle].index] 
+            coords = [traj.xyz[i][mapping[particle].index]
                       for particle in child.particles()]
             plane = calculate_plane_of_best_fit(coords)
             rmsds_per_frame.append(rmsd_from_plane(coords, plane))
         rmsds.append(rmsds_per_frame)
-        
+
     fig = plt.Figure()
     plt.plot([np.mean(rmsd_per_frame) for rmsd_per_frame in rmsds])
     plt.axhline(np.mean(original_rmsd),
@@ -205,7 +208,7 @@ for job in benzene_jobs:
     plt.xlim(0, 500)
     plt.ylabel("RMSD, $nm$", fontdict=font)
     plt.xlabel("Frame", fontdict=font)
-    plt.savefig(f"benzene_planarity/planarity_over_time_{job.sp.replica}.pdf", 
+    plt.savefig(f"benzene_planarity/planarity_over_time_{job.sp.replica}.pdf",
                 bbox_inches='tight',
                 dpi=500)
     plt.close()
@@ -218,15 +221,15 @@ for job in benzene_jobs:
     print(job)
     gsd_path = f"{job.ws}/trajectory-npt.gsd"
     mol2_path = f"{job.ws}/init.mol2"
-    
-    comp = construct_system(job.sp)[0]  
+
+    comp = construct_system(job.sp)[0]
     structure = comp.to_parmed()
-    
+
     traj = md.load(gsd_path)
     traj = traj[::skip]
-    print("This traj has {} frames".format(traj.n_frames))    
-    
-    mapping = dict() 
+    print("This traj has {} frames".format(traj.n_frames))
+
+    mapping = dict()
     for particle, atom in zip(
         comp.particles(), traj.topology.atoms):
         mapping[particle] = atom
@@ -240,11 +243,11 @@ for job in benzene_jobs:
         plane = calculate_plane_of_best_fit(coords)
         original_rmsd.append(rmsd_from_plane(coords, plane))
     compiled_rmsd_init.append(original_rmsd)
-    
+
     for i in range(traj.n_frames):
         rmsds_per_frame = list()
         for child in comp.children:
-            coords = [traj.xyz[i][mapping[particle].index] 
+            coords = [traj.xyz[i][mapping[particle].index]
                       for particle in child.particles()]
             plane = calculate_plane_of_best_fit(coords)
             rmsds_per_frame.append(rmsd_from_plane(coords, plane))
@@ -255,31 +258,31 @@ print(len(compiled_rmsd_npt))
 print("##############################################")
 print("The number of rmsds calculated is: ", len(compiled_rmsd_npt))
 print("##############################################")
-averaged_npt_rmsd = list() 
+averaged_npt_rmsd = list()
 yerr_npt_rmsd = list()
-time_step = list() 
+time_step = list()
 for frame in range(traj.n_frames):
     frame_npt_rmsd = list()
-    time_step.append(frame * 10*skip) 
+    time_step.append(frame * 10*skip)
     print("Checking at frame number: ", frame)
     for i in range(16):
         frame_npt_rmsd.append(np.mean(compiled_rmsd_npt[i][frame]))
     averaged_npt_rmsd.append(np.mean(frame_npt_rmsd))
     yerr_npt_rmsd.append(np.std(frame_npt_rmsd))
 
-averaged_init_rmsd = np.mean(compiled_rmsd_init) 
+averaged_init_rmsd = np.mean(compiled_rmsd_init)
 yerr_init_rmsd = np.std(compiled_rmsd_init)
-   
-plt.plot(time_step, 
+
+plt.plot(time_step,
          averaged_npt_rmsd,
         )
 
 upper = np.array(averaged_npt_rmsd) + np.array(yerr_npt_rmsd)
 lower = np.array(averaged_npt_rmsd) - np.array(yerr_npt_rmsd)
-plt.fill_between(time_step, 
-                 lower, 
-                 upper, 
-                 alpha=0.2, 
+plt.fill_between(time_step,
+                 lower,
+                 upper,
+                 alpha=0.2,
                  edgecolor='#1B2ACC',
                  facecolor='#089FFF',
                  label="Production",
