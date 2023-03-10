@@ -1,3 +1,4 @@
+"""Compare O-H bond-length distribution between LAMMPS, MCCCS-MN-flex, and MCCCS-MN"""
 import numpy as np
 import matplotlib.pyplot as plt
 

@@ -1,3 +1,4 @@
+"""Compute benzene molecule planarity."""
 import warnings
 warnings.filterwarnings("ignore")
 import mbuild as mb 
@@ -16,6 +17,7 @@ font = {'family': 'serif',
         'size': 16,
 }
 def calculate_plane_of_best_fit(coords):
+"""Compute plane of the benzene molecule."""
     # Calculate center of mass for uniform particle
     center_of_mass = np.mean(coords, axis=0)
 
@@ -46,6 +48,7 @@ def calculate_plane_of_best_fit(coords):
     return (a, b, c, d)
 
 def distance_from_plane(point, plane_coeffs):
+"""Compute particle distance from plane."""
     # Extract plane coefficients
     a, b, c, d = plane_coeffs
 
@@ -57,6 +60,7 @@ def distance_from_plane(point, plane_coeffs):
     return distance
 
 def rmsd_from_plane(points, plane_coeffs):
+"""Compute rmsd of the particles from the plane."""
     # Calculate distances from points to plane
     distances = [distance_from_plane(point, plane_coeffs) for point in points]
 
