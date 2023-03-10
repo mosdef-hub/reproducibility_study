@@ -1,8 +1,6 @@
 """Compare O-H bond-length distribution between LAMMPS, MCCCS-MN-flex, and MCCCS-MN."""
-import numpy as np
 import matplotlib.pyplot as plt
-
-
+import numpy as np
 
 # plot settings
 ms = 8  # markersize
@@ -26,18 +24,18 @@ lammps_flex_data = np.genfromtxt(lammps_flex)
 
 plt.figure()
 
-plt.plot(mcccs_flex_data[:,0], mcccs_flex_data[:,1], label = "MCCCS-MN-flex")
-plt.plot(lammps_flex_data[:,0], lammps_flex_data[:,1], label = "LAMMPS")
-plt.plot(lammps_fix_data[:,0], lammps_fix_data[:,1], label= "LAMMPS-fixOH")
-plt.ylim([0,20])
+plt.plot(mcccs_flex_data[:, 0], mcccs_flex_data[:, 1], label="MCCCS-MN-flex")
+plt.plot(lammps_flex_data[:, 0], lammps_flex_data[:, 1], label="LAMMPS")
+plt.plot(lammps_fix_data[:, 0], lammps_fix_data[:, 1], label="LAMMPS-fixOH")
+plt.ylim([0, 20])
 plt.xlabel("Bond length" + r" ($\mathrm{\AA}$)", fontsize=xlabelfs)
 plt.ylabel("Probability", fontsize=ylabelfs)
 plt.xticks(fontsize=xtickfs)
 plt.yticks(fontsize=ytickfs)
 plt.tight_layout()
-plt.fill_between(mcccs_flex_data[:,0], mcccs_flex_data[:,1], alpha = alpha)
-plt.fill_between(lammps_flex_data[:,0], lammps_flex_data[:,1], alpha = alpha)
-plt.fill_between(lammps_fix_data[:,0], lammps_fix_data[:,1], alpha = alpha)
+plt.fill_between(mcccs_flex_data[:, 0], mcccs_flex_data[:, 1], alpha=alpha)
+plt.fill_between(lammps_flex_data[:, 0], lammps_flex_data[:, 1], alpha=alpha)
+plt.fill_between(lammps_fix_data[:, 0], lammps_fix_data[:, 1], alpha=alpha)
 plt.axvline(
     0.945,
     ls="--",
