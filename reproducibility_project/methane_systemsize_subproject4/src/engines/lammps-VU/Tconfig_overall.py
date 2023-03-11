@@ -43,7 +43,6 @@ def main():
             "engine",
         )
     ):
-
         print("-----------------------------------------------------")
         print(
             molecule,
@@ -65,7 +64,6 @@ def main():
                 engine,
             )
         ):
-
             os.makedirs(
                 "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}_{}".format(
                     molecule,

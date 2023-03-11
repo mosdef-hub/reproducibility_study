@@ -43,7 +43,6 @@ def main():
             "long_range_correction",
         )
     ):
-
         print("-----------------------------------------------------")
         print(
             engine,
@@ -65,7 +64,6 @@ def main():
                 str(long_range_correction),
             )
         ):
-
             os.makedirs(
                 "{}_{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
                     engine,
