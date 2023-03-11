@@ -1,0 +1,1 @@
+The average density is 0.375791580078125 g/ml with SEM 5.3669435079162e-06 from 256 samples
