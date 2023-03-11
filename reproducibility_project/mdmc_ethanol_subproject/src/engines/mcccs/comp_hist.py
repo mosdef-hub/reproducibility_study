@@ -1,6 +1,10 @@
 """Compare O-H bond-length distribution between LAMMPS, MCCCS-MN-flex, and MCCCS-MN."""
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import rc
+
+rc("font", **{"family": "serif", "serif": ["Times"]})
+# rc('text', usetex=True)
 
 # plot settings
 ms = 8  # markersize
