@@ -60,7 +60,7 @@ for i, n in enumerate(N):
     data[n] = raw_data[i, 1:]
 
 
-fig, axs = plt.subplots(1, 1, sharex=False, sharey=False, figsize=(4.5, 4.5))
+fig, axs = plt.subplots(1, 1, sharex=False, sharey=False, figsize=(4.5, 4))
 ax2 = axs
 
 N = [450, 600, 900, 1800, 3600, 7200]
