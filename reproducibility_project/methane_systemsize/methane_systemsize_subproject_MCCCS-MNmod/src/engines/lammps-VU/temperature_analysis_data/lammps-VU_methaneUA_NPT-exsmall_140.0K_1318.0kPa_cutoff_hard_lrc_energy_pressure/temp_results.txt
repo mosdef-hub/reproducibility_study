@@ -1,0 +1,1 @@
+The average temp is 139.9965750416356 K with SEM 0.008523828891307041 from 256 samples
