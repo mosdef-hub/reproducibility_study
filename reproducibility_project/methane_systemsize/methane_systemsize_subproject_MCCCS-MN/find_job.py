@@ -39,7 +39,7 @@ def main():
 
         if (
             molecule == "methaneUA"
-            and ensemble == "NPT-gigantic"
+            and ensemble == "NPT-exlarge"
             and engine == "mcccs"
         ):
             print(
