@@ -1,13 +1,18 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
 import os
 import pathlib
+import sys
 
 import flow
 import numpy as np
 from flow import FlowProject
 from flow.environment import DefaultSlurmEnvironment
 
-rigid_molecules = ["waterSPCE", "benzeneUA"]
+sys.path.append(
+    "/home/siepmann/singh891/software/hoomd-2023/hoomd-blue-mosdef38/build"
+)
+
+rigid_molecules = ["waterSPCE"]  # , "benzeneUA"]
 
 
 class Project(FlowProject):
@@ -51,14 +56,15 @@ def FinishedSPECalc(job):
 # The MOSDEF_PYTHON environment variable is set by running
 # echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
 # with the mosdef-study38 conda env active
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation  # .with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(OutputThermoData)
 @flow.with_job
 def run_singleframe(job):
     """Create and run initial configurations of the system statepoint."""
     import foyer
-    import git
+
+    # import git
     import hoomd
     import hoomd.md
     import mbuild as mb
@@ -72,11 +78,11 @@ def run_singleframe(job):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
-    repo = git.Repo(search_parent_directories=True)
-    sha = repo.head.object.hexsha
+    # repo = git.Repo(search_parent_directories=True)
+    # sha = repo.head.object.hexsha
     molecule = job.sp.molecule
     print(job.sp.molecule)
-    print(f"git commit: {sha}\n")
+    # print(f"git commit: {sha}\n")
 
     pr = Project()
     snapshot_directory = (
@@ -174,6 +180,15 @@ def run_singleframe(job):
     # and the default (bond, 1-3) is unecessary and raises a warning for methane
     if job.sp.molecule == "pentaneUA":
         forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    if job.sp.molecule == "benzeneUA":
+        forcefield[0].nlist.exclusions = [
+            "bond",
+            "1-3",
+            "1-4",
+            "body",
+            "angle",
+            "dihedral",
+        ]
     elif job.sp.molecule == "methaneUA":
         forcefield[0].nlist.exclusions = []
 
@@ -282,7 +297,7 @@ def run_singleframe(job):
     print("Finished", flush=True)
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation  # .with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(OutputThermoData)
 @Project.post(FinishedSPECalc)
