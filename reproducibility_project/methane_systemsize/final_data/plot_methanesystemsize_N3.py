@@ -66,7 +66,7 @@ fig, axs = plt.subplots(1, 1, sharex=False, sharey=False, figsize=(4.5, 4))
 ax2 = axs
 
 N = [450, 600, 900, 1800, 3600, 7200]
-onebyN = [1000 / k for k in N]
+onebyN = [(1000 / k) ** (1 / 3) for k in N]
 
 Lammps = []
 Lammps_err = []
@@ -87,74 +87,70 @@ for n in N:
 
 res = stats.linregress(onebyN, Lammps)
 print(f"R-squared: {res.rvalue**2:.6f}")
-# ax2.plot(
-#    onebyN,
-#    res.intercept + res.slope * np.array(onebyN),
-#    "--",
-#    color=colors["LAMMPS"],
-# )
+ax2.plot(
+    onebyN,
+    res.intercept + res.slope * np.array(onebyN),
+    "--",
+    color=colors["LAMMPS"],
+)
 ax2.errorbar(
     onebyN,
-    1000 * np.array(Lammps),
-    1000 * np.array(Lammps_err),
+    Lammps,
+    Lammps_err,
     capsize=4,
-    label="LAMMPS",  # + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
+    label="LAMMPS" + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
     marker=symbols["LAMMPS"],
     color=colors["LAMMPS"],
 )
 
 
-res = stats.linregress(onebyN, MC3S)
+res = stats.linregress(onebyN[1:], MC3S[1:])
 print(f"R-squared: {res.rvalue**2:.6f}")
-# ax2.plot(
-#    onebyN,
-#    res.intercept + res.slope * np.array(onebyN),
-#    "--",
-#    color=colors["MCCCS-MN"],
-# )
+ax2.plot(
+    onebyN[1:],
+    res.intercept + res.slope * np.array(onebyN[1:]),
+    "--",
+    color=colors["MCCCS-MN"],
+)
 ax2.errorbar(
     onebyN,
-    1000 * np.array(MC3S),
-    1000 * np.array(MC3S_err),
+    MC3S,
+    MC3S_err,
     capsize=4,
-    label="MCCCS-MN",  # + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
+    label="MCCCS-MN" + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
     marker=symbols["MCCCS-MN"],
     color=colors["MCCCS-MN"],
 )
 
 res = stats.linregress(onebyN, MC3S_mod)
 print(f"R-squared: {res.rvalue**2:.6f}")
-# ax2.plot(
-#    onebyN,
-#    res.intercept + res.slope * np.array(onebyN),
-#    "--",
-#    color=colors["MCCCS-MN (MOD)"],
-# )
+ax2.plot(
+    onebyN,
+    res.intercept + res.slope * np.array(onebyN),
+    "--",
+    color=colors["MCCCS-MN (MOD)"],
+)
 ax2.errorbar(
     onebyN,
-    1000 * np.array(MC3S_mod),
-    1000 * np.array(MC3S_mod_err),
+    MC3S_mod,
+    MC3S_mod_err,
     capsize=4,
-    label="MCCCS-MN(mod)",  # + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
+    label="MCCCS-MN(mod)" + " " + "$R^2$" + f"={res.rvalue**2:.2f}",
     marker=symbols["MCCCS-MN (MOD)"],
     color=colors["MCCCS-MN (MOD)"],
 )
-ax2.set_xlabel("$1000/N$", fontsize=xlabelfs)
-ax2.set_ylabel(r"$\rho$, kg/m$^3$", fontsize=ylabelfs)
+ax2.set_xlabel("$(1000/N)^{(1/3)}$", fontsize=xlabelfs)
+ax2.set_ylabel(r"$\rho$ [g/ml]", fontsize=ylabelfs)
 
-
-## T-1 scatter
-# ax2.errorbar(1000/450, 1000*0.3763038544921875, 1000*2.0476215387896637e-05, label = "MCCCS-MN "+"$T_{-1}$", marker = "o", color= "magenta")
-# ax2.errorbar(1000/900, 1000*0.3760736484375, 1000*1.4200439459421028e-05, marker = "o", color= "magenta")
-# axes limits
 ax2.tick_params(axis="y", labelsize=ytickfs)
 ax2.tick_params(axis="x", labelsize=ytickfs)
 props = dict(boxstyle="round", facecolor="none", alpha=1, ec="grey")
 ax2.legend(frameon=True, ncol=1, fontsize=legendfs, labelspacing=0.05)
 
+# axes limits
 
-ax2.set_xlim([0.0001, 2.5])
-ax2.set_ylim([375.6, 376])
+ax2.set_xlim([0.5, 1.4])
+ax2.set_ylim([0.37565, 0.37600])
 
 ax2.yaxis.set_major_locator(plt.MaxNLocator(4))
 
@@ -168,4 +164,4 @@ for ax in [ax2]:
 plt.tight_layout()
 
 fig.tight_layout()
-plt.savefig("methane_systemsize.pdf", dpi=900)
+plt.savefig("methane_systemsizeN3.pdf", dpi=900)
