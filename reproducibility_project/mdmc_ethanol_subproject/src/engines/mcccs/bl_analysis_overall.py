@@ -100,7 +100,6 @@ def main():
 
         base_dir = os.getcwd()
         if "NPT" in ensemble and molecule == "ethanolAA":
-
             bl_list = {}
             mean_bl_list = {}
             mean_bl_list["C-C"] = 0.1529
