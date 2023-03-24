@@ -34,7 +34,7 @@ ex = Project.make_group(name="ex")
 
 
 @Project.operation.with_directives({"walltime": 200})
-@Project.pre(lambda j: j.sp.engine == "mcccs")
+# @Project.pre(lambda j: j.sp.engine == "mcccs")
 def save_bl_dist(job):
     """Save bl distribution for 4 types of bonds."""
     import os
@@ -52,9 +52,15 @@ def save_bl_dist(job):
                 print("Can not delete the file as it doesn't exist")
 
             traj_filename = "trajectory-npt.gsd"
-            traj = md.load(traj_filename, top="init1.mol2")
+            if job.sp.engine == "mcccs":
+                topfile = "init1.mol2"
+                skip = 10
+            else:
+                topfile = "box.gro"
+                skip = 1
+            traj = md.load(traj_filename, top=topfile)
             print("traj has {} frames".format(traj.n_frames))
-            traj = traj[::100]
+            traj = traj[::skip]
             atoms_per_molecule = 9
             total_atoms = 4500
             total_molecules = int(total_atoms / atoms_per_molecule)

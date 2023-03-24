@@ -32,10 +32,10 @@ titlefs = 14  # title size
 legendfs = 9
 alpha = 0.2
 
-mcccs_fix = "bl_analysis_data/mcccs_ethanolAA_NPT-fixOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O-H_hist.txt"
-mcccs_flex = "bl_analysis_data/mcccs_ethanolAA_NPT-flexOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O-H_hist.txt"
-lammps_fix = "bl_analysis_data/lammps-VU_ethanolAA_NPT-fixOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O-H_hist.txt"
-lammps_flex = "bl_analysis_data/lammps-VU_ethanolAA_NPT-flexOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O-H_hist.txt"
+mcccs_fix = "bl_analysis_data/mcccs_ethanolAA_NPT-fixOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O_H_hist.txt"
+mcccs_flex = "bl_analysis_data/mcccs_ethanolAA_NPT-flexOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O_H_hist.txt"
+lammps_fix = "bl_analysis_data/lammps-VU_ethanolAA_NPT-fixOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O_H_hist.txt"
+lammps_flex = "bl_analysis_data/lammps-VU_ethanolAA_NPT-flexOH_280.0K_101.325kPa_cutoff_hard_lrc_energy_pressure/O_H_hist.txt"
 
 mcccs_fix_data = np.genfromtxt(mcccs_fix)
 mcccs_flex_data = np.genfromtxt(mcccs_flex)
@@ -51,7 +51,7 @@ plt.plot(lammps_flex_data[:, 0], lammps_flex_data[:, 1], label="LAMMPS")
 plt.plot(lammps_fix_data[:, 0], lammps_fix_data[:, 1], label="LAMMPS-fixOH")
 plt.ylim([0, 20])
 plt.xlabel("O-H Bond length" + r" ($\mathrm{\AA}$)", fontsize=xlabelfs)
-plt.ylabel("Probability", fontsize=ylabelfs)
+plt.ylabel("Probability density", fontsize=ylabelfs)
 plt.xticks(fontsize=xtickfs)
 plt.yticks(fontsize=ytickfs)
 plt.tight_layout()
