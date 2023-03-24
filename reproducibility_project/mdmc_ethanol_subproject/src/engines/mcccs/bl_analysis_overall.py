@@ -10,7 +10,17 @@ import numpy as np
 import seaborn as sns
 import signac
 from scipy import stats
-from scipy.stats import norm
+from scipy.stats import gaussian_kde, norm
+
+# plot settings
+ms = 8  # markersize
+xtickfs = 11  # xtickfontsize
+xlabelfs = 14  # xlabelfontsize
+ylabelfs = 14  # ylabelfontsize
+ytickfs = 11  # ytickfontsize
+titlefs = 14  # title size
+legendfs = 9
+alpha = 0.2
 
 
 def main():
@@ -26,6 +36,7 @@ def main():
     project = signac.get_project()
 
     for (
+        engine,
         molecule,
         ensemble,
         temperature,
@@ -34,6 +45,7 @@ def main():
         long_range_correction,
     ), group in project.groupby(
         (
+            "engine",
             "molecule",
             "ensemble",
             "temperature",
@@ -44,6 +56,7 @@ def main():
     ):
         print("-----------------------------------------------------")
         print(
+            engine,
             molecule,
             ensemble,
             temperature,
@@ -52,7 +65,8 @@ def main():
             long_range_correction,
         )
         if not os.path.isdir(
-            "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+            "{}_{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+                engine,
                 molecule,
                 ensemble,
                 temperature,
@@ -62,7 +76,8 @@ def main():
             )
         ):
             os.makedirs(
-                "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+                "{}_{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+                    engine,
                     molecule,
                     ensemble,
                     temperature,
@@ -72,7 +87,8 @@ def main():
                 )
             )
         os.chdir(
-            "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+            "{}_{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
+                engine,
                 molecule,
                 ensemble,
                 temperature,
@@ -84,6 +100,7 @@ def main():
 
         base_dir = os.getcwd()
         if "NPT" in ensemble and molecule == "ethanolAA":
+
             bl_list = {}
             mean_bl_list = {}
             mean_bl_list["C-C"] = 0.1529
@@ -95,17 +112,8 @@ def main():
             bl_list["O-H"] = []
             bl_list["C-H"] = []
 
-            # plot settings
-            ms = 8  # markersize
-            xtickfs = 11  # xtickfontsize
-            xlabelfs = 14  # xlabelfontsize
-            ylabelfs = 14  # ylabelfontsize
-            ytickfs = 11  # ytickfontsize
-            titlefs = 14  # title size
-            legendfs = 12
-            error_bar_capsize = 3
-
             for job in group:
+                print(job)
                 os.chdir(job.ws)
                 atom_pairs = [["C", "C"], ["C", "O"], ["O", "H"], ["C", "H"]]
 
@@ -120,29 +128,54 @@ def main():
                 atom1 = pair[0]
                 atom2 = pair[1]
                 sns.set_style("whitegrid")
-                plt.hist(
-                    bl_list["{}-{}".format(atom1, atom2)],
-                    density=True,
-                    bins=100,
+                plt.figure(figsize=(4.5, 4.5))
+                numbers = bl_list["{}-{}".format(atom1, atom2)]
+                kde = gaussian_kde(numbers)
+                nbins = 100
+
+                # Evaluate the KDE on a grid of points
+                x_grid = np.linspace(min(numbers), max(numbers), nbins)
+                kde_values = kde.evaluate(x_grid)
+                # Plot the KDE as a smooth curve
+                fig, ax = plt.subplots(figsize=(4.5, 4.5))
+                n, bins, patches = ax.hist(
+                    x_grid,
+                    bins=nbins,
+                    weights=kde_values,
+                    color="#1f77b4",
+                    alpha=0.7,
                 )
+
+                # Stack the freq and bin centers vertically
+                bin_centers = (bins[:-1] + bins[1:]) / 2
+                data = np.column_stack((bin_centers, n))
+
                 plt.axvline(
                     mean_bl_list["{}-{}".format(atom1, atom2)] * 10,
                     ls="--",
                     color="r",
-                    label="FF mean bond length",
+                    label="FF eq.\nbond length",
                 )
-                plt.legend(fontsize=legendfs)
+                plt.legend(
+                    frameon=True,
+                    loc="upper right",
+                    ncol=1,
+                    fontsize=legendfs,
+                    labelspacing=0.05,
+                )
+
                 plt.xlabel(
                     "Bond length" + r" ($\mathrm{\AA}$)", fontsize=xlabelfs
                 )
                 plt.ylabel("Probability", fontsize=ylabelfs)
-                plt.title("{}-{}".format(atom1, atom2), fontsize=titlefs)
                 plt.grid(alpha=0.25)
                 plt.xticks(fontsize=xtickfs)
                 plt.yticks(fontsize=ytickfs)
+                plt.title("{}-{}".format(atom1, atom2), fontsize=titlefs)
                 plt.tight_layout()
 
-                plt.savefig("{}-{}.png".format(atom1, atom2))
+                plt.savefig("{}-{}.pdf".format(atom1, atom2))
+                np.savetxt("{}_{}_hist.txt".format(atom1, atom2), data)
                 plt.close()
 
             fig, axs = plt.subplots(
@@ -150,10 +183,10 @@ def main():
             )
             fig.subplots_adjust(hspace=0.3)
             fig.subplots_adjust(wspace=0.3)
-            fig.suptitle(
-                "Bond length distribution ethanol-AA {} K".format(temperature),
-                fontsize=titlefs,
-            )
+            # fig.suptitle(
+            #    "Bond length distribution ethanol-AA {} K".format(temperature),
+            #    fontsize=titlefs,
+            # )
 
             ax = {}
             ax[0], ax[1], ax[2], ax[3] = (
@@ -167,10 +200,19 @@ def main():
                 atom1 = pair[0]
                 atom2 = pair[1]
 
+                numbers = bl_list["{}-{}".format(atom1, atom2)]
+                kde = gaussian_kde(numbers)
+                nbins = 100
+
+                # Evaluate the KDE on a grid of points
+                x_grid = np.linspace(min(numbers), max(numbers), nbins)
+                kde_values = kde.evaluate(x_grid)
+
                 a = ax[i].hist(
-                    bl_list["{}-{}".format(atom1, atom2)],
-                    density=True,
-                    bins=100,
+                    x_grid,
+                    bins=nbins,
+                    weights=kde_values,
+                    color="#1f77b4",
                     ec="#1f77b4",
                     alpha=0.5,
                 )
@@ -186,7 +228,7 @@ def main():
                         mean_bl_list["{}-{}".format(atom1, atom2)] * 10,
                         ls="--",
                         color="r",
-                        label="FF mean\nbond length",
+                        label="FF eq.\nbond length",
                     )
                 else:
                     ax[i].axvline(
@@ -234,7 +276,8 @@ def main():
             ax[1].set_xlim([1.3, 1.55])
             ax[2].set_xlim([0.85, 1.05])
             ax[3].set_xlim([0.95, 1.2])
-            plt.savefig("bl_T={}.png".format(temperature))
+            plt.tight_layout()
+            plt.savefig("bl_T={}.pdf".format(temperature))
             plt.close()
 
         os.chdir("..")
