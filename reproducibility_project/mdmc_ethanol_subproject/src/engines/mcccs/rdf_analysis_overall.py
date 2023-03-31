@@ -5,10 +5,20 @@ import shutil
 from glob import glob
 
 import freud
+import matplotlib
 import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
 import signac
+from matplotlib import rc
+from matplotlib.ticker import (
+    FormatStrFormatter,
+    MaxNLocator,
+    MultipleLocator,
+    NullFormatter,
+    ScalarFormatter,
+    StrMethodFormatter,
+)
 from scipy import stats
 
 
@@ -95,26 +105,52 @@ def main():
             os.chdir(base_dir)
             avg_rdf = np.mean(rdf_list, axis=0)
             avg_rdf[:, 0] = avg_rdf[:, 0] * 10
+            # print(avg_rdf)
             np.savetxt("avg_rdf.txt", avg_rdf)
 
             avg_cdf = np.mean(cdf_list, axis=0)
             avg_cdf[:, 0] = avg_cdf[:, 0] * 10
             np.savetxt("avg_cdf.txt", avg_cdf)
 
+            fig, axs = plt.subplots(
+                1, 1, sharex=False, sharey=False, figsize=(4.5, 4.5)
+            )
+            ax1 = axs
             plt.plot(avg_rdf[:, 0], avg_rdf[:, 1])
             plt.grid(alpha=0.25)
             plt.xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
             plt.ylabel(r"$g(r)$")
             plt.title("O-O RDF")
-            plt.savefig("O-O_rdf.png")
+            # adjusting ticks
+
+            for ax in [ax1]:
+                ax.xaxis.set_minor_locator(
+                    matplotlib.ticker.AutoMinorLocator(2)
+                )
+            ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(2))
+
+            plt.tight_layout()
+            plt.savefig("O-O_rdf.pdf")
             plt.close()
 
+            fig, axs = plt.subplots(
+                1, 1, sharex=False, sharey=False, figsize=(4.5, 4.5)
+            )
+            ax1 = axs
             plt.plot(avg_cdf[:, 0], avg_cdf[:, 1])
             plt.grid(alpha=0.25)
             plt.xlabel(r"$r$" + r" ($\mathrm{\AA}$)")
             plt.ylabel(r"$n(r)$")
             plt.title("O-O CDF")
-            plt.savefig("O-O_cdf.png")
+            # adjusting ticks
+
+            for ax in [ax1]:
+                ax.xaxis.set_minor_locator(
+                    matplotlib.ticker.AutoMinorLocator(2)
+                )
+            ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(2))
+            plt.tight_layout()
+            plt.savefig("O-O_cdf.pdf")
             plt.close()
 
         os.chdir("..")
