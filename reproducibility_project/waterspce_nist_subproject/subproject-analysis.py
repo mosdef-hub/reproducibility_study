@@ -35,7 +35,7 @@ class RahmanAnalysis(DefaultPBSEnvironment):
 
 
 mc_engines = ("gomc", "mcccs", "cassandra")
-md_engines = ("gromacs", "hoomd", "lammps-VU", "lammps-UD")
+md_engines = ("gromacs", "hoomd", "lammps-VU")  # , "lammps-UD")
 md_npt_props = [
     "potential_energy",
     "kinetic_energy",
@@ -49,17 +49,17 @@ mc_npt_props = [
     "pressure",
     "density",
 ]
-md_nvt_props = [
-    "potential_energy",
-    "kinetic_energy",
-    "temperature",
-    "density",
-]
-mc_nvt_props = [
-    "potential_energy",
-    "temperature",
-    "density",
-]
+# md_nvt_props = [
+#     "potential_energy",
+#     "kinetic_energy",
+#     "temperature",
+#     # "density",
+# ]
+# mc_nvt_props = [
+#     "potential_energy",
+#     "temperature",
+#     # "density",
+# ]
 
 
 # make a FlowGroup for all analysis operations, usually faster than the plotting methods
@@ -67,9 +67,9 @@ analysis = Project.make_group(name="analysis")
 
 
 def _aggregate_statistics(val, n):
-    avg = np.mean(avg_vals)
-    std = np.std(avg_vals)
-    sem = std / np.sqrt(num_replicas)
+    avg = np.mean(val)
+    std = np.std(val)
+    sem = std / np.sqrt(n)
     pass
 
 
@@ -165,10 +165,10 @@ def npt_ke_subsampled(job):
     return _is_prop_subsampled(job, ensemble="npt", prop="kinetic_energy")
 
 
-@Project.label
-def nvt_ke_subsampled(job):
-    """Check if kinetic energy has been subsampled."""
-    return _is_prop_subsampled(job, ensemble="nvt", prop="kinetic_energy")
+# @Project.label
+# def nvt_ke_subsampled(job):
+#     """Check if kinetic energy has been subsampled."""
+#     return _is_prop_subsampled(job, ensemble="nvt", prop="kinetic_energy")
 
 
 @Project.label
@@ -176,9 +176,8 @@ def npt_pe_subsampled(job):
     """Check if potential energy has been subsampled."""
     return _is_prop_subsampled(job, ensemble="npt", prop="potential_energy")
 
-
-@Project.label
-def nvt_pe_subsampled(job):
+    # @Project.label
+    # def nvt_pe_subsampled(job):
     """Check if potential energy has been subsampled."""
     return _is_prop_subsampled(job, ensemble="nvt", prop="potential_energy")
 
@@ -200,15 +199,13 @@ def npt_temp_subsampled(job):
     """Check if temperature has been subsampled."""
     return _is_prop_subsampled(job, ensemble="npt", prop="temperature")
 
-
-@Project.label
-def nvt_temp_subsampled(job):
+    # @Project.label
+    # def nvt_temp_subsampled(job):
     """Check if temperature has been subsampled."""
     return _is_prop_subsampled(job, ensemble="nvt", prop="temperature")
 
-
-@Project.label
-def nvt_volume_subsampled(job):
+    # @Project.label
+    # def nvt_volume_subsampled(job):
     """Check if volume has been subsampled."""
     return _is_prop_subsampled(job, ensemble="nvt", prop="volume")
 
@@ -218,9 +215,8 @@ def npt_prod_finished(job):
     """Generate label if npt production is complete."""
     return job.isfile("trajectory-npt.gsd") and job.isfile("log-npt.txt")
 
-
-@Project.label
-def nvt_prod_finished(job):
+    # @Project.label
+    # def nvt_prod_finished(job):
     """Generate label if nvt production is complete."""
     return job.isfile("trajectory-nvt.gsd") and job.isfile("log-nvt.txt")
 
@@ -234,9 +230,8 @@ def npt_rdf_calculated(job):
         and job.isfile("npt_rdf.txt")
     )
 
-
-@Project.label
-def nvt_rdf_calculated(job):
+    # @Project.label
+    # def nvt_rdf_calculated(job):
     """Generate label if nvt rdf calc is complete."""
     return (
         job.isfile("trajectory-nvt.gsd")
@@ -299,7 +294,8 @@ def create_property_sampling(
 
 
 # generate md sampling methods
-for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+# for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+for ensemble, props in zip(["npt"], [md_npt_props]):
     for prop in props:
         create_property_sampling(
             ensemble=ensemble,
@@ -309,7 +305,8 @@ for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
         )
 
 # generate mc sampling methods
-for ensemble, props in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+# for ensemble, props in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+for ensemble, props in zip(["npt"], [mc_npt_props]):
     for prop in props:
         create_property_sampling(
             ensemble=ensemble,
@@ -348,7 +345,8 @@ def create_largest_t0_operations(
 
 
 # md operations
-for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [md_npt_props]):
     create_largest_t0_operations(
         ensemble=ensemble,
         prop_list=prop_list,
@@ -357,7 +355,8 @@ for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
     )
 
 # mc operations
-for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [mc_npt_props]):
     create_largest_t0_operations(
         ensemble=ensemble,
         prop_list=prop_list,
@@ -406,7 +405,8 @@ def create_write_subsampled_max_t0(
 
 
 # md operations
-for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [md_npt_props]):
     create_write_subsampled_max_t0(
         ensemble=ensemble,
         prop_list=prop_list,
@@ -416,7 +416,8 @@ for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
     )
 
 # mc operations
-for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [mc_npt_props]):
     create_write_subsampled_max_t0(
         ensemble=ensemble,
         prop_list=prop_list,
@@ -446,7 +447,8 @@ def create_calc_prop_statistics(
 
 
 # generate md property statistics methods
-for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+# for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [md_npt_props]):
     for prop in props:
         create_calc_prop_statistics(
             ensemble=ensemble,
@@ -457,7 +459,8 @@ for ensemble, props in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
 
 
 # generate mc property statistics methods
-for ensemble, props in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+# for ensemble, props in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [mc_npt_props]):
     for prop in props:
         create_calc_prop_statistics(
             ensemble=ensemble,
@@ -480,6 +483,7 @@ def create_calc_aggregate_statistics(
             "ensemble",
             "engine",
             "molecule",
+            "forcefield_name",
             "temperature",
             "pressure",
             "cutoff_style",
@@ -511,6 +515,7 @@ def create_calc_aggregate_statistics(
         agg_project = signac.get_project(
             root=pathlib.Path("./aggregate_summary/").absolute()
         )
+        print(len(jobs))
         assert (
             len(jobs) == 16
         ), "Not all 16 replicates have their property averaged."
@@ -521,7 +526,11 @@ def create_calc_aggregate_statistics(
         sem = std / np.sqrt(num_replicas)
         a_job = jobs[0]
         job_sp = copy(a_job.sp._to_base())  # convert from syncedDict->dict
-        _ = job_sp.pop("replica")
+
+        # Discard unnesscary properties
+        discarded_replica = job_sp.pop("replica")
+        discarded_mass = job_sp.pop("mass")
+
         agg_job = agg_project.open_job(statepoint=job_sp)
         agg_job.doc[f"{prop}-avg"] = avg
         agg_job.doc[f"{prop}-std"] = std
@@ -533,7 +542,8 @@ def create_calc_aggregate_statistics(
 
 
 # generate md aggreagate values
-for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [md_npt_props]):
     for prop in prop_list:
         create_calc_aggregate_statistics(
             ensemble=ensemble,
@@ -542,7 +552,8 @@ for ensemble, prop_list in zip(["npt", "nvt"], [md_npt_props, md_nvt_props]):
         )
 
 # generate mc aggreagate values
-for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+# for ensemble, prop_list in zip(["npt", "nvt"], [mc_npt_props, mc_nvt_props]):
+for ensemble, prop_list in zip(["npt"], [mc_npt_props]):
     for prop in prop_list:
         create_calc_aggregate_statistics(
             ensemble=ensemble,
