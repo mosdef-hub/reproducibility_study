@@ -344,7 +344,7 @@ def sample_npt_properties(job):
         )
         get_subsampled_values(
             job,
-            property=poi[prop],
+            prop=poi[prop],
             property_filename="log-npt.txt",
             ensemble="npt",
         )
@@ -399,7 +399,7 @@ def sample_nvt_properties(job):
         )
         get_subsampled_values(
             job,
-            property=poi[prop],
+            prop=poi[prop],
             property_filename="log-nvt.txt",
             ensemble="nvt",
         )

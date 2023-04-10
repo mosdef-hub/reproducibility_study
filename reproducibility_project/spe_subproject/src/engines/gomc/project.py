@@ -6,8 +6,6 @@ import subprocess
 
 import flow
 import matplotlib.pyplot as plt
-
-# from flow.environment import StandardEnvironment
 import mbuild as mb
 import mbuild.formats.charmm_writer as mf_charmm
 import mbuild.formats.gomc_conf_writer as gomc_control
@@ -17,7 +15,7 @@ import pymbar
 import signac
 import unyt as u
 from flow import FlowProject
-from flow.environment import DefaultSlurmEnvironment
+from flow.environment import DefaultSlurmEnvironment, StandardEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.molecules.system_builder import (
@@ -842,10 +840,10 @@ def run_production_energy_analysis(job):
         out_gomc = fp.readlines()
         for i, line in enumerate(out_gomc):
             split_line = line.split()
-            if len(split_line) == 13:
+            if len(split_line) == 15:
                 if split_line[0] == "ENER_0:" and int(split_line[1]) == 0:
                     # energies in K units
-                    total_energy = None
+                    total_energy = float(split_line[2])
                     potential_energy = float(split_line[2])
                     #  tail_energy = LRC
                     tail_energy = float(split_line[6])

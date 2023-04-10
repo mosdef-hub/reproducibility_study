@@ -30,9 +30,9 @@ simulation_engines = [
     "gromacs",
     "hoomd",
     "lammps-VU",
-    "lammps-UD",
+    #    "lammps-UD",
 ]
-md_engines = ["gromacs", "hoomd", "lammps-VU", "lammps-UD"]
+md_engines = ["gromacs", "hoomd", "lammps-VU"]  # , "lammps-UD"]
 mc_engines = ["cassandra", "mcccs", "gomc"]
 forcefields = {}
 r_cuts = {}
@@ -52,14 +52,14 @@ for key in molecules:
         forcefields[key] = "oplsaa"
         r_cuts[key] = 10 * u.angstrom
 g_per_cm3 = u.g / (u.cm * u.cm * u.cm)
-masses = {
-    "methaneUA": [16.04] * u.amu,
-    "pentaneUA-flexible_bonds": [72.15] * u.amu,
-    "pentaneUA-constrain_bonds": [72.15] * u.amu,
-    "benzeneUA": [78.1118] * u.amu,
-    "waterSPCE": [18.0153] * u.amu,
-    "ethanolAA": [46.0684] * u.amu,
-}
+# masses = {
+#     "methaneUA": [16.04] * u.amu,
+#     "pentaneUA-flexible_bonds": [72.15] * u.amu,
+#     "pentaneUA-constrain_bonds": [72.15] * u.amu,
+#     "benzeneUA": [78.1118] * u.amu,
+#     "waterSPCE": [18.0153] * u.amu,
+#     "ethanolAA": [46.0684] * u.amu,
+# }
 init_density_liq = {
     "methaneUA": [0.3752] * g_per_cm3,
     "pentaneUA-flexible_bonds": [0.5390] * g_per_cm3,
@@ -156,7 +156,7 @@ for molecule in molecules:
         n_vap,
         vap_box_L,
         (init_liq_den, init_vap_den),
-        mass,
+        # mass,
         lrc,
         cutoff_style,
     ) in itertools.product(
@@ -168,7 +168,7 @@ for molecule in molecules:
         N_vap_molecules[molecule],
         vap_box_lengths[molecule],
         zip(init_density_liq[molecule], init_density_vap[molecule]),
-        masses[molecule],
+        # masses[molecule],
         long_range_correction,
         cutoff_styles,
     ):
@@ -205,10 +205,10 @@ for molecule in molecules:
             ).item()
             if init_vap_den
             else None,
-            "mass": np.round(
-                mass.to_value("amu"),
-                decimals=3,
-            ).item(),
+            # "mass": np.round(
+            #     mass.to_value("amu"),
+            #     decimals=3,
+            # ).item(),
             "forcefield_name": forcefields[molecule],
             "cutoff_style": cutoff_style,
             "long_range_correction": lrc,

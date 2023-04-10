@@ -151,7 +151,7 @@ def FormatTextFile(job):
 
 
 def add_shake(filename, ln):
-    """Add shake."""
+    """Add SHAKE calc to input file."""
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "fix fix_shake all shake 0.00001 20 1000 b 1 a 1\n"
@@ -161,7 +161,7 @@ def add_shake(filename, ln):
 
 
 def add_14coul(filename, ln):
-    """Add 14 coul."""
+    """Add 14coul to input file."""
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "special_bonds lj/coul 0 0 0.5\n"
@@ -171,7 +171,7 @@ def add_14coul(filename, ln):
 
 
 def add_pppm(filename, ln):
-    """Add pppm."""
+    """Add PPPM to input file."""
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[ln] = "kspace_style pppm 0.00001\n"
@@ -181,7 +181,7 @@ def add_pppm(filename, ln):
 
 
 def remove_shake(filename):
-    """Remove shake."""
+    """Remove SHAKE from input file."""
     with open(filename, "r") as f:
         lines = f.readlines()
         lines[27] = "\n"

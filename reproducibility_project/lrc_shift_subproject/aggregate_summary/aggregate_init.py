@@ -85,8 +85,8 @@ ensembles = {
 }
 
 
-pr_root = os.path.join(os.getcwd(), "src")
-pr = signac.get_project(pr_root)
+# pr_root = os.path.join(os.getcwd(), "src")
+pr = signac.get_project(".")
 
 # ignore statepoints that are not being tested (gemc only for methane, pentane)
 # filter the list of dictionaries
