@@ -6,8 +6,9 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=10g
 module purge
-conda --version
-source /home/rs/anaconda3/etc/profile.d/conda.sh
+module load conda
+#conda --version
+#source /home/rs/anaconda3/etc/profile.d/conda.sh
 conda activate mosdef-study38
 date >> execution.log
 
