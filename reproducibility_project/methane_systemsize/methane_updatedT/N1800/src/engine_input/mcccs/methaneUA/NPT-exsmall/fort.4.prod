@@ -1,0 +1,190 @@
+
+ &mc_shared
+     seed=   SEED
+     nbox=           1
+     nmolty=         1
+     nchain=   NCHAIN
+     nstep=   15000
+     lstop=          F
+     iratio=   50000000
+     rmin=      1
+     softcut=        100.00
+     linit=          F
+     lreadq=         F
+ /
+
+
+ &analysis
+     iprint=         1000
+     imv=            10
+     iblock=         10
+     iratp=          5
+ /
+
+
+ &external_field
+     Elect_field=  0.0
+ /
+
+
+ &mc_volume
+     tavol=    0.50
+     iratv=   50000000
+     pmvlmt=   1.0
+     nvolb=    1
+     pmvolb=   1.00
+     box5=     1
+     box6=     2
+     pmvol=    0.00444
+     rmvolume= 1.00000000000E-003
+ /
+
+
+ &mc_swatch
+     pmswat=    0.0
+     nswaty=           1
+     pmsatc=   1.0
+ /
+
+
+ &mc_swap
+     pmswap=   0.0
+     pmswmt=   1
+ /
+
+
+ &mc_cbmc
+     rcutin=   5.00000000000000
+     pmcb=     0
+     pmcbmt=   0.0
+     pmall=    0.0
+     nchoi1=   16
+     nchoi=    16
+     nchoir=   16
+     nchoih=   1
+     nchtor=   100
+     nchbna=   1000
+     nchbnb=   1000
+     icbdir=   0
+     icbsta=   0
+     rbsmax=   3.50000000000000
+     rbsmin=   2.50000000000000
+     avbmc_version=           0
+     pmbias=   0.0
+     pmbsmt=   0.0
+     pmbias2=  0.0
+     pmfix=    0.0
+     lrig=     F
+     lpresim=  F
+     iupdatefix=         100
+ /
+
+
+ &mc_ee
+     pmexpc=   0.0
+     pmeemt=   1.0
+     pmexpc1=  0.0
+     lexpand=  F
+ /
+
+
+ &mc_simple
+     armtra= 1.000000000000000E-002
+     rmtra=  0.30
+     rmrot=  0.40
+     tatra=  0.50
+     tarot=  0.40
+     pmtra=   1
+     pmtrmt= 1.0
+     pmromt=  1.0
+ /
+
+
+ &mc_flucq
+     taflcq=   0.95
+     fqtemp=   5.00
+     rmflucq=  0.10
+     pmflcq=   0.00
+     pmfqmt=   1.0
+     lflucq=   F
+     lqtrans=  F
+     fqegp=    0.0
+     nchoiq=   1
+ /
+
+
+SIMULATION_BOX
+! boxlx  boxly  boxlz  rcut    kalp   rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure (MPa)
+LENGTH LENGTH LENGTH  RCUT  0.250  0.000  3                      F      F     F      F      TEMPERATURE    PRESSURE
+! nchain_1 ... nchain_nmolty ghost_particles
+NCHAIN       0       0                0
+
+! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
+ 3      3   3   0      0      0.0    4.0  F            0.0
+END SIMULATION_BOX
+
+MOLECULE_TYPE
+!----------------------------------Moltyp  1 (C1)----------------------------------
+!    nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lsetup lq14scale qscale iurot isolute
+PEC1 1     1      1       1       0       0     F      F     F      F       F      F         0.5     0    10000000
+! unit ntype leaderq
+1    4     1
+! stretching
+0
+! bending
+0
+! torsion
+0
+END MOLECULE_TYPE
+
+
+MC_SWATCH
+! moltyp1<->moltyp2 nsampos 2xncut
+2 3 1 1 1
+! gswatc 2x(ifrom, iprev)
+1 0 1 0
+! splist
+1 1
+! nswtcb pmswtcb
+1  1.00
+! box numbers
+1 2
+END MC_SWATCH
+
+
+MC_SWAP
+! nswapb pmswapb
+1  1.00
+! box1 box2
+1 2
+END MC_SWAP
+
+
+SAFE_CBMC
+END SAFE_CBMC
+
+
+INTERMOLECULAR_EXCLUSION
+! mol_1 bead_1 mol_2 bead_2
+END INTERMOLECULAR_EXCLUSION
+
+
+INTRAMOLECULAR_SPECIAL
+! inclmol inclbead_1 inclbead_2 inclsign ofscale ofscale2
+END INTRAMOLECULAR_SPECIAL
+
+
+INTRAMOLECULAR_OH15
+! ainclmol ainclbead_1 ainclbead_2 a15type
+END INTRAMOLECULAR_OH15
+
+UNIFORM_BIASING_POTENTIALS
+! for each molecule type, give nbox values
+0
+END UNIFORM_BIASING_POTENTIALS
+
+SPECIFIC_ATOM_TRANSL
+! How many atoms should we be performing translations on?
+! What is the index of those atoms in their respective molecules?
+! What is the molecule type for each atom?
+END SPECIFIC_ATOM_TRANSL

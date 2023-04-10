@@ -118,7 +118,7 @@ def main():
                 output_string = ""
 
                 print(output_string)
-                energies = 0.00831441001625545 * np.array(
+                energies = 0.008314462618 * np.array(
                     [
                         [
                             csv_pe,
