@@ -1,4 +1,4 @@
-Program started at 2022-02-22 13:52:34.059
+Program started at 2023-04-10 10:15:50.904
 Number of processors: 1
 Threads per processor: 1
 
@@ -451,4 +451,4 @@ number of chains of type    1 L1             400
 
  type  box       vinter       vintra         vtor        vbend        vtail
     1    1      0.00000      0.00000      0.00000      0.00000      0.00000
- Program ended at 2022-02-22 13:52:34.487
+ Program ended at 2023-04-10 10:15:51.323
