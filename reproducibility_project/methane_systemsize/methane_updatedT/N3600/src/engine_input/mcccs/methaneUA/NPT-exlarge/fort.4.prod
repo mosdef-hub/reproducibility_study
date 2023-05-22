@@ -16,7 +16,7 @@
 
  &analysis
      iprint=         1000
-     imv=            10
+     imv=            1000
      iblock=         10
      iratp=          5
  /

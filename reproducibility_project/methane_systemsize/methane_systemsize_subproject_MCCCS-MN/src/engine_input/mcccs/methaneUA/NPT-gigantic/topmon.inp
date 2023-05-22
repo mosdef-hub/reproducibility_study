@@ -58,7 +58,7 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-  4 1   148.00283  3.73000  0.0000  16.043000  _CH4   #Tr-UA CH4
+  4 1   148.0018969973220  3.73000  0.0000  16.043000  _CH4   #Tr-UA CH4
 END ATOMS
 
 NONBOND
