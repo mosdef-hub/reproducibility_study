@@ -1,0 +1,3 @@
+project = lammps_small_dt
+workspace_dir = workspace
+schema_version = 1

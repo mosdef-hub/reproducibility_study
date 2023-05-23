@@ -23,6 +23,7 @@ def main():
         pressure,
         cutoff_style,
         long_range_correction,
+        engine,
     ), group in project.groupby(
         (
             "molecule",
@@ -31,11 +32,12 @@ def main():
             "pressure",
             "cutoff_style",
             "long_range_correction",
+            "engine",
         )
     ):
         print("-----------------------------------------------------")
 
-        if molecule == "ethanolAA":  #  and ensemble == "NPT":
+        if molecule == "ethanolAA" and engine == "hoomd":
             print(
                 molecule,
                 ensemble,
@@ -43,6 +45,7 @@ def main():
                 pressure,
                 cutoff_style,
                 long_range_correction,
+                engine,
             )
 
             for job in group:

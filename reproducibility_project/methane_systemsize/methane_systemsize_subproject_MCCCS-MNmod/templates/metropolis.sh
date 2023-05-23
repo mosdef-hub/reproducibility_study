@@ -9,7 +9,7 @@ module purge
 module load anaconda
 conda --version
 #source /home/rs/anaconda3/etc/profile.d/conda.sh
-conda activate mosdef-study38
+source activate mosdef-study38
 date >> execution.log
 
 {% if partition %}
