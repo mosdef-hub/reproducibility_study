@@ -10,7 +10,7 @@ dependencies:
   - freud=2.6.2
   - gmso
   - gromacs=2020.6
-  - gsd<2.9.0
+  - gsd=2.6.0
   - h5py
   - jupyter
   - jinja2
