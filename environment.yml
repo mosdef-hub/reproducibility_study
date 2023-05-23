@@ -10,7 +10,7 @@ dependencies:
   - freud=2.6.2
   - gmso
   - gromacs=2020.6
-  - gsd
+  - gsd=2.6.0
   - h5py
   - jupyter
   - jinja2
@@ -29,7 +29,7 @@ dependencies:
   - pytest
   - python=3.8
   - rdkit
-  - scipy
+  - scipy=1.9.0
   - seaborn
   - signac=1.7.0
   - signac-dashboard
