@@ -1,4 +1,4 @@
-"""Script for finding the job ids of specific simulations."""
+"""Script for deleting certain files in a state point folder."""
 # It also parses the gsd format trajectory stored in each output analysis folder (obtained by executing conv_traj.py before this script) to get the RDFs."""
 import os
 import shutil
@@ -49,7 +49,15 @@ def main():
             )
 
             for job in group:
-                print(job.sp.replica, job)
+                os.chdir(job.workspace())
+                # print(os.listdir())
+                os.system("cat sig*state*json")
+                # os.system("cat sig*state*json")
+                os.system("rm -rf *")
+
+                # if job.doc.prod_replicates_done > 0:
+                #    job.doc.prod_replicates_done = 0
+                # print(os.listdir())
 
 
 if __name__ == "__main__":

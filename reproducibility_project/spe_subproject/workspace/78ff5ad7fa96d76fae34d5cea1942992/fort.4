@@ -1,13 +1,13 @@
 
  &mc_shared
-     seed=           SEED
+     seed=           0
      nbox=           1
      nmolty=           1
-     nchain=        NCHAIN
-     nstep=         40000
+     nchain=           400
+     nstep=         0
      lstop= F
-     iratio=          500
-     rmin=   1.00000000000000
+     iratio=         500
+     rmin=   1
      softcut=   100.000000000000
      linit= F
      lreadq= F
@@ -15,15 +15,15 @@
 
 
  &analysis
-     iprint=         2500
-     imv=            1000
-     iblock=         1000
+     iprint=          50
+     imv=        1000
+     iblock=          1000
      iratp=           500
-     idiele=       10000
-     iheatcapacity=        5000
-     ianalyze=      1000
+     idiele=      100000
+     iheatcapacity=     1000000
+     ianalyze=      100000
      nbin=         250
-     lrdf= F
+     lrdf= T
      lintra= F
      lstretch= F
      lgvst= F
@@ -45,43 +45,43 @@
 
 
  &mc_volume
-     tavol=  0.5
-     iratv=  500
+     tavol=  0.500000000000000
+     iratv=         500
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
      box5=           1
      box6=           2
-     pmvol=  0.001
+     pmvol=  0.00
      pmvolx=  0.000000000000000E+000
      pmvoly=  0.000000000000000E+000
-     rmvolume=  1.000000000000000E-003
+     rmvolume=  1.000000000000000E+003
  /
 
 
  &mc_swatch
-     pmswat=  0.0
+     pmswat=  0.000000000000000E+000
      nswaty=           1
      pmsatc=   1.00000000000000
  /
 
 
  &mc_swap
-     pmswap=  0.0
+     pmswap=  0.000000000000000E+000
      pmswmt=   1.00000000000000
  /
 
 
  &mc_cbmc
      rcutin=   5.00000000000000
-     pmcb=  0.000
+     pmcb=  0.0000000000000
      pmcbmt=   1.00000000000000
      pmall=  0.000000000000000E+000
-     nchoi1=          16
-     nchoi=           8
-     nchoir=          8
+     nchoi1=          12
+     nchoi=           10
+     nchoir=          50
      nchoih=           1
-     nchtor=         100
+     nchtor=         50
      nchbna=        1000
      nchbnb=        1000
      icbdir=           0
@@ -95,7 +95,7 @@
      pmfix=  0.000000000000000E+000
      lrig= F
      lpresim= F
-     iupdatefix=         100
+     iupdatefix=          10
  /
 
 
@@ -108,12 +108,13 @@
 
 
  &mc_simple
+     pm_atom_tra= 0.05
      armtra=  1.000000000000000E-002
      rmtra=  0.300000000000000
      rmrot=  0.400000000000000
-     tatra=  0.5
-     tarot=  0.5
-     pmtra=  0.5
+     tatra=  0.500000000000000
+     tarot=  0.500000000000000
+     pmtra=  0.4950000000000000
      pmtrmt=   1.00000000000000
      pmromt=   1.00000000000000
  /
@@ -134,53 +135,105 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH LENGTH LENGTH RCUT  0.4  0.000 3  F  F  F  F  TEMPERATURE     PRESSURE
+  42.169999999999995   42.169999999999995   42.169999999999995 14.0  0.250  0.000 3  F  F  F  F 450.0     2.26
 ! nchain_1 ... nchain_nmolty ghost_particles
-NCHAIN 0
+400 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
-14 14 14 0 0  0.0  1.889 F 0.0
+10 10 2 10 0 10.0  2.000 F 0.0
 END SIMULATION_BOX
 
-
 MOLECULE_TYPE
-! nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lsetup lq14scale qscale iurot isolute
-3 3 3 3 3 3  T  F  T  T  F  F 0.0 0 100000
-! n, growpoint_1 ... growpoint_n
-0
+!molecname nunit nugrow ncarbon maxcbmc maxgrow iring lelect lring lrigid lbranch lsetup lq14scale qscale iurot isolute
+L1 6 6 6 6 6 6  F  F  F  F  F  F 1.0 0 100000
 ! unit ntype leaderq
-1 117 1
+1 1002 1
 ! stretching
 2
-2 19
-3 19
+2 2001
+6 2001
 ! bending
-0
+2
+2 3 3001
+6 5 3001
 ! torsion
-0
+2
+2 3 4 4001
+6 5 4 4001
 ! unit ntype leaderq
-2 118 2
+2 1002 2
 ! stretching
-1
-1 19
+2
+1 2001
+3 2001
 ! bending
-0
+2
+3 4 3001
+1 6 3001
 ! torsion
-0
+2
+3 4 5 4001
+1 6 5 4001
 ! unit ntype leaderq
-3 118 3
+3 1002 3
 ! stretching
-1
-1 19
+2
+2 2001
+4 2001
 ! bending
-0
+2
+4 5 3001
+2 1 3001
 ! torsion
-0
+2
+4 5 6 4001
+2 1 6 4001
+! unit ntype leaderq
+4 1002 4
+! stretching
+2
+3 2001
+5 2001
+! bending
+2
+5 6 3001
+3 2 3001
+! torsion
+2
+5 6 1 4001
+3 2 1 4001
+! unit ntype leaderq
+5 1002 5
+! stretching
+2
+4 2001
+6 2001
+! bending
+2
+6 1 3001
+4 3 3001
+! torsion
+2
+6 1 2 4001
+4 3 2 4001
+! unit ntype leaderq
+6 1002 6
+! stretching
+2
+5 2001
+1 2001
+! bending
+2
+1 2 3001
+5 4 3001
+! torsion
+2
+1 2 3 4001
+5 4 3 4001
 END MOLECULE_TYPE
-
 
 MC_SWATCH
 ! moltyp1<->moltyp2 nsampos 2xncut
-2 3 1 1 1
+1 2 1 1 1
 ! gswatc 2x(ifrom, iprev)
 1 0 1 0
 ! splist
@@ -226,6 +279,9 @@ END UNIFORM_BIASING_POTENTIALS
 
 SPECIFIC_ATOM_TRANSL
 ! How many atoms should we be performing translations on?
+6
 ! What is the index of those atoms in their respective molecules?
+1 1 1 1 1 1
 ! What is the molecule type for each atom?
+1 1 1 1 1 1
 END SPECIFIC_ATOM_TRANSL

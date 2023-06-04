@@ -26,7 +26,7 @@
      lchgall= F
      lewald= T
      lcutcm= T
-     ltailc= F
+     ltailc= T
      lshift= F
      ldual= T
      L_Coul_CBMC= T
@@ -39,7 +39,7 @@
      lelect_field= F
      lgaro= F
      lionic= F
-     L_Ewald_Auto= F
+     L_Ewald_Auto= T
      lmixlb= T
      lmixjo= F
      L_spline= F
@@ -52,8 +52,8 @@
 
 ATOMS
 !i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
-117 1   78.19743  3.165558  -0.8476  15.999430    O   #SPCE O water
-118 1    0.0000  0.00000  0.4238   1.007947     H   #SPCE H water
+117 1   78.20081  3.16557  -0.8476  15.9994000 O   #SPCE O water
+118 1    0.0000  0.00000  0.4238   1.0079400 H   #SPCE H water
 END ATOMS
 
 NONBOND

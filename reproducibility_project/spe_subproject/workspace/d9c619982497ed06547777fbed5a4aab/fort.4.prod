@@ -1,12 +1,12 @@
 
  &mc_shared
-     seed=           SEED
+     seed=           0
      nbox=           1
      nmolty=           1
-     nchain=        NCHAIN
-     nstep=         40000
+     nchain=        1100
+     nstep=         30000
      lstop= F
-     iratio=          500
+     iratio=          5000000
      rmin=   1.00000000000000
      softcut=   100.000000000000
      linit= F
@@ -16,9 +16,9 @@
 
  &analysis
      iprint=         2500
-     imv=            1000
+     imv=            10
      iblock=         1000
-     iratp=           500
+     iratp=           5
      idiele=       10000
      iheatcapacity=        5000
      ianalyze=      1000
@@ -46,7 +46,7 @@
 
  &mc_volume
      tavol=  0.5
-     iratv=  500
+     iratv=  50000000
      pmvlmt=   1.00000000000000
      nvolb=           1
      pmvolb=   1.00000000000000
@@ -134,9 +134,9 @@
 
 SIMULATION_BOX
 ! boxlx boxly boxlz rcut kalp rcutnn numDimensionIsIstropic lsolid lrect lideal ltwice temperature pressure
-  LENGTH LENGTH LENGTH RCUT  0.4  0.000 3  F  F  F  F  TEMPERATURE     PRESSURE
+  32.07 32.07 32.07 9.0  0.320  0.000 3  F  F  F  F  300.0     0.101325
 ! nchain_1 ... nchain_nmolty ghost_particles
-NCHAIN 0
+1100 0
 ! inix iniy iniz inirot inimix zshift dshift use_linkcell rintramax
 14 14 14 0 0  0.0  1.889 F 0.0
 END SIMULATION_BOX
