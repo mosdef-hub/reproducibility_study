@@ -1,4 +1,4 @@
-Program started at 2023-04-10 10:15:50.832
+Program started at 2023-06-04 13:25:58.889
 Number of processors: 1
 Threads per processor: 1
 
@@ -377,4 +377,4 @@ number of chains of type    1 PEC1           900
 
  type  box       vinter       vintra         vtor        vbend        vtail
     1    1      0.00000      0.00000      0.00000      0.00000      0.00000
- Program ended at 2023-04-10 10:15:50.999
+ Program ended at 2023-06-04 13:25:59.058

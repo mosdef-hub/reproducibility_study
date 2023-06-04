@@ -1,0 +1,2 @@
+# potential_energy 	 tot_vdw_energy 	 tail_energy 	 tot_electrostatics 	 short_range_electrostatics 	 long_range_electrostatics 	 tot_pair_energy 	 bonds_energy 	 angles_energy 	 dihedrals_energy 	 tot_bonded_energy 	 intramolecular_energy 	 intermolecular_energy
+5.377377927811132977e+05	5.377377927810472902e+05	-1.811079101130398499e+02	0.000000000000000000e+00	nan	nan	5.377377927810472902e+05	0.000000000000000000e+00	6.262987838449454568e-08	2.921697354555153285e-09	6.555157573904970351e-08	nan	nan

@@ -1,0 +1,75 @@
+
+ &io
+     io_output=           2
+     run_num=           1
+     suffix=a
+     L_movie_xyz= T
+     L_movie_pdb = T
+ /
+
+
+ &system
+     lnpt= T
+     lgibbs= F
+     lgrand= F
+     lanes= F
+     lvirial= F
+     lmipsw= F
+     lexpee= F
+     ldielect= F
+     lpbc= T
+     lpbcx= T
+     lpbcy= T
+     lpbcz= T
+     lfold= T
+     lijall= F
+     lchgall= F
+     lewald= T
+     lcutcm= T
+     ltailc= F
+     lshift= F
+     ldual= T
+     L_Coul_CBMC= T
+     lneigh= F
+     lexzeo= F
+     lslit= F
+     lgraphite= F
+     lsami= F
+     lmuir= F
+     lelect_field= F
+     lgaro= F
+     lionic= F
+     L_Ewald_Auto= T
+     lmixlb= T
+     lmixjo= F
+     L_spline= F
+     L_linear= F
+     L_vib_table= F
+     L_bend_table= F
+     L_elect_table= F
+ /
+
+
+ATOMS
+!i type(i) epsi(i) sigi(i) q(i) mass(i) chemid(i) chname(i) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+117 1   78.20081  3.16557  -0.8476  15.9994000 O   #SPCE O water
+118 1    0.0000  0.00000  0.4238   1.0079400 H   #SPCE H water
+END ATOMS
+
+NONBOND
+!i j type(ij) epsi(ij) sigi(ij) [Angstrom, Kelvin, a.u.]; type 1: Lennard-Jones
+END NONBOND
+
+BONDS
+!i type(i) brvib(i) brvibk(i) [Angstrom]; type 1: U = brvibk * ( r_ij - brvib ) ^ 2
+ 19 1 1.000   0.00000
+END BONDS
+
+ANGLES
+!i type(i) brben(i) brbenk(i) [degree]; type 1: U = brbenk * ( theta_ijk - brben ) ^ 2 [radian]
+ 10 1 109.4700 0
+END ANGLES
+
+DIHEDRALS
+!i type(i) vtt0(i) vtt1(i) vtt2(i) vtt3(i); !!!check vtorso.f, calctor.f!!!
+END DIHEDRALS
