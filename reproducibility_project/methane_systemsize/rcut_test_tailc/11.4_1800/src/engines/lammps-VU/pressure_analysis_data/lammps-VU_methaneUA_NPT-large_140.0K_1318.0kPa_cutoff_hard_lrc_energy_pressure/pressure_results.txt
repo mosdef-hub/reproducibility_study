@@ -1,0 +1,1 @@
+The average pressure is 1332.4624046708266 kPa with SEM 7.318637531251015 from 256 samples
