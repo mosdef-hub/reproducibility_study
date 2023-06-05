@@ -423,7 +423,11 @@ def run_hoomd(job, method, restart=False):
         )
     else:
         # shrink and nvt both use nvt
-        integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
+        integrator_method = hoomd.md.methods.ConstantVolume(
+            filter=_all,
+            thermostat=hoomd.md.methods.thermostats.Buss(kT),
+            tau=tau,
+        )
 
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
