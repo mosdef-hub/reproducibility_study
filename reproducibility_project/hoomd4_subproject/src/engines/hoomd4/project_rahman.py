@@ -426,7 +426,6 @@ def run_hoomd(job, method, restart=False):
         integrator_method = hoomd.md.methods.ConstantVolume(
             filter=_all,
             thermostat=hoomd.md.methods.thermostats.Bussi(kT),
-            tau=tau,
         )
 
     integrator.methods = [integrator_method]
