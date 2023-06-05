@@ -425,7 +425,7 @@ def run_hoomd(job, method, restart=False):
         # shrink and nvt both use nvt
         integrator_method = hoomd.md.methods.ConstantVolume(
             filter=_all,
-            thermostat=hoomd.md.methods.thermostats.Buss(kT),
+            thermostat=hoomd.md.methods.thermostats.Bussi(kT),
             tau=tau,
         )
 
