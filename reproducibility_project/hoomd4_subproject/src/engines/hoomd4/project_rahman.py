@@ -365,7 +365,7 @@ def run_hoomd(job, method, restart=False):
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode=f"{writemode}b",
-        dynamic=["momentum"],
+        dynamic=["property", "momentum"],
     )
     sim.operations.writers.append(gsd_writer)
 
