@@ -75,6 +75,7 @@ def run_shrink(job):
     run_hoomd(job, "shrink")
 
 
+'''
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
@@ -82,6 +83,7 @@ def run_shrink(job):
 def run_nvt(job):
     """Run an NVT simulation with HOOMD-blue."""
     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
+'''
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
@@ -102,6 +104,7 @@ def check_equilibration_npt(job):
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
+'''
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("nvt_finished"))
@@ -109,11 +112,12 @@ def check_equilibration_npt(job):
 def check_equilibration_nvt(job):
     """Check the equilibration of the NVT simulation."""
     job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
+'''
 
 
 @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("nvt_eq"))
+@Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
 def post_process(job):
     """Run post-processing on the log files."""
@@ -122,7 +126,7 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
-    for logfile in [job.fn("log-npt.txt"), job.fn("log-nvt.txt")]:
+    for logfile in [job.fn("log-npt.txt")]:
         # Make a copy, just in case
         backup = f"{logfile}.bkup"
         if not os.path.exists(backup):
