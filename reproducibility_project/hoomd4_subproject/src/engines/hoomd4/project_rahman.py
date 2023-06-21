@@ -67,38 +67,37 @@ class RahmanHOOMD(DefaultSlurmEnvironment):
 # The MOSDEF_PYTHON environment variable is set by running
 # echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
 # with the mosdef-study38 conda env active
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(lambda j: j.doc.get("shrink_finished"))
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 def run_shrink(job):
     """Initialize volume for simulation with HOOMD-blue."""
     run_hoomd(job, "shrink")
 
 
 '''
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("nvt_finished"))
+@Project.operation(directives{"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 def run_nvt(job):
     """Run an NVT simulation with HOOMD-blue."""
     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 '''
 
-
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 def run_npt(job):
     """Run an NPT simulation with HOOMD-blue."""
     run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_finished"))
 @Project.post(lambda j: j.doc.get("npt_eq"))
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 def check_equilibration_npt(job):
     """Check the equilibration of the NPT simulation."""
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
@@ -115,10 +114,10 @@ def check_equilibration_nvt(job):
 '''
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 def post_process(job):
     """Run post-processing on the log files."""
     from shutil import copy
