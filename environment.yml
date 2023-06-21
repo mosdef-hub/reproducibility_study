@@ -7,9 +7,8 @@ dependencies:
   - constrainmol
   - ele
   - foyer=0.11.2
-  - freud=2.6.2
+  - freud
   - gmso
-  - gromacs=2020.6
   - gsd=2.6.0
   - h5py
   - jupyter
@@ -18,7 +17,6 @@ dependencies:
   - matplotlib
   - mbuild=0.15.1
   - mdtraj
-  - mosdef_cassandra
   - numpy
   - openmm>=7.6
   - packmol>=18
@@ -31,7 +29,7 @@ dependencies:
   - rdkit
   - scipy=1.9.0
   - seaborn
-  - signac=1.7.0
+  - signac
   - signac-dashboard
-  - signac-flow=0.20.0
+  - signac-flow
   - unyt
