@@ -425,16 +425,10 @@ def run_hoomd(job, method, restart=False):
             tauS=tauS,
             couple="xyz",
         )
-    elif method == "nvt":
+    else:
         integrator_method = hoomd.md.methods.ConstantVolume(
             filter=_all,
             thermostat=hoomd.md.methods.thermostats.Bussi(kT),
-        )
-    elif method == "shrink":
-        # Shrink will use MTTK
-        integrator_method = hoomd.md.methods.ConstantVolume(
-            filter=_all,
-            thermostat=hoomd.md.methods.thermostats.MTTK(kT, tau),
         )
 
     integrator.methods = [integrator_method]
