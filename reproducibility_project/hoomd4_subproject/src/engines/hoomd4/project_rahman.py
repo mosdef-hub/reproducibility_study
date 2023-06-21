@@ -85,6 +85,7 @@ def run_nvt(job):
     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 '''
 
+
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
