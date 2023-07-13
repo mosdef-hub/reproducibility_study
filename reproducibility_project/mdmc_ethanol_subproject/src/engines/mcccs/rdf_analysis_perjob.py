@@ -55,6 +55,7 @@ def find_O_O_rdf(job):
             traj_filename = "trajectory-npt.gsd"
             traj = md.load(traj_filename, top="init1.mol2")
             traj = traj[::100]
+            print("Traj loaded")
             oxygen_indices = traj.top.select("name O")
             bins = 250
             r_min = 0

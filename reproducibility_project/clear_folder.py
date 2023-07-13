@@ -50,10 +50,12 @@ def main():
 
             for job in group:
                 os.chdir(job.workspace())
+                os.chdir("..")
+                os.system("rm -rf {}".format(job))
                 # print(os.listdir())
-                os.system("cat sig*state*json")
                 # os.system("cat sig*state*json")
-                os.system("rm -rf *")
+                # os.system("cat sig*state*json")
+                # os.system("rm -rf *")
 
                 # if job.doc.prod_replicates_done > 0:
                 #    job.doc.prod_replicates_done = 0

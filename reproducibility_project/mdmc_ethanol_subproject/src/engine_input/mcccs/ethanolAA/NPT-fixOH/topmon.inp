@@ -40,7 +40,7 @@
      lelect_field= F
      lgaro= F
      lionic= F
-     L_Ewald_Auto= T
+     L_Ewald_Auto= F
      lmixlb= F
      lmixjo= T
      L_spline= F

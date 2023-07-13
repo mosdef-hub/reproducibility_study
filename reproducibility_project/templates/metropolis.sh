@@ -4,7 +4,7 @@
 #SBATCH --job-name="{{ id }}"
 #SBATCH -t 199:59:59
 #SBATCH --ntasks=1
-#SBATCH --mem=1G
+#SBATCH --mem=6G
 module purge
 module load anaconda
 #conda --version

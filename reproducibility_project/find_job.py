@@ -37,7 +37,7 @@ def main():
     ):
         print("-----------------------------------------------------")
 
-        if molecule == "waterSPCE" and engine == "mcccs":
+        if molecule == "ethanolAA" and engine == "mcccs":
             print(
                 molecule,
                 ensemble,
