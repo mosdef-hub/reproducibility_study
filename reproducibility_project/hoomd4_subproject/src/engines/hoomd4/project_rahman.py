@@ -10,15 +10,34 @@ from flow.environment import DefaultSlurmEnvironment
 
 rigid_molecules = ["waterSPCE", "benzeneUA"]
 
+header_dict = {
+    "Simulationtimestep": "timestep",
+    "Simulationtps": "tps",
+    "mdcomputeThermodynamicQuantitieskinetic_energy": "kinetic_energy",
+    "mdcomputeThermodynamicQuantitiespotential_energy": "potential_energy",
+    "mdcomputeThermodynamicQuantitiespressure": "pressure",
+    "mdcomputeThermodynamicQuantitieskinetic_temperature": "temperature",
+    "mdcomputeThermodynamicQuantitiesvolume": "volume",
+    "mdpairLJenergy": "LJ_energy",
+    "mdpairEwaldenergy": "Ewald_energy",
+    "mdlong_rangepppmCoulombenergy": "Coulomb_energy",
+    "mdspecial_pairLJenergy": "LJ_1-4_energy",
+    "mdspecial_pairCoulombenergy": "Coulomb_1-4_energy",
+    "mdbondHarmonicenergy": "bond_energy",
+    "mdangleHarmonicenergy": "angle_energy",
+    "mddihedralOPLSenergy": "dihedral_energy",
+    "Statustime_remaining": "time_remaining",
+}
 
-# class Project(FlowProject):
-#     """Subclass of FlowProject to provide custom methods and attributes."""
 
-#     def __init__(self):
-#         super().__init__()
-#         current_path = pathlib.Path(os.getcwd()).absolute()
-#         self.data_dir = current_path.parents[1] / "data"
-#         self.ff_fn = self.data_dir / "forcefield.xml"
+class Project(FlowProject):
+    """Subclass of FlowProject to provide custom methods and attributes."""
+
+    def __init__(self):
+        super().__init__()
+        current_path = pathlib.Path(os.getcwd()).absolute()
+        self.data_dir = current_path.parents[1] / "data"
+        self.ff_fn = self.data_dir / "forcefield.xml"
 
 
 # class Fry(DefaultSlurmEnvironment):
@@ -36,17 +55,6 @@ rigid_molecules = ["waterSPCE", "benzeneUA"]
 #             help="Specify the partition to submit to.",
 #         )
 #         parser.add_argument("--nodelist", help="Specify the node to submit to.")
-
-
-class Project(flow.FlowProject):
-    """Subclass of FlowProject to provide custom methods and attributes."""
-
-    def __init__(self):
-        super().__init__()
-        current_path = pathlib.Path(os.getcwd()).absolute()
-        self.data_dir = current_path.parents[1] / "data"
-        self.ff_fn = self.data_dir / "forcefield.xml"
-
 
 class RahmanHOOMD(DefaultSlurmEnvironment):
     """Subclass of DefaultSlurmEnvironment for VU's Rahman cluster."""
@@ -75,15 +83,13 @@ def run_shrink(job):
     run_hoomd(job, "shrink")
 
 
-'''
-@Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("npt_eq"))
-@Project.post(lambda j: j.doc.get("nvt_finished"))
-@Project.operation(directives{"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-def run_nvt(job):
-    """Run an NVT simulation with HOOMD-blue."""
-    run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
-'''
+# @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+# @Project.pre(lambda j: j.sp.engine == "hoomd")
+# @Project.pre(lambda j: j.doc.get("npt_eq"))
+# @Project.post(lambda j: j.doc.get("nvt_finished"))
+# def run_nvt(job):
+#     """Run an NVT simulation with HOOMD-blue."""
+#     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
 
 
 @Project.pre(lambda j: j.sp.engine == "hoomd")
@@ -104,15 +110,13 @@ def check_equilibration_npt(job):
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
-'''
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-@Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("nvt_finished"))
-@Project.post(lambda j: j.doc.get("nvt_eq"))
-def check_equilibration_nvt(job):
-    """Check the equilibration of the NVT simulation."""
-    job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
-'''
+# @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+# @Project.pre(lambda j: j.sp.engine == "hoomd")
+# @Project.pre(lambda j: j.doc.get("nvt_finished"))
+# @Project.post(lambda j: j.doc.get("nvt_eq"))
+# def check_equilibration_nvt(job):
+#     """Check the equilibration of the NVT simulation."""
+#     job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
 
 
 @Project.pre(lambda j: j.sp.engine == "hoomd")
@@ -126,14 +130,16 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
-    for logfile in [job.fn("log-npt.txt")]:
-        # Make a copy, just in case
-        backup = f"{logfile}.bkup"
-        if not os.path.exists(backup):
-            copy(logfile, backup)
+    for filename in ["log-npt-raw.txt", "log-nvt-raw.txt"]:
+        rawlogfile = job.fn(filename)
+        logfile = job.fn(filename.replace("-raw", ""))
 
-        data = np.genfromtxt(logfile, names=True)
+        data = np.genfromtxt(rawlogfile, names=True)
         data = clean_data(data)
+
+        # Clean up headers
+        for k, v in header_dict.items():
+            data = rf.rename_fields(data, {k: v})
 
         system_mass = job.sp.mass * u.amu * job.sp.N_liquid
         volume = data["volume"] * u.nm**3
@@ -142,7 +148,6 @@ def post_process(job):
         pressure_factor = float((1 * u.kJ / u.mol / u.nm**3).to("kPa"))
 
         data = rf.drop_fields(data, ["time_remaining"])
-        data = rf.rename_fields(data, {"kinetic_temperature": "temperature"})
         data["temperature"] /= kB
         data["pressure"] *= pressure_factor
         data = rf.append_fields(
@@ -155,6 +160,7 @@ def post_process(job):
 def run_hoomd(job, method, restart=False):
     """Run a simulation with HOOMD-blue."""
     import foyer
+    import git
     import gsd.hoomd
     import hoomd
     import hoomd.md
@@ -169,7 +175,10 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
-    # print(job.sp.molecule, hoomd.__version__)
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
+    print(job.sp.molecule)
+    print(f"git commit: {sha}\n")
     if method not in ["npt", "nvt", "shrink"]:
         raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 
@@ -178,6 +187,7 @@ def run_hoomd(job, method, restart=False):
     # Only the number matters at this point--all other attributes of the
     # snapshot will be adjusted later.
     if job.sp["molecule"] in rigid_molecules:
+        print("Rigid body")
         isrigid = True
         init_snap = hoomd.Snapshot()
         init_snap.particles.types = ["R"]
@@ -186,7 +196,6 @@ def run_hoomd(job, method, restart=False):
     else:
         isrigid = False
         init_snap = None
-    print("created snapshot")
 
     # This structure will only be used for the initial npt run,
     # but we need forcefield info for all sims.
@@ -197,7 +206,6 @@ def run_hoomd(job, method, restart=False):
         job.sp, scale_liq_box=2, fix_orientation=isrigid
     )
 
-    print("constructed system")
     ff = load_ff(job.sp.forcefield_name)
     structure = ff.apply(filled_box)
 
@@ -217,15 +225,24 @@ def run_hoomd(job, method, restart=False):
         init_snap=init_snap,
         pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
     )
-    print("hoomd forcefield generated")
+    print("Snapshot created")
 
-    # update the neighborlist exclusions for pentane and benzene
-    # these wont be set automatically because their scaling is 0
-    # forcefield[0] is LJ pair force and all nlist objects are connected
-    if job.sp.molecule == "benzeneUA" or job.sp.molecule == "pentaneUA":
-        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
-    if job.sp.molecule == "methaneUA":
-        forcefield[0].nlist.exclusions = []
+    # If the molecule is constrained, add distance constraints to
+    # bonded particles in snapshot
+    if "constrain" in job.sp.molecule:
+        print("Constrained bonds")
+        snapshot.constraints.N = snapshot.bonds.N
+        snapshot.constraints.group[:] = snapshot.bonds.group[:]
+        constraint_vals = np.ones(snapshot.bonds.N) * 0.154
+        snapshot.constraints.value[:] = constraint_vals
+
+        # I also checked that the starting positions on each bond were
+        # close enough to the constraint value:
+        # bond_pos = snapshot.particles.position[snapshot.bonds.group]
+        # bond_dists = np.linalg.norm(bond_pos[:,0] - bond_pos[:,1], axis=1)
+        # np.allclose(constraint_vals, bond_dists)
+
+        constrain_dist = hoomd.md.constrain.Distance()
 
     # Adjust the snapshot rigid bodies
     if isrigid:
@@ -272,7 +289,16 @@ def run_hoomd(job, method, restart=False):
             forcefield.remove(f)
 
         # update the neighborlist exclusions for rigid
+        # forcefield[0] is LJ pair force and all nlist objects are connected
         forcefield[0].nlist.exclusions = ["body"]
+
+    # update the neighborlist exclusions for pentane and methane
+    # pentane's wont be set automatically because the scaling is 0
+    # and the default (bond, 1-3) is unecessary and raises a warning for methane
+    if job.sp.molecule.startswith("pentane"):
+        forcefield[0].nlist.exclusions = ["bond", "1-3", "1-4"]
+    elif job.sp.molecule == "methaneUA":
+        forcefield[0].nlist.exclusions = []
 
     if job.sp.get("long_range_correction") == "energy_pressure":
         for force in forcefield:
@@ -369,7 +395,7 @@ def run_hoomd(job, method, restart=False):
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode=f"{writemode}b",
-        dynamic=["property", "momentum"],
+        dynamic=["momentum"],
     )
     sim.operations.writers.append(gsd_writer)
 
@@ -390,46 +416,59 @@ def run_hoomd(job, method, restart=False):
 
     status = Status(sim)
     logger[("Status", "time_remaining")] = (status, "time_remaining", "string")
+
+    for f in forcefield:
+        logger.add(f, quantities=["energy"])
+
     table_file = hoomd.write.Table(
         output=open(
-            job.fn(f"log-{method}.txt"), mode=f"{writemode}", newline="\n"
+            job.fn(f"log-{method}-raw.txt"), mode=f"{writemode}", newline="\n"
         ),
         trigger=hoomd.trigger.Periodic(period=1000),
         logger=logger,
-        max_header_len=7,
     )
     sim.operations.writers.append(table_file)
 
-    dt = 0.001
+    if job.sp.molecule == "ethanolAA":
+        # ethanol needs a smaller timestep to capture fast oscillations of
+        # explicit hydrogen bonds (period 0.0118 time units)
+        dt = 0.0005
+    else:
+        dt = 0.001
     if isrigid:
         integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
         integrator.rigid = rigid
     else:
         integrator = hoomd.md.Integrator(dt=dt)
+    if "constrain" in job.sp.molecule:
+        integrator.constraints = [constrain_dist]
     integrator.forces = forcefield
 
     # convert temp in K to kJ/mol
-    kT = (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    kT = float(
+        (job.sp.temperature * u.K).to_equivalent("kJ/mol", "thermal").value
+    )
+    print(f"kT = {kT}")
 
     # start with high tau and tauS
-    tau = 1000 * dt
-    tauS = 5000 * dt
+    tau = 0.5  # 1000dt (ethanol) or 500dt
+    tauS = 1  # 2000dt (ethanol) or 1000dt
 
     if method == "npt":
         # convert pressure to unit system
-        pressure = (job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value
-        integrator_method = hoomd.md.methods.ConstantPressure(
-            thermostat=hoomd.md.methods.thermostats.Bussi(kT),
+        pressure = float((job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value)
+        print(f"Pressure = {pressure}")
+        integrator_method = hoomd.md.methods.NPT(
             filter=_all,
+            kT=kT,
+            tau=tau,
             S=pressure,
             tauS=tauS,
             couple="xyz",
         )
     else:
-        integrator_method = hoomd.md.methods.ConstantVolume(
-            filter=_all,
-            thermostat=hoomd.md.methods.thermostats.Bussi(kT),
-        )
+        # shrink and nvt both use nvt
+        integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
 
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
@@ -441,26 +480,25 @@ def run_hoomd(job, method, restart=False):
         if not restart:
             steps = 1e6
             print(
-                f"""Running {steps} with tau: {integrator.methods[0].S} and
-                tauS: {integrator.methods[0].tauS}"""
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
+                f"and tauS: {integrator.methods[0].tauS}"
             )
             sim.run(steps)
             print("Done")
-        integrator.methods[0].tauS = 1000 * dt
-    else:
-        # Shrink and NVT both use NVT method
-        if method == "shrink":
-            # shrink to the desired box length
-            L = job.sp.box_L_liq
-            shrink_steps = 1e5
-        else:
-            # The target volume should be the average volume from NPT
-            target_volume = job.doc.avg_volume
-            L = target_volume ** (1 / 3)
-            shrink_steps = 2e4
 
+    else:
         if not restart:
-            # Shrink and nvt methods both use shrink step
+            # Shrink and NVT both use NVT method
+            if method == "shrink":
+                # shrink to the desired box length
+                L = job.sp.box_L_liq
+                shrink_steps = 1e5
+            else:
+                # The target volume should be the average volume from NPT
+                target_volume = job.doc.avg_volume
+                L = target_volume ** (1 / 3)
+                shrink_steps = 2e4
+
             # Shrink step follows this example
             # https://hoomd-blue.readthedocs.io/en/latest/tutorial/
             # 01-Introducing-Molecular-Dynamics/03-Compressing-the-System.html
@@ -478,23 +516,32 @@ def run_hoomd(job, method, restart=False):
             )
             sim.operations.updaters.append(box_resize)
             print(
-                f"Running shrink {shrink_steps} with: {integrator.methods[0]}"
+                f"Running shrink {shrink_steps:.0e} with tau: "
+                f"{integrator.methods[0].tau}"
             )
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
+    integrator.methods[0].tau = 0.1
     if method != "shrink":
-        steps = 5e6
+        steps = 2e7
         if method == "npt":
+            integrator.methods[0].tauS = 1
             print(
-                f"""Running {steps} with S: {integrator.methods[0].S} and
-                tauS: {integrator.methods[0].tauS}"""
+                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
+                f"and tauS: {integrator.methods[0].tauS}"
             )
         else:
-            print(f"Running {steps} with: {integrator.methods[0]}")
+            print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
         sim.run(steps)
+    else:
+        # Try adding a short temperature equilibration step after shrink
+        steps = 1e4
+        print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
+        sim.run(steps)
+
     job.doc[f"{method}_finished"] = True
     print("Finished", flush=True)
 
@@ -506,9 +553,9 @@ def check_equilibration(job, method, eq_property, min_t0=100):
 
     import reproducibility_project.src.analysis.equilibration as eq
 
-    data = np.genfromtxt(job.fn(f"log-{method}.txt"), names=True)
+    data = np.genfromtxt(job.fn(f"log-{method}-raw.txt"), names=True)
     data = clean_data(data)
-    prop_data = data[eq_property]
+    prop_data = data[f"mdcomputeThermodynamicQuantities{eq_property}"]
     iseq, _, _, _ = eq.is_equilibrated(prop_data)
     if iseq:
         uncorr, t0, g, N = eq.trim_non_equilibrated(prop_data)
@@ -529,7 +576,9 @@ def clean_data(data):
     The HOOMD Table file writer always writes a header, but for restarted jobs,
     this header is in the middle of the file, which creates nan values.
     """
-    return np.delete(data, np.where(np.isnan(data["timestep"]))[0], axis=0)
+    return np.delete(
+        data, np.where(np.isnan(data["Simulationtimestep"]))[0], axis=0
+    )
 
 
 class Status:
