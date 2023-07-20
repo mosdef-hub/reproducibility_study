@@ -4,13 +4,15 @@
 *.xyz
 *.pdb
 *.ipynb
+*.pdf
 
 # Signac
 .signac_sp_cache.json.gz
 signac_project_document.json
 signac_statepoints.json
 workspace*
-
+water_*
+ethanol_*
 # MacOS/finder file
 .DS_Store
 
@@ -23,6 +25,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.vscode/
 .Python
 build/
 develop-eggs/
@@ -42,6 +45,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.bundles/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -147,6 +151,7 @@ dmypy.json
 # Signac workspace
 workspace/
 view/
+local_archive/
 
 # Pycharm
 .idea/
@@ -156,9 +161,11 @@ slurm*
 *.out
 *.err
 rclone.sh
+*.bundles
+test_job_out.txt
 
 # UGE
 *.o*
 
 #Local analysis
-analysis_data/
+#analysis_data/

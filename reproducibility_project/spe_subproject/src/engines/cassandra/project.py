@@ -14,7 +14,7 @@ class Project(flow.FlowProject):
 
     def __init__(self):
         super().__init__()
-        current_path = Path(os.getcwd()).absolute()
+        current_path = pathlib.Path(os.getcwd()).absolute()
         self.data_dir = current_path.parents[1] / "data"
         self.ff_fn = self.data_dir / "forcefield.xml"
 
@@ -34,7 +34,7 @@ def FinishedSPECalc(job):
 """Setting up workflow operation"""
 
 
-def LoadSystemSnapShot(job):
+def LoadSystemSnapshot(job):
     """Create initial configurations of the system statepoint."""
     import mbuild as mb
 
@@ -51,7 +51,7 @@ def LoadSystemSnapShot(job):
 
 @Project.operation
 @Project.pre(lambda j: j.sp.engine == "cassandra")
-@Project.post(FinishedSPCECalc)
+@Project.post(FinishedSPECalc)
 @directives(omp_num_threads=4)
 @flow.with_job
 def CalculateEnergy(job):
@@ -61,6 +61,12 @@ def CalculateEnergy(job):
     import pandas as pd
     import unyt as u
 
+    from reproducibility_project.src.molecules.system_builder import (
+        construct_system,
+        get_molecule,
+    )
+    from reproducibility_project.src.utils.forcefields import load_ff
+
     molecule = job.sp.molecule
 
     compound = get_molecule(job.sp)
@@ -68,17 +74,22 @@ def CalculateEnergy(job):
     ff = load_ff(ffname)
     structure = ff.apply(compound)
 
+    if ff.combining_rule == "geometric":
+        comb_rule = "geometric"
+    else:
+        comb_rule = "lb"
+
     species_list = [structure]
     cutoff = job.sp.r_cut * u.nm
 
     box = LoadSystemSnapshot(job)
 
-    system = mc.System([box], species_list, job.sp.N_liquid)
+    system = mc.System([box], species_list, [[job.sp.N_liquid]])
     moveset = mc.MoveSet("nvt", species_list)
     moveset.prob_rotate = 0.0
     moveset.prob_translate = 1.0
-    nvtmoves.prob_regrow = 0.0
-    nvtmoves.max_translate = [[0.0]]
+    moveset.prob_regrow = 0.0
+    moveset.max_translate = [[0.0 * u.angstrom]]
 
     cass_cutoffs = {
         ("hard", "None"): "cut",
@@ -125,6 +136,7 @@ def CalculateEnergy(job):
         properties=proplist,
         cutoff_style=cutoff_style,
         charge_style=charge_style,
+        mixing_rule=comb_rule,
         vdw_cutoff=cutoff,
         charge_cutoff=cutoff,
         run_name="nvt_spe",
@@ -136,16 +148,18 @@ def CalculateEnergy(job):
     prpvec = np.loadtxt("nvt_spe.out.prp")[1:]
     prp = pd.Series(prpvec, index=proplist)
     spe_dict = {
-        "total_energy": None,
         "potential_energy": prp.energy_total,
-        "vdw_energy": prp.energy_intravdw
+        "tot_vdw_energy": prp.energy_intravdw
         + prp.energy_intervdw
         + prp.energy_lrc,
-        "coul_energy": prp.energy_intraq
+        "tail_energy": prp.energy_lrc,
+        "tot_electrostatics": prp.energy_intraq
         + prp.energy_interq
         + prp.energy_self
         + prp.energy_recip,
-        "pair_energy": prp.energy_intraq
+        "short_range_electrostatics": prp.energy_intraq + prp.energy_interq,
+        "long_range_electrostatics": prp.energy_self + prp.energy_recip,
+        "tot_pair_energy": prp.energy_intraq
         + prp.energy_interq
         + prp.energy_self
         + prp.energy_recip
@@ -155,8 +169,15 @@ def CalculateEnergy(job):
         "bonds_energy": None,
         "angles_energy": prp.energy_angle,
         "dihedrals_energy": prp.energy_dihedral,
-        "tail_energy": prp.energy_lrc,
-        "kspace_energy": prp.energy_recip,
+        "tot_bonded_energy": None,
+        "intramolecular_energy": prp.energy_angle
+        + prp.energy_dihedral
+        + prp.energy_intravdw
+        + prp.energy_intraq,
+        "intermolecular_energy": prp.energy_intervdw
+        + prp.energy_interq
+        + prp.energy_self
+        + prp.energy_recip,
     }
     spe_series = pd.Series(spe_dict)
     spe_log = pd.DataFrame(spe_series).T

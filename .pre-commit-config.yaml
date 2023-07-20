@@ -10,24 +10,24 @@ ci:
     submodules: false
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.4.0
   hooks:
     - id: check-yaml
     - id: end-of-file-fixer
     - id: trailing-whitespace
 - repo: https://github.com/psf/black
-  rev: 22.1.0
+  rev: 23.7.0
   hooks:
     - id: black
       args: [--line-length=80, --target-version=py38]
 - repo: https://github.com/pycqa/isort
-  rev: 5.10.1
+  rev: 5.12.0
   hooks:
     - id: isort
       name: isort (python)
       args: [--profile=black, --line-length=80]
 - repo: https://github.com/pycqa/pydocstyle
-  rev: '6.1.1'
+  rev: '6.3.0'
   hooks:
     - id: pydocstyle
       args: [--convention=numpy]

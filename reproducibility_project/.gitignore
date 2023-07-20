@@ -1,0 +1,3 @@
+workspace/
+*.o*
+o_files/

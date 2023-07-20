@@ -6,18 +6,19 @@ channels:
 dependencies:
   - constrainmol
   - ele
-  - foyer>=0.9.4
   - freud
   - gitpython
+  - foyer=0.11.2
+  - freud=2.6.2
   - gmso
   - gromacs=2020.6
-  - gsd
+  - gsd=2.6.0
   - h5py
   - jupyter
   - jinja2
   - lammps
   - matplotlib
-  - mbuild>=0.13.0
+  - mbuild=0.15.1
   - mdtraj
   - mosdef_cassandra
   - numpy
@@ -26,13 +27,13 @@ dependencies:
   - pandas
   - panedr
   - parmed>=3.4.3
-  - pymbar
+  - pymbar=3.0.5
   - pytest
   - python=3.8
   - rdkit
-  - scipy
+  - scipy=1.9.0
   - seaborn
-  - signac
+  - signac=1.7.0
   - signac-dashboard
-  - signac-flow
+  - signac-flow=0.20.0
   - unyt

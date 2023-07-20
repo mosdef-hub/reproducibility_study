@@ -25,9 +25,10 @@ simulation_engines = [
     "hoomd",
     "lammps-VU",
     "lammps-UD",
+    "mcccs_lammps_foyer",
 ]
 md_engines = ["gromacs", "hoomd", "lammps-VU", "lammps-UD"]
-mc_engines = ["cassandra", "mcccs", "gomc"]
+mc_engines = ["cassandra", "mcccs", "gomc", "mcccs_lammps_foyer"]
 forcefields = {}
 r_cuts = {}
 cutoff_styles = ["hard"]

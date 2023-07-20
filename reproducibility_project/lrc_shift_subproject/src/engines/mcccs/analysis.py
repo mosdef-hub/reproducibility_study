@@ -59,7 +59,6 @@ def main():
                 str(long_range_correction),
             )
         ):
-
             os.makedirs(
                 "{}_{}_{}K_{}kPa_cutoff_{}_lrc_{}".format(
                     molecule,
@@ -83,7 +82,6 @@ def main():
 
         base_dir = os.getcwd()
         if ensemble == "NPT":
-
             density_list = []
             for job in group:
                 os.chdir(job.ws)

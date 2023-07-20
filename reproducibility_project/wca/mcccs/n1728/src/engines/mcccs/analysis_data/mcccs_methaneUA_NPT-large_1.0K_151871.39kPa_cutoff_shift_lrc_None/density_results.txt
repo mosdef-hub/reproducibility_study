@@ -1,0 +1,1 @@
+The average density is 0.9193870628124999 number/Ang^3 with SEM 2.9751646458405836e-05 from 16 samples

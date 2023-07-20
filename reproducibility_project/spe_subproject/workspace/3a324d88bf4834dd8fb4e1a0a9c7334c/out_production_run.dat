@@ -1,13 +1,26 @@
 Info: GOMC Version 2.70
-Info: Start Time: Thu Mar 10 13:44:46 2022
-
+Info: Start Time: Mon Jan 30 12:52:10 2023
+Info: Host Name: localhost.localdomain
+CPU information:
+Info: Total number of CPUs: 40
+Info: Total number of CPUs available: 40
+Info: Model name: Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
+Info: System name: Linux
+Info: Release: 4.18.0-372.9.1.el8.x86_64
+Info: Version: #1 SMP Fri Apr 15 22:12:19 EDT 2022
+Info: Kernel Architecture: x86_64
+Info: Total Ram: 193077.0MB
+Info: Used Ram: 9802.1MB
+Info: Working in the current directory: /home/brad/Programs/GIT_repositories/reproduciblity_project/reproducibility_study/reproducibility_project/spe_subproject/workspace/3a324d88bf4834dd8fb4e1a0a9c7334c
 Info: GOMC COMPILED TO RUN ISOBARIC-ISOTHERMAL ENSEMBLE.
 Info: Number of threads                  1
+Info: Compiled with OpenMP Version       4.5
 
 Reading Input File:                      production_run.conf
 Info: Restart simulation                 Active
 Warning: Unknown input RestartCheckpoint!
 Info: Expert Mode                        Inactive
+Info: Integer seed                       Active
 Info: Constant seed                      Active
 Info: PARAMETER file                     CHARMM format!
 Info: Input Temperature                  450.0000 K
@@ -15,7 +28,6 @@ Info: Input Pressure                     22.6000 bar
 Info: Volume change using constant ratio.
 Info: Non-truncated potential            Active
 Info: Long Range Correction              Active
-Info: Impulse Pressure Correction        Inactive
 Info: Cutoff                             14.0000 A
 Info: Short Range Cutoff                 1.0000 A
 Info: Exclude                            ONE-THREE
@@ -27,14 +39,22 @@ Info: Number of equilibration steps      1
 Info: Move adjustment frequency          1
 Info: Displacement move frequency        0.4900
 Info: Rotation move frequency            0.5000
+Info: Intra-Swap move frequency          0.0000
+Warning: Unknown input SwapFreq!
+Info: Regrowth move frequency            0.0000
+Info: Crank-Shaft move frequency         0.0000
 Info: Volume move frequency              0.0100
+Info: Multi-Particle move frequency      0.0000
+Warning: Unknown input MEMC-1Freq!
+Warning: Unknown input MEMC-2Freq!
+Warning: Unknown input MEMC-3Freq!
 Info: CBMC First atom trials             12
 Info: CBMC Secondary atom trials         10
 Info: CBMC Angle trials                  50
 Info: CBMC Dihedral trials               50
 Info: Output name                        production_run
 Info: Restart frequency                  1
-Warning: Unknown input CheckpointFreq!
+Info: Checkpoint frequency               1
 Info: Printing coordinate                Inactive
 Info: DCD frequency                      1
 Info: Console output frequency           1
@@ -45,12 +65,8 @@ Warning: Unknown input HistName!
 Warning: Unknown input RunNumber!
 Warning: Unknown input RunLetter!
 Warning: Unknown input SampleFreq!
-Default: Intra-Swap move frequency       0.0000
-Default: Multi-Particle move frequency   0.0000
 Default: Multi-Particle Brownian move frequency 0.0000
 Default: Intra-MEMC move frequency       0.0000
-Default: Regrowth move frequency         0.0000
-Default: Crank-Shaft move frequency      0.0000
 Default: Targeted-Swap move frequency    0.0000
 Warning: 1-4 Electrostatic scaling set, but will be ignored.
 Warning: Cell dimension set, but will be ignored in restart mode.
@@ -68,12 +84,12 @@ Random number seed: 0
 Molecules in PSF:
 Molecule Kind: benz
 Idx	name	type	charge	mass
-0	C1	A	0	13.02
-1	C2	A	0	13.02
-2	C3	A	0	13.02
-3	C4	A	0	13.02
-4	C5	A	0	13.02
-5	C6	A	0	13.02
+0	C1	A	0.0000	13.0190
+1	C2	A	0.0000	13.0190
+2	C3	A	0.0000	13.0190
+3	C4	A	0.0000	13.0190
+4	C5	A	0.0000	13.0190
+5	C6	A	0.0000	13.0190
 
 Bonds:
 [4 5] [3 4] [2 3] [1 2] [0 1] [0 5]
@@ -97,6 +113,7 @@ A	A	A	                 FIX         120.0000
 
 Dihedrals parameter:
 Atom Types                           Kchi(K)    n    delta(degree)
+A	A	A	A	      0.0000    0     90.0000
 A	A	A	A	      0.0000    1    180.0000
 A	A	A	A	      0.0000    2      0.0000
 A	A	A	A	      0.0000    3    180.0000
@@ -130,33 +147,33 @@ Wrapping molecules inside the simulation box 0:
 ################################################################################
 ########################## INITIAL SIMULATION ENERGY ###########################
 
-ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+     ETITLE:     STEP                TOTAL             INTRA(B)              BOND(B)             ANGLE(B)          DIHEDRAL(B)            INTRA(NB)            INTER(LJ)                  LRC          TOTAL_ELECT                 REAL                RECIP                 SELF                 CORR
 
-ENER_0:        0  4.67786183e+07  0.00000000e+00  0.00000000e+00  4.68087536e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75253349e+05
+ENER_0:             0       4.67786183e+07       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       4.68087536e+07      -3.01352873e+04       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00
 
-STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+     STITLE:     STEP               VOLUME             PRESSURE      COMPRESSIBILITY             ENTHALPY             TOTALMOL          TOT_DENSITY
 
-STAT_0:        0      7.4991e+04      5.6087e+05      1.6925e+03      7.3047e+03             400      6.9187e+02
+STAT_0:             0       7.49912863e+04       5.60874992e+05       1.69247044e+03       7.30473913e+03                  400       6.91874331e+02
 
 ################################################################################
 ############################# STARTING SIMULATION ##############################
 
-MTITLE:     STEP          DISTRY       DISACCEPT      DISACCEPT%          DISMAX          ROTATE       ROTACCEPT      ROTACCEPT%          ROTMAX          VOLUME       VOLACCEPT      VOLACCEPT%          VOLMAX
+     MTITLE:     STEP               DISTRY            DISACCEPT           DISACCEPT%               DISMAX               ROTATE            ROTACCEPT           ROTACCEPT%               ROTMAX               VOLUME            VOLACCEPT           VOLACCEPT%               VOLMAX
 
-ETITLE:     STEP           TOTAL        INTRA(B)       INTRA(NB)       INTER(LJ)             LRC     TOTAL_ELECT            REAL           RECIP            SELF            CORR        ENTHALPY
+     ETITLE:     STEP                TOTAL             INTRA(B)              BOND(B)             ANGLE(B)          DIHEDRAL(B)            INTRA(NB)            INTER(LJ)                  LRC          TOTAL_ELECT                 REAL                RECIP                 SELF                 CORR
 
-STITLE:     STEP          VOLUME        PRESSURE COMPRESSIBILITY        ENTHALPY        TOTALMOL     TOT_DENSITY
+     STITLE:     STEP               VOLUME             PRESSURE      COMPRESSIBILITY             ENTHALPY             TOTALMOL          TOT_DENSITY
 
 Opening DCD coordinate file: production_run_BOX_0.dcd
 Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
 Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
-MOVE_0:        1               0               0      0.0000e+00      1.0000e-10               1               1      1.0000e+02      7.8540e-01               0               0      0.0000e+00      5.0000e+02
+MOVE_0:             1                    0                    0       0.00000000e+00       1.00000000e-10                    1                    0       0.00000000e+00       7.85398163e-01                    0                    0       0.00000000e+00       5.00000000e+02
 
-ENER_0:        1  4.67674946e+07  0.00000000e+00  0.00000000e+00  4.67976299e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75253118e+05
+ENER_0:             1       4.67786183e+07       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       4.68087536e+07      -3.01352873e+04       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00
 
-STAT_0:        1      7.4991e+04      5.6087e+05      1.6925e+03      7.3045e+03             400      6.9187e+02
+STAT_0:             1       7.49912863e+04       5.60874992e+05       1.69247044e+03       7.30473913e+03                  400       6.91874331e+02
 
-PRES_0:        1      5.7100e+05      5.4896e+05      5.6201e+05
+PRES_0:             1       5.70995177e+05       5.48962566e+05       5.62005902e+05
 
 Writing DCD coordinate to file production_run_BOX_0.dcd at step 1
 Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 1
@@ -165,13 +182,13 @@ Finished writing binary restart coordinate to file production_run_BOX_0_restart.
 Printed combined psf to file production_run_merged.psf
 Writing checkpoint to file production_run_restart.chk at step 1
 Checkpoint saved to production_run_restart.chk
-MOVE_0:        2               0               0      0.0000e+00      1.0000e-10               2               2      1.0000e+02      1.5708e+00               0               0      0.0000e+00      5.0000e+02
+MOVE_0:             2                    0                    0       0.00000000e+00       1.00000000e-10                    2                    0       0.00000000e+00       3.92699082e-01                    0                    0       0.00000000e+00       5.00000000e+02
 
-ENER_0:        2  4.67664304e+07  0.00000000e+00  0.00000000e+00  4.67965657e+07 -3.01352873e+04  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  0.00000000e+00  8.75172010e+05
+ENER_0:             2       4.67786183e+07       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       4.68087536e+07      -3.01352873e+04       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00       0.00000000e+00
 
-STAT_0:        2      7.4991e+04      5.6082e+05      1.6923e+03      7.3039e+03             400      6.9187e+02
+STAT_0:             2       7.49912863e+04       5.60874992e+05       1.69247044e+03       7.30473913e+03                  400       6.91874331e+02
 
-PRES_0:        2      5.7191e+05      5.4677e+05      5.6313e+05
+PRES_0:             2       5.70995177e+05       5.48962566e+05       5.62005902e+05
 
 Writing DCD coordinate to file production_run_BOX_0.dcd at step 2
 Finished writing DCD coordinate to file production_run_BOX_0.dcd at step 2
@@ -179,15 +196,15 @@ Writing binary restart coordinate to file production_run_BOX_0_restart.coor at s
 Finished writing binary restart coordinate to file production_run_BOX_0_restart.coor at step 2
 Writing checkpoint to file production_run_restart.chk at step 2
 Checkpoint saved to production_run_restart.chk
-Simulation Time (total): 1.5092e-01 sec.
+Simulation Time (total): 1.31257057e-01 sec.
 
 Move Type                Mol. Kind      BOX_0
 % Accepted Displacement        benz     0.00000
-% Accepted Rotation            benz   100.00000
+% Accepted Rotation            benz     0.00000
 % Accepted Volume-Transfer              0.00000
 
 Displacement:                            0.0000    sec.
-Rotation:                                0.0019    sec.
+Rotation:                                0.0016    sec.
 MultiParticle:                           0.0000    sec.
 Brownian-like MultiParticle:             0.0000    sec.
 Intra Molecule Transfer:                 0.0000    sec.
@@ -198,5 +215,5 @@ Intra Targeted Transfer:                 0.0000    sec.
 Volume Transfer:                         0.0000    sec.
 
 Info: GOMC Version 2.70
-Info: Completed at: Thu Mar 10 13:44:46 2022
-Info: On hostname: Info: Hostname Unavailable
+Info: Completed at: Mon Jan 30 12:52:10 2023
+Info: On hostname: localhost.localdomain

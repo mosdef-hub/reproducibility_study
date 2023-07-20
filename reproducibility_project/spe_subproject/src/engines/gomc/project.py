@@ -6,8 +6,6 @@ import subprocess
 
 import flow
 import matplotlib.pyplot as plt
-
-# from flow.environment import StandardEnvironment
 import mbuild as mb
 import mbuild.formats.charmm_writer as mf_charmm
 import mbuild.formats.gomc_conf_writer as gomc_control
@@ -17,7 +15,7 @@ import pymbar
 import signac
 import unyt as u
 from flow import FlowProject
-from flow.environment import DefaultSlurmEnvironment
+from flow.environment import DefaultSlurmEnvironment, StandardEnvironment
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 from reproducibility_project.src.molecules.system_builder import (
@@ -47,9 +45,7 @@ class Grid(DefaultSlurmEnvironment):  # Grid(StandardEnvironment):
 # set binary path to gomc binary files (the bin folder).
 # If the gomc binary files are callable directly from the terminal without a path,
 # please just enter and empty string (i.e., "" or '')
-gomc_binary_path = (
-    "/Users/brad/Programs/GOMC/GOMC_dev_zero_point_energy_2_28_22/bin"
-)
+gomc_binary_path = "/home/brad/Programs/GOMC/GOMC_2_76/bin"
 
 # force field (FF) file for all simulations in that job
 # Note: do not add extensions
@@ -113,6 +109,7 @@ ff_info_dict = {
 # ******************************************************
 # signac and GOMC-MOSDEF code (start)
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
@@ -265,6 +262,7 @@ def initial_parameters(job):
 # ******************************************************
 # ******************************************************
 
+
 # check if GOMC-MOSDEF wrote the gomc files
 # @Project.pre(select_production_ensemble)
 @Project.label
@@ -311,6 +309,7 @@ def mosdef_input_written(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # check if GOMC control file was written (start)
@@ -353,6 +352,7 @@ def part_2a_production_control_file_written(job):
 # ******************************************************
 # ******************************************************
 
+
 # ******************************************************
 # ******************************************************
 # check if GOMC simulations started (start)
@@ -394,6 +394,7 @@ def part_3a_output_production_run_started(job):
 # check if GOMC simulation are completed properly (start)
 # ******************************************************
 # ******************************************************
+
 
 # function for checking if GOMC simulations are completed properly
 def gomc_sim_completed_properly(job, control_filename_str):
@@ -539,6 +540,7 @@ def build_charmm(job, write_files=True):
 # build system, with option to write the force field (FF), pdb, psf files.
 # Note: this is needed to write GOMC control file, even if a restart (end)
 # ******************************************************
+
 
 # ******************************************************
 # ******************************************************
@@ -838,10 +840,10 @@ def run_production_energy_analysis(job):
         out_gomc = fp.readlines()
         for i, line in enumerate(out_gomc):
             split_line = line.split()
-            if len(split_line) == 13:
+            if len(split_line) == 15:
                 if split_line[0] == "ENER_0:" and int(split_line[1]) == 0:
                     # energies in K units
-                    total_energy = None
+                    total_energy = float(split_line[2])
                     potential_energy = float(split_line[2])
                     #  tail_energy = LRC
                     tail_energy = float(split_line[6])

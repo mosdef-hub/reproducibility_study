@@ -1,9 +1,11 @@
 """Utility methods for plotting data."""
 import pathlib
+import textwrap
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
+import scipy
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
@@ -97,3 +99,62 @@ def plot_data_with_t0_line(
         str(path.absolute()),
     )
     plt.close()
+
+
+def mean_confidence_interval(m, se, confidence=0.95):
+    """Calculate mean confidence_interval."""
+    se = np.array(se)
+    n = 16
+    h = se * scipy.stats.t.ppf((1 + confidence) / 2.0, n - 1)
+    return h
+
+
+def wrap_labels(ax, width, break_long_words=False):
+    """Wrap labels if string is too long."""
+    labels = []
+    for label in ax.get_xticklabels():
+        text = label.get_text()
+        labels.append(
+            textwrap.fill(text, width=width, break_long_words=break_long_words)
+        )
+    ax.set_xticklabels(labels, rotation=0)
+
+
+# Colors
+symbols = {}
+symbols["cassandra"] = "o"
+symbols["mcccs"] = "^"
+symbols["gomc"] = "s"
+symbols["gromacs"] = "x"
+symbols["hoomd"] = "v"
+symbols["lammps-VU"] = "D"
+# symbols[ "LAMMPS-UD"] = ">"
+
+colors = {}
+colors["cassandra"] = "#009392"  # (23/256, 109/256, 156/256)
+colors["mcccs"] = "#39B1B5"  # (194/256, 135/256, 32/256)
+colors["gomc"] = "#9CCB86"  # (21/256, 138/256, 106/256)
+colors["gromacs"] = "#E9E29C"  # (186/256, 97/256, 26/256)
+colors["hoomd"] = "#EEB479"  # (193/256, 130/256, 181/256)
+colors["lammps-VU"] = "#E88471"  # (188/256, 146/256, 110/256)
+colors["fix"] = "#FF7F00"
+colors["flex"] = "#007FFF"
+# colors_dict = {all_engine_molecule: all_engine_colors,
+#                pentane_fixed: pentane_fixed_colors,
+#                pentane_flexible: pentane_flexible_colors}
+
+pretty_names = {
+    "mcccsflex": "MCCCS-MN-FlexOH",
+    "mcccsfix": "MCCCS-MN-FixOH",
+    "lammps-VUflex": "LAMMPS-FlexOH",
+    "lammps-VUfix": "LAMMPS-FixOH",
+    "cassandra": "Cassandra",
+    "mcccs": "MCCCS-MN",
+    "gomc": "GOMC",
+    "gromacs": "GROMACS",
+    "hoomd": "HOOMD-Blue",
+    "lammps-VU": "LAMMPS",
+}
+
+
+figsize = (9, 6)

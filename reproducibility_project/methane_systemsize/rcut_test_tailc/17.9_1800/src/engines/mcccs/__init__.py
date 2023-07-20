@@ -1,0 +1,1 @@
+"""MCCCS project module."""

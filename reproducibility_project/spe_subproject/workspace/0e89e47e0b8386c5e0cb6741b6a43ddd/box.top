@@ -1,0 +1,73 @@
+;
+;   File box.top  was generated
+;   By user: craven76 (1036)
+;   On host: master.cl.vanderbilt.edu
+;   At date: Fri. February  5 10:44:28 2022
+;
+;   This is a standalone topology file
+;
+;   Created by:
+;   ParmEd:       project.py, VERSION 3.4.1
+;   Executable:   project.py
+;   Library dir:  /raid6/homes/craven76/.conda/envs/mosdef-study38/share/gromacs/top
+;   Command line:
+;     project.py run
+;
+
+[ defaults ]
+; nbfunc        comb-rule       gen-pairs       fudgeLJ fudgeQQ
+1               2               yes             1            1
+
+[ atomtypes ]
+; name    at.num    mass    charge ptype  sigma      epsilon
+CH_sp2         0  13.019000  0.00000000  A         0.3695     0.41988036
+
+
+[ moleculetype ]
+; Name            nrexcl
+RES          3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr    charge       mass  typeB    chargeB      massB
+; residue    1 RES rtp RES q 0.0
+    1     CH_sp2      1    RES    _CH      1 0.00000000  13.019000   ; qtot 0.000000
+    2     CH_sp2      1    RES    _CH      2 0.00000000  13.019000   ; qtot 0.000000
+    3     CH_sp2      1    RES    _CH      3 0.00000000  13.019000   ; qtot 0.000000
+    4     CH_sp2      1    RES    _CH      4 0.00000000  13.019000   ; qtot 0.000000
+    5     CH_sp2      1    RES    _CH      5 0.00000000  13.019000   ; qtot 0.000000
+    6     CH_sp2      1    RES    _CH      6 0.00000000  13.019000   ; qtot 0.000000
+
+[ bonds ]
+;    ai     aj funct         c0         c1         c2         c3
+      2      1     1   0.14000 392459.200000
+      3      2     1   0.14000 392459.200000
+      4      3     1   0.14000 392459.200000
+      4      5     1   0.14000 392459.200000
+      5      6     1   0.14000 392459.200000
+      6      1     1   0.14000 392459.200000
+
+[ angles ]
+;    ai     aj     ak funct         c0         c1         c2         c3
+      1      2      3     1   120.0000000 527.178502
+      1      6      5     1   120.0000000 527.178502
+      2      1      6     1   120.0000000 527.178502
+      2      3      4     1   120.0000000 527.178502
+      3      4      5     1   120.0000000 527.178502
+      4      5      6     1   120.0000000 527.178502
+
+[ dihedrals ]
+;    ai     aj     ak     al funct         c0         c1         c2         c3         c4         c5
+      1      2      3      4     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+      1      6      5      4     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+      2      1      6      5     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+      2      3      4      5     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+      3      2      1      6     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+      3      4      5      6     3    30.3338203     0.0000000   -30.3338203     0.0000000     0.0000000     0.0000000
+
+[ system ]
+; Name
+Generic title
+
+[ molecules ]
+; Compound       #mols
+RES                400

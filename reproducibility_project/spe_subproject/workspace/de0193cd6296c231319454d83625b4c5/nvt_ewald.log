@@ -1,83 +1,74 @@
-                      :-) GROMACS - gmx mdrun, 2020.6 (-:
+                      :-) GROMACS - gmx mdrun, 2022.4 (-:
 
-                            GROMACS is written by:
-     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
-    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd
- Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray
-  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang
-  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
-    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson
-  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund
-    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall
-    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov
-   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen
- Christian Wennberg    Maarten Wolf      Artem Zhmurov
-                           and the project leaders:
-        Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
-
-Copyright (c) 1991-2000, University of Groningen, The Netherlands.
-Copyright (c) 2001-2019, The GROMACS development team at
-Uppsala University, Stockholm University and
-the Royal Institute of Technology, Sweden.
-check out http://www.gromacs.org for more information.
-
+Copyright 1991-2022 The GROMACS Authors.
 GROMACS is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License
 as published by the Free Software Foundation; either version 2.1
 of the License, or (at your option) any later version.
 
-GROMACS:      gmx mdrun, version 2020.6
-Executable:   /Users/quachcd/mambaforge/envs/mosdef-study38/bin.AVX2_256/gmx
-Data prefix:  /Users/quachcd/mambaforge/envs/mosdef-study38
-Working dir:  /Users/quachcd/Documents/science/reproducibility/reproducibility_study/reproducibility_project/spe_subproject/workspace/de0193cd6296c231319454d83625b4c5
-Process ID:   49281
+                         Current GROMACS contributors:
+       Mark Abraham           Andrey Alekseenko           Cathrine Bergh
+      Christian Blau            Eliane Briand               Kevin Boyd
+     Oliver Fleetwood         Stefan Fleischmann           Vytas Gapsys
+       Gaurav Garg           Gilles Gouaillardet            Alan Gray
+      Victor Holanda           M. Eric Irrgang              Joe Jordan
+    Christoph Junghans        Prashanth Kanduri           Sebastian Kehl
+     Sebastian Keller          Carsten Kutzner           Magnus Lundborg
+       Pascal Merz              Dmitry Morozov             Szilard Pall
+      Roland Schulz             Michael Shirts         David van der Spoel
+     Alessandra Villa      Sebastian Wingbermuehle        Artem Zhmurov
+
+                         Previous GROMACS contributors:
+        Emile Apol             Rossen Apostolov           James Barnett
+  Herman J.C. Berendsen          Par Bjelkmar           Viacheslav Bolnykh
+    Aldert van Buuren          Carlo Camilloni           Rudi van Drunen
+      Anton Feenstra           Gerrit Groenhof            Bert de Groot
+      Anca Hamuraru           Vincent Hindriksen         Aleksei Iupinov
+   Dimitrios Karkoulis           Peter Kasson               Jiri Kraus
+       Per Larsson             Justin A. Lemkul           Viveca Lindahl
+      Erik Marklund           Pieter Meulenhoff           Vedran Miletic
+      Teemu Murtola              Sander Pronk            Alexey Shvetsov
+      Alfons Sijbers            Peter Tieleman             Jon Vincent
+     Teemu Virolainen         Christian Wennberg           Maarten Wolf
+
+                  Coordinated by the GROMACS project leaders:
+                    Paul Bauer, Berk Hess, and Erik Lindahl
+
+GROMACS:      gmx mdrun, version 2022.4
+Executable:   /usr/local/gromacs/bin/gmx
+Data prefix:  /usr/local/gromacs
+Working dir:  /Users/quachcd/Documents/science/reproducibility/reproducibility_study_data_analysis/reproducibility_project/spe_subproject/workspace/de0193cd6296c231319454d83625b4c5
+Process ID:   6471
 Command line:
   gmx mdrun -v -deffnm nvt_ewald -s nvt_ewald.tpr -cpi nvt_ewald.cpt -nt 16
 
-GROMACS version:    2020.6
-Verified release checksum is 2f568d8884e039acbc6b68722432516e0628be00c847969b7c905c8b53ef826f
-Precision:          single
+GROMACS version:    2022.4
+Precision:          mixed
 Memory model:       64 bit
 MPI library:        thread_mpi
-OpenMP support:     enabled (GMX_OPENMP_MAX_THREADS = 64)
-GPU support:        OpenCL
-SIMD instructions:  AVX2_256
-FFT library:        fftw-3.3.10-sse2-avx
-RDTSCP usage:       enabled
+OpenMP support:     disabled
+GPU support:        disabled
+SIMD instructions:  ARM_NEON_ASIMD
+CPU FFT library:    fftw-3.3.8
+GPU FFT library:    none
 TNG support:        enabled
-Hwloc support:      hwloc-2.4.1
+Hwloc support:      disabled
 Tracing support:    disabled
-C compiler:         /Users/distiller/project/miniconda/conda-bld/gromacs_1618502294889/_build_env/bin/x86_64-apple-darwin13.4.0-clang Clang 11.1.0
-C compiler flags:   -mavx2 -mfma -O3 -DNDEBUG
-C++ compiler:       /Users/distiller/project/miniconda/conda-bld/gromacs_1618502294889/_build_env/bin/x86_64-apple-darwin13.4.0-clang++ Clang 11.1.0
-C++ compiler flags: -mavx2 -mfma -fopenmp=libomp -O3 -DNDEBUG
-OpenCL include dir: /Applications/Xcode-9.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/OpenCL.framework
-OpenCL library:     /Applications/Xcode-9.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/OpenCL.framework
-OpenCL version:     2.2
+C compiler:         /Library/Developer/CommandLineTools/usr/bin/cc AppleClang 14.0.0.14000029
+C compiler flags:   -Wno-unknown-pragmas -Wno-missing-field-initializers -fno-stack-check -fno-stack-check -O3 -DNDEBUG
+C++ compiler:       /Library/Developer/CommandLineTools/usr/bin/c++ AppleClang 14.0.0.14000029
+C++ compiler flags: -Wno-unknown-pragmas -Wno-reserved-identifier -Wno-missing-field-initializers -fno-stack-check -fno-stack-check -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-source-uses-openmp -Wno-c++17-extensions -Wno-documentation-unknown-command -Wno-covered-switch-default -Wno-switch-enum -Wno-extra-semi-stmt -Wno-weak-vtables -Wno-shadow -Wno-padded -Wno-reserved-id-macro -Wno-double-promotion -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-format-nonliteral -Wno-used-but-marked-unused -Wno-float-equal -Wno-conditional-uninitialized -Wno-conversion -Wno-disabled-macro-expansion -Wno-unused-macros -O3 -DNDEBUG
 
 
-Running on 1 node with total 4 cores, 8 logical cores, 0 compatible GPUs
+Running on 1 node with total 0 processing units
 Hardware detected:
   CPU info:
-    Vendor: Intel
-    Brand:  Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz
-    Family: 6   Model: 142   Stepping: 10
-    Features: aes apic avx avx2 clfsh cmov cx8 cx16 f16c fma htt intel lahf mmx msr nonstop_tsc pcid pclmuldq pdcm pdpe1gb popcnt pse rdrnd rdtscp sse2 sse3 sse4.1 sse4.2 ssse3 tdt x2apic
-  Hardware topology: Full
-    Sockets, cores, and logical processors:
-      Socket  0: [   0   1] [   2   3] [   4   5] [   6   7]
-    Numa nodes:
-      Node  0 (17179869184 bytes mem):   0   1   2   3   4   5   6   7
-      Latency:
-               0
-         0  1.00
-    Caches:
-      L1: 32768 bytes, linesize 64 bytes, assoc. 0, shared 2 ways
-      L2: 262144 bytes, linesize 64 bytes, assoc. 4, shared 2 ways
-      L3: 6291456 bytes, linesize 64 bytes, assoc. 0, shared 8 ways
-  GPU info:
-    Number of GPUs detected: 1
-    #0: name: Intel(R) Iris(TM) Plus Graphics 655, vendor: Intel Inc., device version: OpenCL 1.2 , stat: incompatible (please recompile with GMX_OPENCL_NB_CLUSTER_SIZE=4)
+    Vendor: ARM
+    Brand:  Unknown CPU brand
+    Family: 0   Model: 0   Stepping: 0
+    Features: neon neon_asimd
+  Hardware topology: Only logical processor count
+    CPU limit set by OS: -1   Recommended max number of threads: 8
 
 
 ++++ PLEASE READ AND CITE THE FOLLOWING REFERENCE ++++
@@ -137,7 +128,7 @@ Comp. Phys. Comm. 91 (1995) pp. 43-56
 
 
 ++++ PLEASE CITE THE DOI FOR THIS VERSION OF GROMACS ++++
-https://doi.org/10.5281/zenodo.4576055
+https://doi.org/10.5281/zenodo.7323393
 -------- -------- --- Thank You --- -------- --------
 
 Plain Ewald electrostatics only supports a single rank. Choosing to use only a single thread-MPI rank.
@@ -148,10 +139,11 @@ Input Parameters:
    nsteps                         = 0
    init-step                      = 0
    simulation-part                = 1
+   mts                            = false
    comm-mode                      = Linear
    nstcomm                        = 100
    bd-fric                        = 0
-   ld-seed                        = -143491078
+   ld-seed                        = 2079718901
    emtol                          = 10
    emstep                         = 0.01
    niter                          = 20
@@ -193,7 +185,7 @@ Input Parameters:
    ewald-rtol                     = 0.0001
    ewald-rtol-lj                  = 0.001
    lj-pme-comb-rule               = Geometric
-   ewald-geometry                 = 0
+   ewald-geometry                 = 3d
    epsilon-surface                = 0
    tcoupl                         = Nose-Hoover
    nsttcouple                     = 10
@@ -221,9 +213,6 @@ Input Parameters:
       posres-comB[1]= 0.00000e+00
       posres-comB[2]= 0.00000e+00
    QMMM                           = false
-   QMconstraints                  = 0
-   QMMMscheme                     = 0
-   MMChargeScaleFactor            = 1
 qm-opts:
    ngQM                           = 0
    constraint-algorithm           = Lincs
@@ -300,6 +289,15 @@ qm-opts:
        normalize-densities        = true
        adaptive-force-scaling     = false
        adaptive-force-scaling-time-constant = 4
+       shift-vector               =
+       transformation-matrix      =
+     qmmm-cp2k:
+       active                     = false
+       qmgroup                    = System
+       qmmethod                   = PBE
+       qmfilenames                =
+       qmcharge                   = 0
+       qmmultiplicity             = 1
 grpopts:
    nrdf:        4497
    ref-t:         372
@@ -313,15 +311,40 @@ annealing-npoints:           0
 Changing nstlist from 10 to 100, rlist from 1.4 to 1.4
 
 
+When checking whether update groups are usable:
+  No constraints or virtual sites are in use, so it is best not to use update groups
+
+Initializing Domain Decomposition on 1 ranks
+Dynamic load balancing: auto
+Minimum cell size due to atom displacement: 0.295 nm
+Initial maximum distances in bonded interactions:
+    two-body bonded interactions: 0.396 nm, Exclusion, atoms 716 720
+  multi-body bonded interactions: 0.396 nm, Ryckaert-Bell., atoms 716 720
+Minimum cell size due to bonded interactions: 0.436 nm
+The system does not use PME for electrostatics or LJ
+Optimizing the DD grid for 1 cells with a minimum initial size of 0.436 nm
+The maximum allowed number of cells is: X 9 Y 9 Z 9
+Domain decomposition grid 1 x 1 x 1, separate PME ranks 0
+
+The initial number of communication pulses is:
+The initial domain decomposition cell size is:
+
+The maximum allowed distance for atoms involved in interactions is:
+                 non-bonded interactions           1.400 nm
+            two-body bonded interactions  (-rdd)   1.400 nm
+          multi-body bonded interactions  (-rdd)   1.400 nm
+
+When dynamic load balancing gets turned on, these settings will change to:
+The maximum number of communication pulses is:
+The minimum size for domain decomposition cells is 1.400 nm
+The requested allowed shrink of DD cells (option -dds) is: 0.80
+The allowed shrink of domain decomposition cells is:
+The maximum allowed distance for atoms involved in interactions is:
+                 non-bonded interactions           1.400 nm
+            two-body bonded interactions  (-rdd)   1.400 nm
+          multi-body bonded interactions  (-rdd)   1.400 nm
+
 Using 1 MPI thread
-
-Non-default thread affinity set, disabling internal thread affinity
-
-Using 16 OpenMP threads
-
-
-WARNING: Oversubscribing the available 8 logical CPU cores with 16 threads.
-         This will cause considerable performance loss.
 System total charge: 0.000
 Will do PME sum in reciprocal space for electrostatic interactions.
 
@@ -333,40 +356,47 @@ J. Chem. Phys. 103 (1995) pp. 8577-8592
 
 Using a Gaussian width (1/beta) of 0.508894 nm for Ewald
 Potential shift: LJ r^-12: 0.000e+00 r^-6: 0.000e+00
-Initialized non-bonded Ewald tables, spacing: 1.18e-03 size: 1192
-
-Will do ordinary reciprocal space Ewald sum.
-
-Using SIMD 4x8 nonbonded short-range kernels
-
-Using a 4x8 pair-list setup:
-  updated every 100 steps, buffer 0.000 nm, rlist 1.400 nm
-At tolerance 0.005 kJ/mol/ps per atom, equivalent classical 1x1 list would be:
-  updated every 100 steps, buffer 0.034 nm, rlist 1.434 nm
-
-Using Lorentz-Berthelot Lennard-Jones combination rule
+Initialized non-bonded Coulomb Ewald tables, spacing: 1.18e-03 size: 1192
 
 Long Range LJ corr.: <C6> 7.0332e-03
 
+
+Using SIMD 4x4 nonbonded short-range kernels
+
+Using a 4x4 pair-list setup:
+  updated every 100 steps, buffer 0.000 nm, rlist 1.400 nm
+At tolerance 0.005 kJ/mol/ps per atom, equivalent classical 1x1 list would be:
+  updated every 100 steps, buffer 0.037 nm, rlist 1.437 nm
+
+Using Lorentz-Berthelot Lennard-Jones combination rule
+Will do ordinary reciprocal space Ewald sum.
 Removing pbc first time
+
+Linking all bonded interactions to atoms
+
 There are: 1500 Atoms
+
+Atom distribution over 1 domains: av 1500 stddev 0 min 1500 max 1500
 Center of mass motion removal mode is Linear
 We have the following groups for center of mass motion removal:
   0:  rest
 Initial temperature: 0 K
 
-Started mdrun on rank 0 Mon Mar 14 15:06:46 2022
+Started mdrun on rank 0 Wed Feb  8 12:01:24 2023
 
            Step           Time
               0        0.00000
 
    Energies (kJ/mol)
            Bond          Angle Ryckaert-Bell.        LJ (SR)  Disper. corr.
-    2.27535e-06    6.77658e-06    5.72205e-03    5.37971e+05   -1.68323e+02
+    2.27535e-06    6.81303e-06    5.72205e-03    5.37918e+05   -1.81148e+02
    Coulomb (SR)   Coul. recip.      Potential    Kinetic En.   Total Energy
-    0.00000e+00    0.00000e+00    5.37803e+05    6.22919e+04    6.00095e+05
+    0.00000e+00    0.00000e+00    5.37737e+05    6.22920e+04    6.00029e+05
   Conserved En.    Temperature Pres. DC (bar) Pressure (bar)
-    6.00095e+05    3.33199e+03   -7.79040e+01    5.34507e+05
+    6.00029e+05    3.33200e+03   -9.02280e+01    5.75202e+05
+
+
+Time interval for measuring conserved energy has length 0, time 0 to 0 ps
 
 
 	<======  ###############  ==>
@@ -377,21 +407,21 @@ Started mdrun on rank 0 Mon Mar 14 15:06:46 2022
 
    Energies (kJ/mol)
            Bond          Angle Ryckaert-Bell.        LJ (SR)  Disper. corr.
-    2.27535e-06    6.77658e-06    5.72205e-03    5.37971e+05   -1.68323e+02
+    2.27535e-06    6.81303e-06    5.72205e-03    5.37918e+05   -1.81148e+02
    Coulomb (SR)   Coul. recip.      Potential    Kinetic En.   Total Energy
-    0.00000e+00    0.00000e+00    5.37803e+05    6.22919e+04    6.00095e+05
+    0.00000e+00    0.00000e+00    5.37737e+05    6.22920e+04    6.00029e+05
   Conserved En.    Temperature Pres. DC (bar) Pressure (bar)
-    6.00095e+05    3.33199e+03   -7.79040e+01    5.34507e+05
+    6.00029e+05    3.33200e+03   -9.02280e+01    5.75202e+05
 
    Total Virial (kJ/mol)
-   -1.22394e+06    3.23247e+04    2.95018e+04
-    3.23241e+04   -1.09673e+06   -1.34980e+04
-    2.95012e+04   -1.34977e+04   -1.08167e+06
+   -1.22388e+06    3.23216e+04    2.94979e+04
+    3.23209e+04   -1.09667e+06   -1.34986e+04
+    2.94987e+04   -1.34983e+04   -1.08161e+06
 
    Pressure (bar)
-    5.77001e+05   -1.51898e+04   -1.40021e+04
-   -1.51896e+04    5.16812e+05    6.62882e+03
-   -1.40018e+04    6.62869e+03    5.09707e+05
+    6.20935e+05   -1.63456e+04   -1.50671e+04
+   -1.63453e+04    5.56157e+05    7.13419e+03
+   -1.50675e+04    7.13406e+03    5.48513e+05
 
 
 	M E G A - F L O P S   A C C O U N T I N G
@@ -403,39 +433,46 @@ Started mdrun on rank 0 Mon Mar 14 15:06:46 2022
 
  Computing:                               M-Number         M-Flops  % Flops
 -----------------------------------------------------------------------------
- Pair Search distance check               0.330714           2.976    12.3
- NxN LJ [V&F]                             0.481856          20.720    85.6
- Shift-X                                  0.001500           0.009     0.0
+ Pair Search distance check               0.263042           2.367    11.4
+ NxN LJ [V&F]                             0.416304          17.901    86.1
+ Reset In Box                             0.001500           0.005     0.0
+ CG-CoM                                   0.003000           0.009     0.0
  Bonds                                    0.001200           0.071     0.3
- Angles                                   0.000900           0.151     0.6
- RB-Dihedrals                             0.000600           0.148     0.6
+ Angles                                   0.000900           0.151     0.7
+ RB-Dihedrals                             0.000600           0.148     0.7
  Virial                                   0.001545           0.028     0.1
  Stop-CM                                  0.003000           0.030     0.1
- Calc-Ekin                                0.003000           0.081     0.3
+ Calc-Ekin                                0.003000           0.081     0.4
 -----------------------------------------------------------------------------
- Total                                                      24.214   100.0
+ Total                                                      20.791   100.0
 -----------------------------------------------------------------------------
+
+
+    D O M A I N   D E C O M P O S I T I O N   S T A T I S T I C S
+
+ av. #atoms communicated per step for force:  2 x 0.0
 
 
      R E A L   C Y C L E   A N D   T I M E   A C C O U N T I N G
 
-On 1 MPI rank, each using 16 OpenMP threads
+On 1 MPI rank
 
  Computing:          Num   Num      Call    Wall time         Giga-Cycles
                      Ranks Threads  Count      (s)         total sum    %
 -----------------------------------------------------------------------------
- Neighbor search        1   16          1       0.001          0.027   0.0
- Force                  1   16          1       1.869         71.782  99.7
- NB X/F buffer ops.     1   16          1       0.000          0.002   0.0
- Write traj.            1   16          1       0.004          0.148   0.2
- Update                 1   16          1       0.000          0.003   0.0
- Rest                                           0.001          0.036   0.0
+ Domain decomp.         1    1          1       0.000          0.000   0.0
+ Neighbor search        1    1          1       0.001          0.000   0.1
+ Force                  1    1          1       1.030          0.025  99.7
+ NB X/F buffer ops.     1    1          1       0.000          0.000   0.0
+ Write traj.            1    1          1       0.002          0.000   0.2
+ Update                 1    1          1       0.000          0.000   0.0
+ Rest                                           0.000          0.000   0.0
 -----------------------------------------------------------------------------
- Total                                          1.875         71.998 100.0
+ Total                                          1.033          0.025 100.0
 -----------------------------------------------------------------------------
 
                Core t (s)   Wall t (s)        (%)
-       Time:       29.997        1.875     1599.9
+       Time:        1.033        1.033      100.0
                  (ns/day)    (hour/ns)
-Performance:        0.046      520.831
-Finished mdrun on rank 0 Mon Mar 14 15:06:48 2022
+Performance:        0.084      286.984
+Finished mdrun on rank 0 Wed Feb  8 12:01:25 2023

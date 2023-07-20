@@ -253,12 +253,12 @@ def run_cassandra(job):
         else:
             p_translate = 0.7
             p_swap = 0.29
-    elif molecule == "pentaneUA" and ensemble == "GEMC-NVT":
+    elif "pentaneUA" in molecule and ensemble == "GEMC-NVT":
         p_swap = 0.2
         p_translate = 0.27
         p_rotate = 0.26
         p_regrow = 0.26
-    elif molecule == "waterSPCE":
+    elif molecule == "waterSPCE" or molecule == "benzeneUA":
         p_translate = 0.49
         p_rotate = 0.5
     else:
@@ -292,6 +292,7 @@ def run_cassandra(job):
                 charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
+                mixing_rule=comb_rule,
                 run_name="nvt_melt",
                 prop_freq=prop_freq,
                 coord_freq=5000,
@@ -318,6 +319,7 @@ def run_cassandra(job):
                 charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
+                mixing_rule=comb_rule,
                 run_name="nvt_equil",
                 prop_freq=prop_freq,
                 coord_freq=5000,
@@ -345,6 +347,7 @@ def run_cassandra(job):
                     charge_style=charge_style,
                     vdw_cutoff=cutoff,
                     charge_cutoff=cutoff,
+                    mixing_rule=comb_rule,
                     run_name="nvt_melt_vap",
                     prop_freq=prop_freq,
                     coord_freq=5000,
@@ -368,6 +371,7 @@ def run_cassandra(job):
                     charge_style=charge_style,
                     vdw_cutoff=cutoff,
                     charge_cutoff=cutoff,
+                    mixing_rule=comb_rule,
                     run_name="nvt_equil_vap",
                     prop_freq=prop_freq,
                     coord_freq=5000,
@@ -400,6 +404,7 @@ def run_cassandra(job):
                 charge_style=charge_style,
                 vdw_cutoff=cutoff,
                 charge_cutoff=cutoff,
+                mixing_rule=comb_rule,
                 run_name=this_run,
                 prop_freq=prop_freq,
                 coord_freq=coord_freq,
@@ -519,7 +524,6 @@ def statistics(job):
     ]
 
     if job.sp.ensemble == "GEMC-NVT":
-
         box1 = "prod.out.box1.prp"
         box2 = "prod.out.box2.prp"
 
@@ -534,7 +538,6 @@ def statistics(job):
         job.document.mean_energy_box2 = data_box2["energy_total"].mean()
 
     else:
-
         box1 = "prod.out.prp"
 
         data_box1 = pd.read_table(
