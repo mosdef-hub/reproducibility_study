@@ -1,7 +1,6 @@
 name: mosdef-study38
 channels:
   - conda-forge
-  - conda-forge/label/hoomd_dev
   - bioconda
 dependencies:
   - constrainmol
@@ -35,3 +34,4 @@ dependencies:
   - signac-dashboard
   - signac-flow
   - unyt
+  - hoomd=4.0.0=*gpu*

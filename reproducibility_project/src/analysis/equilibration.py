@@ -6,7 +6,6 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from pymbar import timeseries
-from signac.contrib.job import Job
 
 
 def is_equilibrated(
@@ -135,7 +134,7 @@ def trim_non_equilibrated(
 
 
 def plot_job_property_with_t0(
-    job: Job,
+    job,
     filename: str,
     property_name: str,
     log_filename: str = "log.txt",

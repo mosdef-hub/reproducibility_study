@@ -40,45 +40,12 @@ class Project(FlowProject):
         self.ff_fn = self.data_dir / "forcefield.xml"
 
 
-# class Fry(DefaultSlurmEnvironment):
-#     """Subclass of DefaultSlurmEnvironment for BSU's Fry cluster."""
-
-#     hostname_pattern = "fry.boisestate.edu"
-#     template = "fry.sh"
-
-#     @classmethod
-#     def add_args(cls, parser):
-#         """Add command line arguments to the submit call."""
-#         parser.add_argument(
-#             "--partition",
-#             default="batch",
-#             help="Specify the partition to submit to.",
-#         )
-#         parser.add_argument("--nodelist", help="Specify the node to submit to.")
-
-
-class RahmanHOOMD(DefaultSlurmEnvironment):
-    """Subclass of DefaultSlurmEnvironment for VU's Rahman cluster."""
-
-    template = "rahman_hoomd.sh"
-
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--walltime",
-            type=float,
-            default=96,
-            help="Walltime for this submission",
-        )
-
-
 # The MOSDEF_PYTHON environment variable is set by running
 # echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
 # with the mosdef-study38 conda env active
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(lambda j: j.doc.get("shrink_finished"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1})
 def run_shrink(job):
     """Initialize volume for simulation with HOOMD-blue."""
     run_hoomd(job, "shrink")
@@ -96,7 +63,7 @@ def run_shrink(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 48})
 def run_npt(job):
     """Run an NPT simulation with HOOMD-blue."""
     run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
@@ -105,7 +72,7 @@ def run_npt(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_finished"))
 @Project.post(lambda j: j.doc.get("npt_eq"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1})
 def check_equilibration_npt(job):
     """Check the equilibration of the NPT simulation."""
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
@@ -123,7 +90,7 @@ def check_equilibration_npt(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1})
+@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1})
 def post_process(job):
     """Run post-processing on the log files."""
     from shutil import copy
@@ -283,7 +250,7 @@ def run_hoomd(job, method, restart=False):
             for f in forcefield
             if isinstance(f, hoomd.md.bond.Harmonic)
             or isinstance(f, hoomd.md.angle.Harmonic)
-            or isinstance(f, hoomd.md.dihedral.Harmonic)
+            or isinstance(f, hoomd.md.dihedral.Periodic)
             or isinstance(f, hoomd.md.dihedral.OPLS)
         ]
         for f in remove:
@@ -378,8 +345,6 @@ def run_hoomd(job, method, restart=False):
             "constituent_types": c_types,
             "positions": c_pos,
             "orientations": c_orient,
-            "charges": c_charge,
-            "diameters": c_diam,
         }
 
         for force in forcefield:
@@ -458,8 +423,8 @@ def run_hoomd(job, method, restart=False):
     if method == "npt":
         # convert pressure to unit system
         pressure = float((job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value)
-        print(f"Pressure = {pressure}")
-        integrator_method = hoomd.md.methods.NPT(
+        integrator_method = hoomd.md.methods.ConstantPressure(
+            thermostat=hoomd.md.methods.thermostats.Bussi(kT=kT),
             filter=_all,
             kT=kT,
             tau=tau,
@@ -468,8 +433,10 @@ def run_hoomd(job, method, restart=False):
             couple="xyz",
         )
     else:
-        # shrink and nvt both use nvt
-        integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
+        integrator_method = hoomd.md.methods.ConstantVolume(
+            filter=_all,
+            thermostat=hoomd.md.methods.thermostats.Bussi(kT=kT),
+        )
 
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator

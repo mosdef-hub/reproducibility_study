@@ -13,7 +13,7 @@ from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
 
 def sample_job(
-    job: signac.contrib.job.Job,
+    job,
     ensemble: str,
     filename: str = "log.txt",
     variable: str = "potential_energy",
@@ -29,7 +29,7 @@ def sample_job(
 
     Parameters
     ----------
-    job : signac.contrib.job.Job
+    job : signac.contrib.job.Jb
         The Job object.
     ensemble : str
         The ensemble of interest, affects the name of the sampled values in
@@ -88,7 +88,7 @@ def sample_job(
 
 
 def get_subsampled_values(
-    job: signac.contrib.project.Job,
+    job,
     prop: str,
     ensemble: str,
     property_filename: str = "log-npt.txt",
@@ -119,11 +119,6 @@ def get_subsampled_values(
                                 property_filename="log-npt.txt")
     >>> assert isinstance(arr, np.ndarray)
     """
-    if not isinstance(job, signac.contrib.project.Job):
-        raise TypeError(
-            f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
-        )
-
     if prop is None or prop == "":
         raise ValueError(
             f"Expected 'prop' to be a name of a property, was provided {prop}."
@@ -197,7 +192,7 @@ def _decorr_sampling(
 
 
 def get_decorr_samples_using_max_t0(
-    job: signac.contrib.Project.Job,
+    job,
     ensemble: str,
     property_filename: str,
     prop: str,
