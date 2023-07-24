@@ -98,7 +98,7 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
-    for filename in ["log-npt-raw.txt", "log-nvt-raw.txt"]:
+    for filename in ["log-npt-raw.txt"]:
         rawlogfile = job.fn(filename)
         logfile = job.fn(filename.replace("-raw", ""))
 
@@ -356,7 +356,7 @@ def run_hoomd(job, method, restart=False):
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode=f"{writemode}b",
-        dynamic=["momentum"],
+        dynamic=["property", "momentum"],
     )
     sim.operations.writers.append(gsd_writer)
 
