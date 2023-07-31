@@ -186,7 +186,7 @@ def run_hoomd(job, method, restart=False):
         ref_mass=m,
         r_cut=job.sp.r_cut,
         init_snap=init_snap,
-        pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
+        pppm_kwargs={"Nx": 24, "Ny": 24, "Nz": 24, "order": 5},
     )
     print("Snapshot created")
 
@@ -390,12 +390,8 @@ def run_hoomd(job, method, restart=False):
     )
     sim.operations.writers.append(table_file)
 
-    if job.sp.molecule == "ethanolAA":
-        # ethanol needs a smaller timestep to capture fast oscillations of
-        # explicit hydrogen bonds (period 0.0118 time units)
-        dt = 0.0005
-    else:
-        dt = 0.001
+    dt = 0.001
+
     if isrigid:
         integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
         integrator.rigid = rigid
