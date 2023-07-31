@@ -179,6 +179,15 @@ def run_hoomd(job, method, restart=False):
     e = 1 / 4.184
     m = 0.9999938574
 
+    pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7}
+
+    if job.sp.molecule.startswith("waterSPCE"):
+        print('PPPM args for water')
+        pppm_kwargs={"Nx": 32, "Ny": 32, "Nz": 32, "order": 5}
+    elif job.sp.molecule.startswith("ethanolAA"):
+        print('PPPM args for ethanol')
+        pppm_kwargs={"Nx": 24, "Ny": 24, "Nz": 24, "order": 5}
+
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure,
         ref_distance=d,
@@ -186,7 +195,7 @@ def run_hoomd(job, method, restart=False):
         ref_mass=m,
         r_cut=job.sp.r_cut,
         init_snap=init_snap,
-        pppm_kwargs={"Nx": 24, "Ny": 24, "Nz": 24, "order": 5},
+        pppm_kwargs=pppm_kwargs,
     )
     print("Snapshot created")
 
