@@ -55,19 +55,20 @@ if __name__ == "__main__":
     # Parse LAMMPS SPE data
     lmp_map = {
         "potential_energy": "potential_energy",
-        "vdw_energy": "tot_vdw_energy",
-        "coul_energy": "tot_electrostatics",
-        "pair_energy": "tot_pair_energy",
+        "tot_vdw_energy": "tot_vdw_energy",
+        "tot_electrostatics": "tot_electrostatics",
+        "tot_pair_energy": "tot_pair_energy",
         "bonds_energy": "bonds_energy",
         "angles_energy": "angles_energy",
         "dihedrals_energy": "dihedrals_energy",
         "tail_energy": "tail_energy",
-        "kspace_energy": "long_range_electrostatics",
+        "long_range_electrostatics": "long_range_electrostatics",
+        "short_range_electrostatics": "short_range_electrostatics",
     }
 
     for job in project.find_jobs({"engine": "lammps-VU"}):
         data = np.genfromtxt(f"{job.ws}/log-spe.txt", names=True, delimiter=",")
-        for prop in data.dtype.names:
+        for prop in lmp_map:
             spe_data[job.sp.molecule][job.sp.engine][lmp_map[prop]] += data[
                 prop
             ]
@@ -86,6 +87,8 @@ if __name__ == "__main__":
         "potential_energy": "potential_energy",
     }
     for job in project.find_jobs({"engine": "hoomd"}):
+        if not job.isfile("log-spe-raw.txt"):
+            continue
         data = np.genfromtxt(
             f"{job.ws}/log-spe-raw.txt", names=True, delimiter=" "
         )
@@ -155,8 +158,22 @@ if __name__ == "__main__":
     if not os.path.isdir("csvs"):
         os.mkdir("csvs")
 
-    summarize_dfs = dict()
+    summaryDF = pd.DataFrame(columns=["engine", "molecule", "potential_energy"])
+
     for molecule in spe_data:
         print("Saving", molecule)
         df = pd.DataFrame.from_dict(spe_data[molecule]).transpose()
         df.to_csv(f"csvs/{molecule}_spe.csv")
+        for engine in spe_data[molecule]:
+            summaryDF.loc[len(summaryDF.index)] = [
+                engine,
+                molecule,
+                spe_data[molecule][engine]["potential_energy"],
+            ]
+
+    reDF = summaryDF.pivot(
+        index="engine", columns="molecule", values="potential_energy"
+    ).rename_axis(index=None, columns=None)
+    re_func = lambda x: (x - x.mean()) / x.mean() * 100000
+    reDF = reDF.transform(re_func)
+    reDF.to_csv(f"csvs/relative_error_in_spe.csv")
