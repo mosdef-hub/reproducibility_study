@@ -1,0 +1,36 @@
+name: mosdef-study38
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - constrainmol
+  - ele
+  - freud
+  - foyer=0.11.2
+  - freud
+  - gmso
+  - gsd=2.6.0
+  - h5py
+  - jupyter
+  - jinja2
+  - lammps
+  - matplotlib
+  - mbuild=0.15.1
+  - mdtraj
+  - numpy
+  - openmm>=7.6
+  - packmol>=18
+  - pandas
+  - panedr
+  - parmed>=3.4.3
+  - pymbar=3.0.5
+  - pytest
+  - python=3.8
+  - rdkit
+  - scipy=1.9.0
+  - seaborn
+  - signac
+  - signac-dashboard
+  - signac-flow
+  - unyt
+  - hoomd=4.0.0=*gpu*
