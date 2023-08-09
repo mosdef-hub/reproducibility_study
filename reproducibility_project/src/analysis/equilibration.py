@@ -5,8 +5,13 @@ from typing import List
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+import signac
 from pymbar import timeseries
-from signac.contrib.job import Job
+
+if hasattr(signac, "contrib"):
+    Job = signac.contrib.job.Job
+else:
+    Job = signac.job.Job
 
 
 def is_equilibrated(

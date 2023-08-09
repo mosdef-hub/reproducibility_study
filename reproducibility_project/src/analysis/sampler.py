@@ -11,9 +11,14 @@ from pymbar import timeseries
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
+if hasattr(signac, "contrib"):
+    Job = signac.contrib.job.Job
+else:
+    Job = signac.job.Job
+
 
 def sample_job(
-    job: signac.contrib.job.Job,
+    job: Job,
     ensemble: str,
     filename: str = "log.txt",
     variable: str = "potential_energy",
@@ -88,7 +93,7 @@ def sample_job(
 
 
 def get_subsampled_values(
-    job: signac.contrib.project.Job,
+    job: Job,
     prop: str,
     ensemble: str,
     property_filename: str = "log-npt.txt",
@@ -119,9 +124,9 @@ def get_subsampled_values(
                                 property_filename="log-npt.txt")
     >>> assert isinstance(arr, np.ndarray)
     """
-    if not isinstance(job, signac.contrib.project.Job):
+    if not isinstance(job, Job):
         raise TypeError(
-            f"Expected input 'job' of type signac.contrib.project.Job, was provided: {type(job)}"
+            f"Expected input 'job' of type Job, was provided: {type(job)}"
         )
 
     if prop is None or prop == "":
@@ -197,7 +202,7 @@ def _decorr_sampling(
 
 
 def get_decorr_samples_using_max_t0(
-    job: signac.contrib.Project.Job,
+    job: Job,
     ensemble: str,
     property_filename: str,
     prop: str,

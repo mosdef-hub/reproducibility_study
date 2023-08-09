@@ -1,6 +1,0 @@
-project = mosdef_hoomd4
-workspace_dir = workspace
-schema_version = 1
-[General]
-[hosts]
-[flow]
