@@ -29,7 +29,7 @@ def sample_job(
 
     Parameters
     ----------
-    job : signac.contrib.job.Jb
+    job : signac.contrib.job.Job
         The Job object.
     ensemble : str
         The ensemble of interest, affects the name of the sampled values in

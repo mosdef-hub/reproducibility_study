@@ -1,36 +1,33 @@
 name: mosdef-study38
 channels:
   - conda-forge
+  - conda-forge/label/hoomd_dev
   - bioconda
 dependencies:
   - constrainmol
   - ele
   - freud
+  - gitpython
   - foyer=0.11.2
-  - freud
+  - freud=2.6.2
   - gmso
+  - gromacs=2020.6
   - gsd=2.6.0
   - h5py
   - jupyter
-  - jinja2
-  - lammps
+	@@ -20,7 +17,6 @@ dependencies:
   - matplotlib
   - mbuild=0.15.1
   - mdtraj
+  - mosdef_cassandra
   - numpy
   - openmm>=7.6
   - packmol>=18
-  - pandas
-  - panedr
-  - parmed>=3.4.3
-  - pymbar=3.0.5
-  - pytest
-  - python=3.8
+	@@ -33,7 +29,8 @@ dependencies:
   - rdkit
   - scipy=1.9.0
   - seaborn
-  - signac
+  - signac=1.7.0
   - signac-dashboard
-  - signac-flow
+  - signac-flow=0.20.0
   - unyt
-  - hoomd=4.0.0=*gpu*
