@@ -45,7 +45,14 @@ class Project(FlowProject):
 # with the mosdef-study38 conda env active
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(lambda j: j.doc.get("shrink_finished"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1, "memory": 16})
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def run_shrink(job):
     """Initialize volume for simulation with HOOMD-blue."""
     run_hoomd(job, "shrink")
@@ -63,7 +70,14 @@ def run_shrink(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 48, "memory": 16})
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 48,
+        "memory": 16,
+    }
+)
 def run_npt(job):
     """Run an NPT simulation with HOOMD-blue."""
     run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
@@ -72,7 +86,14 @@ def run_npt(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_finished"))
 @Project.post(lambda j: j.doc.get("npt_eq"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1, "memory": 16})
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def check_equilibration_npt(job):
     """Check the equilibration of the NPT simulation."""
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
@@ -90,7 +111,14 @@ def check_equilibration_npt(job):
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
-@Project.operation(directives={"executable": "$MOSDEF_PYTHON", "ngpu": 1, "walltime": 1, "memory": 16})
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def post_process(job):
     """Run post-processing on the log files."""
     from shutil import copy
@@ -179,14 +207,14 @@ def run_hoomd(job, method, restart=False):
     e = 1 / 4.184
     m = 0.9999938574
 
-    pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7}
+    pppm_kwargs = {"Nx": 64, "Ny": 64, "Nz": 64, "order": 7}
 
     if job.sp.molecule.startswith("waterSPCE"):
-        print('PPPM args for water')
-        pppm_kwargs={"Nx": 32, "Ny": 32, "Nz": 32, "order": 5}
+        print("PPPM args for water")
+        pppm_kwargs = {"Nx": 32, "Ny": 32, "Nz": 32, "order": 5}
     elif job.sp.molecule.startswith("ethanolAA"):
-        print('PPPM args for ethanol')
-        pppm_kwargs={"Nx": 24, "Ny": 24, "Nz": 24, "order": 5}
+        print("PPPM args for ethanol")
+        pppm_kwargs = {"Nx": 24, "Ny": 24, "Nz": 24, "order": 5}
 
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure,
@@ -445,9 +473,7 @@ def run_hoomd(job, method, restart=False):
         # only run with high tauS if we are starting from scratch
         if not restart:
             steps = 1e6
-            print(
-                f"Running {steps:.0e}."
-            )
+            print(f"Running {steps:.0e}.")
             sim.run(steps)
             print("Done")
 
@@ -480,9 +506,7 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
-            print(
-                f"Running shrink {shrink_steps:.0e}."
-            )
+            print(f"Running shrink {shrink_steps:.0e}.")
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
@@ -491,9 +515,7 @@ def run_hoomd(job, method, restart=False):
     if method != "shrink":
         steps = 2e7
         if method == "npt":
-            print(
-                f"Running {steps:.0e}."
-            )
+            print(f"Running {steps:.0e}.")
         else:
             print(f"Running {steps:.0e}.")
         sim.run(steps)
