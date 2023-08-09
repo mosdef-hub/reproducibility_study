@@ -11,7 +11,7 @@ from pymbar import timeseries
 
 from reproducibility_project.src.analysis.equilibration import is_equilibrated
 
-if hasattr(signac, 'contrib'):
+if hasattr(signac, "contrib"):
     Job = signac.contrib.job.Job
 else:
     Job = signac.job.Job

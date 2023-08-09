@@ -5,10 +5,10 @@ from typing import List
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from pymbar import timeseries
 import signac
+from pymbar import timeseries
 
-if hasattr(signac, 'contrib'):
+if hasattr(signac, "contrib"):
     Job = signac.contrib.job.Job
 else:
     Job = signac.job.Job
