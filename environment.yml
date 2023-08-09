@@ -15,7 +15,8 @@ dependencies:
   - gsd=2.6.0
   - h5py
   - jupyter
-	@@ -20,7 +17,6 @@ dependencies:
+  - jinja2
+  - lammps
   - matplotlib
   - mbuild=0.15.1
   - mdtraj
@@ -23,7 +24,12 @@ dependencies:
   - numpy
   - openmm>=7.6
   - packmol>=18
-	@@ -33,7 +29,8 @@ dependencies:
+  - pandas
+  - panedr
+  - parmed>=3.4.3
+  - pymbar=3.0.5
+  - pytest
+  - python=3.8
   - rdkit
   - scipy=1.9.0
   - seaborn
