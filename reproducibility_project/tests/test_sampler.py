@@ -35,7 +35,7 @@ class TestSampler(BaseTest):
     def test_write_subsampled_incorrect_params(self, tmp_job):
         with pytest.raises(
             TypeError,
-            match=r"Expected input \'job\' of type signac\.contrib\.project\.Job",
+            match=r"Expected input \'job\' of type Job",
         ):
             get_subsampled_values("foo", prop="density", ensemble="npt")
 
