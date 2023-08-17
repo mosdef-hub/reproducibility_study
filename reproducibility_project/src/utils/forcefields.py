@@ -3,6 +3,8 @@ import os
 
 import foyer
 
+from reproducibility_project.src import xmls
+
 
 def load_ff(
     name: str = None,
@@ -18,6 +20,10 @@ def load_ff(
         Forcefield name to load.
     """
     if name in ["oplsaa", "trappe-ua"]:
+        ff_path = (
+            str(os.path.dirname(os.path.abspath(xmls.__file__)))
+            + f"/{name}.xml"
+        )
         return foyer.Forcefield(name=name)
     elif name == "spce":
         from reproducibility_project.src import xmls
