@@ -141,13 +141,13 @@ def main():
 
     for i, temp in enumerate(temps):
         ax[i].plot(
-            rdf_flex[temp][:, 0], cdf_flex[temp][:, 1], label="MCCCS-MN-fix"
+            rdf_flex[temp][:, 0], cdf_flex[temp][:, 1], label="MCCCS-MN-flex"
         )
         ax[i].plot(
             rdf_rig[temp][:, 0],
             cdf_rig[temp][:, 1],
             "--",
-            label="MCCCS-MN-flex",
+            label="MCCCS-MN-fix",
         )
 
         f = interpolate.interp1d(rdf_flex[temp][:, 0], cdf_flex[temp][:, 1])
