@@ -37,3 +37,4 @@ dependencies:
   - signac-dashboard
   - signac-flow=0.20.0
   - unyt
+  - camelot-py
