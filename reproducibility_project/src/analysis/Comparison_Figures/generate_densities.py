@@ -139,26 +139,62 @@ def _generate_csv_from_PDF(molecule):
         headerInt = int(4 * np.floor(i / 4))
         header = newDF.iloc[headerInt]["Program(Group)"]
         newDF.iloc[i]["Program(Group)"] = header
-        
-    manAddDict = { #manually add missing densities
-        (5, 98.0):"648.53", (41, 98.0):"663.17", (70, 98.0):"673.97", (70, 173.0):"606.08"
+
+    manAddDict = {  # manually add missing densities
+        (5, 98.0): "648.53",
+        (41, 98.0): "663.17",
+        (70, 98.0): "673.97",
+        (70, 173.0): "606.08",
     }
-    if molecule in [
-        "OPLS Ethane at 5 MPa", "OPLS Ethane at 41 MPa"
-    ]:
+    if molecule in ["OPLS Ethane at 5 MPa", "OPLS Ethane at 41 MPa"]:
         press = int(molecule.split(" ")[-2])
-        newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "98.0"), "ρ / kg m−3"] = manAddDict[
-            (press, 98.0)]
-        print(f"ADDED "+ str(newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "98.0"), "ρ / kg m−3"]))
+        newDF.loc[
+            (newDF["Program(Group)"] == "TOWHEE(BS)")
+            & (newDF["T / K"] == "98.0"),
+            "ρ / kg m−3",
+        ] = manAddDict[(press, 98.0)]
+        print(
+            f"ADDED "
+            + str(
+                newDF.loc[
+                    (newDF["Program(Group)"] == "TOWHEE(BS)")
+                    & (newDF["T / K"] == "98.0"),
+                    "ρ / kg m−3",
+                ]
+            )
+        )
     elif molecule == "OPLS Ethane at 70 MPa":
         press = int(molecule.split(" ")[-2])
-        newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "98.0"), "ρ / kg m−3"] = manAddDict[
-            (press, 98.0)]
-        newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "173.0"), "ρ / kg m−3"] = manAddDict[
-            (press, 173.0)]
-        print(f"ADDED "+ str(newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "98.0"), "ρ / kg m−3"]))
-        print(f"ADDED "+ str(newDF.loc[(newDF["Program(Group)"] == "TOWHEE(BS)") & (newDF["T / K"] == "173.0"), "ρ / kg m−3"]))
-        
+        newDF.loc[
+            (newDF["Program(Group)"] == "TOWHEE(BS)")
+            & (newDF["T / K"] == "98.0"),
+            "ρ / kg m−3",
+        ] = manAddDict[(press, 98.0)]
+        newDF.loc[
+            (newDF["Program(Group)"] == "TOWHEE(BS)")
+            & (newDF["T / K"] == "173.0"),
+            "ρ / kg m−3",
+        ] = manAddDict[(press, 173.0)]
+        print(
+            f"ADDED "
+            + str(
+                newDF.loc[
+                    (newDF["Program(Group)"] == "TOWHEE(BS)")
+                    & (newDF["T / K"] == "98.0"),
+                    "ρ / kg m−3",
+                ]
+            )
+        )
+        print(
+            f"ADDED "
+            + str(
+                newDF.loc[
+                    (newDF["Program(Group)"] == "TOWHEE(BS)")
+                    & (newDF["T / K"] == "173.0"),
+                    "ρ / kg m−3",
+                ]
+            )
+        )
 
     # we will change the data type
     # of id column to str by giving
