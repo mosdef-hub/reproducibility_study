@@ -1,4 +1,5 @@
 """Plotting code for ethanol subproject."""
+
 import glob
 import itertools
 import textwrap

@@ -1,4 +1,5 @@
 """Scheduler environment module for NotreDameCRC."""
+
 import flow
 
 from .ndcrc_scheduler import SGEScheduler

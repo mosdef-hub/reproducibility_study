@@ -1,4 +1,5 @@
 """Create atomistic representation of ethanol."""
+
 import os
 
 import mbuild as mb

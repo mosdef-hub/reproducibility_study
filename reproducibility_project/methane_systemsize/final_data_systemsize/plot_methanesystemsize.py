@@ -1,4 +1,5 @@
 """Plot methane systemsize density."""
+
 import matplotlib
 import matplotlib.pyplot as plt
 

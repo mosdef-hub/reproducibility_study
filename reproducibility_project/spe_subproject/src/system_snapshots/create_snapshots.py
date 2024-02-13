@@ -2,6 +2,7 @@
 
 Create and return only liquid boxes for all systems
 """
+
 import numpy as np
 import unyt as u
 

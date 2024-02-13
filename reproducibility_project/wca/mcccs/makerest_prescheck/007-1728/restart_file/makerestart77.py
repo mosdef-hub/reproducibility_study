@@ -1,4 +1,5 @@
 """Make MCCCS-MN restart file for calculating pressure."""
+
 import mbuild as mb
 from fort77maker_onebox import fort77writer
 from system_builder import get_molecule

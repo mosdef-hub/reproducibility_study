@@ -1,4 +1,5 @@
 """Quick Analysis to output average densities locally for LAMMPS-VU."""
+
 import math
 import sys
 
