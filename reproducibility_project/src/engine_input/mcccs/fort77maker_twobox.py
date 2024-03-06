@@ -1,4 +1,5 @@
 """Takes an mbuild filled_box and creates a restart file for mcccs simulations."""
+
 import errno
 import os
 import sys
@@ -108,9 +109,9 @@ def fort77writer(
     MoleculesBox[1] = molecule_names
     MoleculesBox[2] = molecule_names
     NBeadsBox = {}
-    NBeadsBox[
-        1
-    ] = nbeads_list  # list that contains number of beads for each molecule type
+    NBeadsBox[1] = (
+        nbeads_list  # list that contains number of beads for each molecule type
+    )
     NBeadsBox[2] = nbeads_list
 
     NMoleculesBox = {}

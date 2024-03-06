@@ -1,4 +1,5 @@
 """Script for finding the job ids of specific simulations."""
+
 # It also parses the gsd format trajectory stored in each output analysis folder (obtained by executing conv_traj.py before this script) to get the RDFs."""
 import os
 import shutil

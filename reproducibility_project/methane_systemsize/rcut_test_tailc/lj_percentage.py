@@ -1,4 +1,5 @@
 """Script to calculate LJ potential/epsilon at various rcuts."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 

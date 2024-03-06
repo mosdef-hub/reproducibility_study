@@ -1,4 +1,5 @@
 """Move and remove obsolete jobs from workspace. Use with care."""
+
 import json
 import os
 import os.path

@@ -1,4 +1,5 @@
 """Test file to ensure that forcefield loading is behaving as expected."""
+
 import pytest
 from foyer import Forcefield
 

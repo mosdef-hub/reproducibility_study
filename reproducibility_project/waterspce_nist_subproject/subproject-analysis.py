@@ -1,4 +1,5 @@
 """Setup for signac, signac-flow, signac-dashboard for this study."""
+
 import pathlib
 from copy import copy
 from typing import List

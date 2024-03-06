@@ -1,4 +1,5 @@
 """GOMC's setup for signac, signac-flow, signac-dashboard for this study."""
+
 # project.py
 
 import os
@@ -2753,15 +2754,15 @@ def part_5b_avg_std_dev_of_replicates_analysis(*jobs):
                 setMeanZ2[replicateAverageName2[i]] = (
                     setMeanZ2[replicateAverageName2[i]] + replicateAverageZ2[i]
                 )
-                setMeanTemperature2[
-                    replicateAverageName2[i]
-                ] = replicateAverageT2[i]
-                setMeanMolecule2[
-                    replicateAverageName2[i]
-                ] = replicateAverageMolecule2[i]
-                setMeanOptions2[
-                    replicateAverageName2[i]
-                ] = replicateAverageOptions2[i]
+                setMeanTemperature2[replicateAverageName2[i]] = (
+                    replicateAverageT2[i]
+                )
+                setMeanMolecule2[replicateAverageName2[i]] = (
+                    replicateAverageMolecule2[i]
+                )
+                setMeanOptions2[replicateAverageName2[i]] = (
+                    replicateAverageOptions2[i]
+                )
 
         for i in np.unique(replicateAverageName):
             setMeanEnergy[i] /= replicaCount
