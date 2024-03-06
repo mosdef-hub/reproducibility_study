@@ -36,7 +36,7 @@ class RahmanAnalysis(DefaultPBSEnvironment):
 
 
 mc_engines = ("gomc", "mcccs", "cassandra")
-md_engines = ("gromacs", "hoomd", "lammps-VU")  # , "lammps-UD")
+md_engines = ("gromacs", "hoomd", "lammps-VU")
 md_npt_props = [
     "potential_energy",
     "kinetic_energy",

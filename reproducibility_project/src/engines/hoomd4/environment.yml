@@ -29,7 +29,7 @@ dependencies:
   - rdkit
   - scipy=1.9.0
   - seaborn
-  - signac
+  - signac>=2
   - signac-dashboard
   - signac-flow
   - unyt
