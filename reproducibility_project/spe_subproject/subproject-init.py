@@ -25,10 +25,9 @@ simulation_engines = [
     "gromacs",
     "hoomd",
     "lammps-VU",
-    "lammps-UD",
     "mcccs_lammps_foyer",
 ]
-md_engines = ["gromacs", "hoomd", "lammps-VU", "lammps-UD"]
+md_engines = ["gromacs", "hoomd", "lammps-VU"]
 mc_engines = ["cassandra", "mcccs", "gomc", "mcccs_lammps_foyer"]
 forcefields = {}
 r_cuts = {}
