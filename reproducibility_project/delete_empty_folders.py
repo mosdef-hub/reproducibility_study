@@ -1,4 +1,5 @@
 """Delete folders in ws which are empty."""
+
 import os
 from glob import glob
 

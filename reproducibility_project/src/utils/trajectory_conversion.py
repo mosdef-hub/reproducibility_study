@@ -1,4 +1,5 @@
 """Convert trajectory files to gsd format."""
+
 import io
 from pathlib import Path
 

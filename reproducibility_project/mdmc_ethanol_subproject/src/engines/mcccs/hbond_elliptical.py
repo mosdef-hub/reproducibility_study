@@ -1,4 +1,5 @@
 """Base code to find hbonding in trajectory files."""
+
 import math
 import os
 
@@ -81,9 +82,7 @@ def ellipticalFun(dist, degangle):
     Boolean
         Returns True if the point lies in the elliptical region. Otherwise False.
     """
-    if (
-        ((dist - 0.275) / 0.05) ** 2 + (1 / 50**2) * (degangle - 180) ** 2
-    ) < 1:
+    if (((dist - 0.275) / 0.05) ** 2 + (1 / 50**2) * (degangle - 180) ** 2) < 1:
         return True
 
     else:

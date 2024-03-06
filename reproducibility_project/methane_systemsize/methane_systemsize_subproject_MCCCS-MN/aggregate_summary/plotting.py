@@ -1,4 +1,5 @@
 """Plotting code for methane system size subproject."""
+
 import textwrap
 
 import matplotlib.pyplot as plt

@@ -1,4 +1,5 @@
 """Convert water-SPC/E parameters from the original paper to epsilon and sigma."""
+
 # U = -(A/r)^6+(B/r)^12
 # that makes
 # sigma = B^2/A and epsilon = (1/4)*(A/B)^12

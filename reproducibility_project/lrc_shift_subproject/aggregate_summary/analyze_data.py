@@ -1,4 +1,5 @@
 """Create summary data based on the aggregate values."""
+
 import pathlib
 
 import matplotlib.pyplot as plt

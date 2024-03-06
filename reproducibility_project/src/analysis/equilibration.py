@@ -1,4 +1,5 @@
 """Timeseries and pyMBAR related methods."""
+
 import pathlib
 from typing import List
 

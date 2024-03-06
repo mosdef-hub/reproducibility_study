@@ -1,4 +1,5 @@
 """GOMC's single point energy analysis setup for signac, signac-flow, signac-dashboard for this study."""
+
 # project.py
 
 import os

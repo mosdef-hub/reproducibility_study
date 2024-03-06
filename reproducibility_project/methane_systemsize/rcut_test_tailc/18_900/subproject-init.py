@@ -1,4 +1,5 @@
 """Initialize signac statepoints."""
+
 import itertools
 import os
 
@@ -127,28 +128,34 @@ for molecule in molecules:
             "ensemble": ensemble if ensemble else None,
             "N_liquid": n_liq,
             "N_vap": n_vap if n_vap else None,
-            "box_L_liq": np.round(
-                liq_box_L.to_value("nm"),
-                decimals=3,
-            ).item()
-            if liq_box_L
-            else None,
-            "box_L_vap": np.round(
-                vap_box_L.to_value("nm"),
-                decimals=3,
-            ).item()
-            if vap_box_L
-            else None,
+            "box_L_liq": (
+                np.round(
+                    liq_box_L.to_value("nm"),
+                    decimals=3,
+                ).item()
+                if liq_box_L
+                else None
+            ),
+            "box_L_vap": (
+                np.round(
+                    vap_box_L.to_value("nm"),
+                    decimals=3,
+                ).item()
+                if vap_box_L
+                else None
+            ),
             "init_liq_den": np.round(
                 init_liq_den.to_value(g_per_cm3),
                 decimals=3,
             ).item(),
-            "init_vap_den": np.round(
-                init_vap_den.to_value(g_per_cm3),
-                decimals=3,
-            ).item()
-            if init_vap_den
-            else None,
+            "init_vap_den": (
+                np.round(
+                    init_vap_den.to_value(g_per_cm3),
+                    decimals=3,
+                ).item()
+                if init_vap_den
+                else None
+            ),
             "mass": np.round(
                 mass.to_value("amu"),
                 decimals=3,

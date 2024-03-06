@@ -1,4 +1,5 @@
 """Remove job doc entries related to the analysis of the simulation data."""
+
 import signac
 
 

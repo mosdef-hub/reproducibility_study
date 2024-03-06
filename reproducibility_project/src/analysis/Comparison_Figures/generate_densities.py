@@ -1,4 +1,5 @@
 """Generate CSV from job docs for job densities."""
+
 import os
 
 import camelot

@@ -1,4 +1,5 @@
 """Utility methods for plotting data."""
+
 import pathlib
 import textwrap
 

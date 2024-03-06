@@ -1,4 +1,5 @@
 """Reads the .xyz files for different seeds in NPT MC simulations, and combines and saves them in the gsd format."""
+
 import os
 import shutil
 from glob import glob

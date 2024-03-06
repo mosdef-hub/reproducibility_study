@@ -1,4 +1,5 @@
 """Summarize spe data and save as csv files."""
+
 import os
 
 import numpy as np

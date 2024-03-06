@@ -1,4 +1,5 @@
 """Functionality to generate figure plots to compare MoSDeF to RR relative errors."""
+
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -168,9 +169,11 @@ def _transform_ff_names(df):
     )
     df["ff-mol"] = df[["molecule", "forcefield"]].agg("-".join, axis=1)
     df["ff-mol"] = df["ff-mol"].transform(
-        lambda x: re.sub("([a-zA-Z])", lambda y: y.groups()[0].upper(), x, 1)
-        if "Butane" not in x
-        else x
+        lambda x: (
+            re.sub("([a-zA-Z])", lambda y: y.groups()[0].upper(), x, 1)
+            if "Butane" not in x
+            else x
+        )
     )
 
 

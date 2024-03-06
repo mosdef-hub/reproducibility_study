@@ -1,4 +1,5 @@
 """Plotting code for main project."""
+
 import textwrap
 
 import matplotlib.pyplot as plt
