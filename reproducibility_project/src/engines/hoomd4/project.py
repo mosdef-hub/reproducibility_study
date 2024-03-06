@@ -59,15 +59,6 @@ def run_shrink(job):
     run_hoomd(job, "shrink")
 
 
-# @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-# @Project.pre(lambda j: j.sp.engine == "hoomd")
-# @Project.pre(lambda j: j.doc.get("npt_eq"))
-# @Project.post(lambda j: j.doc.get("nvt_finished"))
-# def run_nvt(job):
-#     """Run an NVT simulation with HOOMD-blue."""
-#     run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
-
-
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
@@ -100,15 +91,6 @@ def check_equilibration_npt(job):
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
-# @Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-# @Project.pre(lambda j: j.sp.engine == "hoomd")
-# @Project.pre(lambda j: j.doc.get("nvt_finished"))
-# @Project.post(lambda j: j.doc.get("nvt_eq"))
-# def check_equilibration_nvt(job):
-#     """Check the equilibration of the NVT simulation."""
-#     job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
-
-
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
@@ -127,6 +109,8 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
+    # Create a clean version of log-npt.txt file to be in consistent format with others.
+    # All the data points are preserved (not trimmed).
     for filename in ["log-npt-raw.txt"]:
         rawlogfile = job.fn(filename)
         logfile = job.fn(filename.replace("-raw", ""))
@@ -419,6 +403,7 @@ def run_hoomd(job, method, restart=False):
     for f in forcefield:
         logger.add(f, quantities=["energy"])
 
+    # Write out the data to raw file
     table_file = hoomd.write.Table(
         output=open(
             job.fn(f"log-{method}-raw.txt"), mode=f"{writemode}", newline="\n"
@@ -541,6 +526,13 @@ def check_equilibration(job, method, eq_property, min_t0=100):
     data = clean_data(data)
     prop_data = data[f"mdcomputeThermodynamicQuantities{eq_property}"]
     iseq, _, _, _ = eq.is_equilibrated(prop_data)
+
+    # Note: The following block generates average property value stored hoomd4 job.doc.
+    # However, this value is not used in the final data analysis
+    # (combining all data from all simulation engines)
+    # The final analysis (defined in project-analysis.py) performs on the log-{method}-raw.txt
+    # and utilized slightly different threshold for equilibraiton detection to ensure
+    # overall consistency across engines.
     if iseq:
         uncorr, t0, g, N = eq.trim_non_equilibrated(prop_data)
         # Sometimes the trim_non_equilibrated function does not cut off enough
