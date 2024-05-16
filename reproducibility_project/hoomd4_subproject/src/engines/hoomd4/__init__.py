@@ -1,1 +1,0 @@
-"""HOOMD project module."""

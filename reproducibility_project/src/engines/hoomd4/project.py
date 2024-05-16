@@ -41,74 +41,67 @@ class Project(FlowProject):
         self.ff_fn = self.data_dir / "forcefield.xml"
 
 
-class Fry(DefaultSlurmEnvironment):
-    """Subclass of DefaultSlurmEnvironment for BSU's Fry cluster."""
-
-    hostname_pattern = "fry.boisestate.edu"
-    template = "fry.sh"
-
-    @classmethod
-    def add_args(cls, parser):
-        """Add command line arguments to the submit call."""
-        parser.add_argument(
-            "--partition",
-            default="batch",
-            help="Specify the partition to submit to.",
-        )
-        parser.add_argument("--nodelist", help="Specify the node to submit to.")
-
-
 # The MOSDEF_PYTHON environment variable is set by running
 # echo "export MOSDEF_PYTHON=$(which python)" >> ~/.bashrc
 # with the mosdef-study38 conda env active
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.post(lambda j: j.doc.get("shrink_finished"))
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def run_shrink(job):
     """Initialize volume for simulation with HOOMD-blue."""
     run_hoomd(job, "shrink")
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-@Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("npt_eq"))
-@Project.post(lambda j: j.doc.get("nvt_finished"))
-def run_nvt(job):
-    """Run an NVT simulation with HOOMD-blue."""
-    run_hoomd(job, "nvt", restart=job.isfile("trajectory-nvt.gsd"))
-
-
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("shrink_finished"))
 @Project.post(lambda j: j.doc.get("npt_finished"))
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 48,
+        "memory": 16,
+    }
+)
 def run_npt(job):
     """Run an NPT simulation with HOOMD-blue."""
     run_hoomd(job, "npt", restart=job.isfile("trajectory-npt.gsd"))
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
 @Project.pre(lambda j: j.doc.get("npt_finished"))
 @Project.post(lambda j: j.doc.get("npt_eq"))
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def check_equilibration_npt(job):
     """Check the equilibration of the NPT simulation."""
     job.doc.npt_finished = check_equilibration(job, "npt", "volume")
 
 
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
 @Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("nvt_finished"))
-@Project.post(lambda j: j.doc.get("nvt_eq"))
-def check_equilibration_nvt(job):
-    """Check the equilibration of the NVT simulation."""
-    job.doc.nvt_finished = check_equilibration(job, "nvt", "potential_energy")
-
-
-@Project.operation.with_directives({"executable": "$MOSDEF_PYTHON", "ngpu": 1})
-@Project.pre(lambda j: j.sp.engine == "hoomd")
-@Project.pre(lambda j: j.doc.get("nvt_eq"))
+@Project.pre(lambda j: j.doc.get("npt_eq"))
 @Project.post(lambda j: j.doc.get("post_processed"))
+@Project.operation(
+    directives={
+        "executable": "$MOSDEF_PYTHON",
+        "ngpu": 1,
+        "walltime": 1,
+        "memory": 16,
+    }
+)
 def post_process(job):
     """Run post-processing on the log files."""
     from shutil import copy
@@ -116,7 +109,9 @@ def post_process(job):
     import numpy.lib.recfunctions as rf
     import unyt as u
 
-    for filename in ["log-npt-raw.txt", "log-nvt-raw.txt"]:
+    # Create a clean version of log-npt.txt file to be in consistent format with others.
+    # All the data points are preserved (not trimmed).
+    for filename in ["log-npt-raw.txt"]:
         rawlogfile = job.fn(filename)
         logfile = job.fn(filename.replace("-raw", ""))
 
@@ -146,7 +141,6 @@ def post_process(job):
 def run_hoomd(job, method, restart=False):
     """Run a simulation with HOOMD-blue."""
     import foyer
-    import git
     import gsd.hoomd
     import hoomd
     import hoomd.md
@@ -161,10 +155,6 @@ def run_hoomd(job, method, restart=False):
     from reproducibility_project.src.utils.forcefields import load_ff
     from reproducibility_project.src.utils.rigid import moit
 
-    repo = git.Repo(search_parent_directories=True)
-    sha = repo.head.object.hexsha
-    print(job.sp.molecule)
-    print(f"git commit: {sha}\n")
     if method not in ["npt", "nvt", "shrink"]:
         raise ValueError("Method must be 'nvt', 'npt' or 'shrink'.")
 
@@ -202,6 +192,15 @@ def run_hoomd(job, method, restart=False):
     e = 1 / 4.184
     m = 0.9999938574
 
+    pppm_kwargs = {"Nx": 64, "Ny": 64, "Nz": 64, "order": 7}
+
+    if job.sp.molecule.startswith("waterSPCE"):
+        print("PPPM args for water")
+        pppm_kwargs = {"Nx": 32, "Ny": 32, "Nz": 32, "order": 5}
+    elif job.sp.molecule.startswith("ethanolAA"):
+        print("PPPM args for ethanol")
+        pppm_kwargs = {"Nx": 24, "Ny": 24, "Nz": 24, "order": 5}
+
     snapshot, forcefield, ref_vals = create_hoomd_forcefield(
         structure,
         ref_distance=d,
@@ -209,7 +208,7 @@ def run_hoomd(job, method, restart=False):
         ref_mass=m,
         r_cut=job.sp.r_cut,
         init_snap=init_snap,
-        pppm_kwargs={"Nx": 64, "Ny": 64, "Nz": 64, "order": 7},
+        pppm_kwargs=pppm_kwargs,
     )
     print("Snapshot created")
 
@@ -268,7 +267,7 @@ def run_hoomd(job, method, restart=False):
             for f in forcefield
             if isinstance(f, hoomd.md.bond.Harmonic)
             or isinstance(f, hoomd.md.angle.Harmonic)
-            or isinstance(f, hoomd.md.dihedral.Harmonic)
+            or isinstance(f, hoomd.md.dihedral.Periodic)
             or isinstance(f, hoomd.md.dihedral.OPLS)
         ]
         for f in remove:
@@ -363,8 +362,6 @@ def run_hoomd(job, method, restart=False):
             "constituent_types": c_types,
             "positions": c_pos,
             "orientations": c_orient,
-            "charges": c_charge,
-            "diameters": c_diam,
         }
 
         for force in forcefield:
@@ -381,7 +378,7 @@ def run_hoomd(job, method, restart=False):
         filename=job.fn(f"trajectory-{method}.gsd"),
         trigger=hoomd.trigger.Periodic(10000),
         mode=f"{writemode}b",
-        dynamic=["momentum"],
+        dynamic=["property", "momentum"],
     )
     sim.operations.writers.append(gsd_writer)
 
@@ -406,6 +403,7 @@ def run_hoomd(job, method, restart=False):
     for f in forcefield:
         logger.add(f, quantities=["energy"])
 
+    # Write out the data to raw file
     table_file = hoomd.write.Table(
         output=open(
             job.fn(f"log-{method}-raw.txt"), mode=f"{writemode}", newline="\n"
@@ -415,12 +413,8 @@ def run_hoomd(job, method, restart=False):
     )
     sim.operations.writers.append(table_file)
 
-    if job.sp.molecule == "ethanolAA":
-        # ethanol needs a smaller timestep to capture fast oscillations of
-        # explicit hydrogen bonds (period 0.0118 time units)
-        dt = 0.0005
-    else:
-        dt = 0.001
+    dt = 0.001
+
     if isrigid:
         integrator = hoomd.md.Integrator(dt=dt, integrate_rotational_dof=True)
         integrator.rigid = rigid
@@ -443,18 +437,18 @@ def run_hoomd(job, method, restart=False):
     if method == "npt":
         # convert pressure to unit system
         pressure = float((job.sp.pressure * u.kPa).to("kJ/(mol*nm**3)").value)
-        print(f"Pressure = {pressure}")
-        integrator_method = hoomd.md.methods.NPT(
+        integrator_method = hoomd.md.methods.ConstantPressure(
+            thermostat=hoomd.md.methods.thermostats.Bussi(kT=kT),
             filter=_all,
-            kT=kT,
-            tau=tau,
             S=pressure,
             tauS=tauS,
             couple="xyz",
         )
     else:
-        # shrink and nvt both use nvt
-        integrator_method = hoomd.md.methods.NVT(filter=_all, kT=kT, tau=tau)
+        integrator_method = hoomd.md.methods.ConstantVolume(
+            filter=_all,
+            thermostat=hoomd.md.methods.thermostats.Bussi(kT=kT),
+        )
 
     integrator.methods = [integrator_method]
     sim.operations.integrator = integrator
@@ -465,10 +459,7 @@ def run_hoomd(job, method, restart=False):
         # only run with high tauS if we are starting from scratch
         if not restart:
             steps = 1e6
-            print(
-                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
-                f"and tauS: {integrator.methods[0].tauS}"
-            )
+            print(f"Running {steps:.0e}.")
             sim.run(steps)
             print("Done")
 
@@ -501,31 +492,23 @@ def run_hoomd(job, method, restart=False):
                 trigger=box_resize_trigger,
             )
             sim.operations.updaters.append(box_resize)
-            print(
-                f"Running shrink {shrink_steps:.0e} with tau: "
-                f"{integrator.methods[0].tau}"
-            )
+            print(f"Running shrink {shrink_steps:.0e}.")
             sim.run(shrink_steps + 1)
             print("Done")
             assert sim.state.box == final_box
             sim.operations.updaters.remove(box_resize)
 
-    integrator.methods[0].tau = 0.1
     if method != "shrink":
         steps = 2e7
         if method == "npt":
-            integrator.methods[0].tauS = 1
-            print(
-                f"Running {steps:.0e} with tau: {integrator.methods[0].tau} "
-                f"and tauS: {integrator.methods[0].tauS}"
-            )
+            print(f"Running {steps:.0e}.")
         else:
-            print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
+            print(f"Running {steps:.0e}.")
         sim.run(steps)
     else:
         # Try adding a short temperature equilibration step after shrink
         steps = 1e4
-        print(f"Running {steps:.0e} with tau: {integrator.methods[0].tau}")
+        print(f"Running {steps:.0e}.")
         sim.run(steps)
 
     job.doc[f"{method}_finished"] = True
@@ -543,6 +526,13 @@ def check_equilibration(job, method, eq_property, min_t0=100):
     data = clean_data(data)
     prop_data = data[f"mdcomputeThermodynamicQuantities{eq_property}"]
     iseq, _, _, _ = eq.is_equilibrated(prop_data)
+
+    # Note: The following block generates average property value stored hoomd4 job.doc.
+    # However, this value is not used in the final data analysis
+    # (combining all data from all simulation engines)
+    # The final analysis (defined in project-analysis.py) performs on the log-{method}-raw.txt
+    # and utilized slightly different threshold for equilibraiton detection to ensure
+    # overall consistency across engines.
     if iseq:
         uncorr, t0, g, N = eq.trim_non_equilibrated(prop_data)
         # Sometimes the trim_non_equilibrated function does not cut off enough

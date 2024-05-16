@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo Removing jobs from all engines but $1
-for ENGINE in cassandra mcccs gomc gromacs hoomd lammps-VU lammps-UD
+for ENGINE in cassandra mcccs gomc gromacs hoomd lammps-VU
 do
     if [[ $ENGINE != $1 ]]
     then
