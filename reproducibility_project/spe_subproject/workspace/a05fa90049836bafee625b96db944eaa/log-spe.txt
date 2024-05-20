@@ -1,0 +1,2 @@
+potential_energy tot_vdw_energy tail_energy short_range_electrostatics long_range_electrostatics tot_pair_energy bonds_energy angles_energy dihedrals_energy tot_bonded_energy tot_electrostatics intramolecular_energy intermolecular_energy
+536736.470216157 536736.470216156 -128.229542383854 0 0 536736.470216156 0 0 0 0 0 0 0
