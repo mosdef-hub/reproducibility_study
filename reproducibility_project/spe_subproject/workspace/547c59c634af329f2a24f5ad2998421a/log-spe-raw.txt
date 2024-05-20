@@ -1,0 +1,2 @@
+pair_LJ pair_LJ_tail bond_Harmonic angle_Harmonic dihedral_OPLS potential_energy
+388939.009526006 -250.558686917935 1.53615277086747e-22 2.88255557109613e-10 0 388939.009526007
