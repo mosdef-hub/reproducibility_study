@@ -287,7 +287,8 @@ def sanitize_npt_log(step, job):
     """Sanitize the output logs for NPT simulations."""
     import numpy as np
 
-    mw = job.sp.mass
+    mw = 46.068672
+    print("sanitizing for", job, "molecule =", job.sp.molecule, "mw=", mw)
     temp = job.sp.temperature
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays = []
