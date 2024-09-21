@@ -51,8 +51,9 @@ def main():
 
             for job in group:
                 os.chdir(job.workspace())
-                os.chdir("..")
-                os.system("rm -rf {}".format(job))
+                print(job)
+                # os.chdir("..")
+                os.system("rm -rf log-npt.txt")
                 # print(os.listdir())
                 # os.system("cat sig*state*json")
                 # os.system("cat sig*state*json")
