@@ -329,7 +329,7 @@ def sanitize_gemc_log(step, job):
     """Sanitize the output logs for gemc simulations."""
     import numpy as np
 
-    mw = job.sp.mass
+    mw = 46.068672
     files = sorted(glob("fort*12*{}*".format(step)))
     arrays_box1 = []
     arrays_box2 = []
