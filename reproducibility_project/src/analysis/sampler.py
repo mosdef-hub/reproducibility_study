@@ -29,6 +29,9 @@ def sample_job(
 ):
     """Use the timeseries module from pymbar to perform statistical sampling.
 
+    **Note this was turned off in order to have the same sampling across all
+    techniques. All jobs set monte_carlo_overrite=True.
+
     The start, end and decorrleated step size of the production region are
     added to the job document.
 
