@@ -424,7 +424,13 @@ def _save_single_scatter_labels(
 
 
 def single_plot_comparisons(
-    df, splitby, combMCMD, plot_type, average_replicas=False, figdir="combined", errormax=None
+    df,
+    splitby,
+    combMCMD,
+    plot_type,
+    average_replicas=False,
+    figdir="combined",
+    errormax=None,
 ):
     """Plot deviations split into splitby groupings on xaxis and compared to their statepoint and/or MD/MC means."""
     if average_replicas:
@@ -487,7 +493,7 @@ def single_plot_comparisons(
         color_labels,
         average_replicas,
         rotation=45,
-        wrap_labels=False
+        wrap_labels=False,
     )  # formatting for all plots
     if errormax:
         ax.set_ylim(-errormax, errormax)
@@ -723,7 +729,9 @@ def looper_for_plotting_single_data(df):
     """Seperate out plotting data from source specific dataframes."""
     for filter_method in ["MoSDeF", "RR", None]:
         if filter_method:
-            plotDF = copy.deepcopy(df.loc[df["associated_work"] == filter_method])
+            plotDF = copy.deepcopy(
+                df.loc[df["associated_work"] == filter_method]
+            )
         for use_replica_avg in (True, False):
             for splitby in ["ff-mol", "forcefield", "associated_work"]:
                 for combMCMD in [True, False]:
@@ -745,7 +753,7 @@ def looper_for_plotting_single_data(df):
                                 plot_type=plot_type,
                                 average_replicas=use_replica_avg,
                                 figdir=filter_method,
-                                errormax=3.0
+                                errormax=3.0,
                             )
                         else:
                             single_plot_comparisons(
@@ -1011,7 +1019,7 @@ if __name__ == "__main__":
         },
     ]
 
-    stack_plot_comparisons(df, stack2) # try other plotting
+    stack_plot_comparisons(df, stack2)  # try other plotting
 
     stack3 = [
         {

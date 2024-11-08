@@ -329,9 +329,9 @@ def create_largest_t0_operations(
     @Project.post(lambda job: job.doc.get(f"{ensemble}/max_t0") is not None)
     def write_largest_t0(job):
         """Write out maximium t0 for all subsampled values in npt production."""
-        #job.doc[f"{ensemble}/max_t0"] = _get_largest_t0( # note that this was overwritten such that all production data is used
+        # job.doc[f"{ensemble}/max_t0"] = _get_largest_t0( # note that this was overwritten such that all production data is used
         #    job, ensemble=ensemble, props=prop_list
-        #)
+        # )
         job.doc[f"{ensemble}/max_t0"] = 0
 
 
