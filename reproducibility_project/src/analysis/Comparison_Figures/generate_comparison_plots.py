@@ -595,7 +595,7 @@ def stack_plot_comparisons(df, stack, ymax=None):
     fname = f"figures/Stacked_Figures/{'_'.join(fig_names)}.pdf"
     print(f"Plotting {fname}")
     fig.tight_layout()
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def stack_plot_multix(stack):
@@ -705,7 +705,7 @@ def stack_plot_multix(stack):
     axs[2].text(3.1, 5.8, "RR", fontdict={"size": fontsize})
     axs[2].text(3.1, 29.7, "RR", fontdict={"size": fontsize})
     axs[2].text(0.8, 53.8, "RR", fontdict={"size": fontsize})
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def looper_for_plotting_single_data(df):
@@ -842,7 +842,7 @@ def plot_rr_mosdef_mosdef_avg(fullDF):
     fname = f"figures/Stacked_Figures/{'Grouped-Comparison'}-{plot_type}.pdf"
     print(f"Plotting {fname}")
     fig.tight_layout()
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def print_errors_for_text(df):
