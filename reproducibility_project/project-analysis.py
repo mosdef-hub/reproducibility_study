@@ -98,7 +98,7 @@ def _determine_sampling_information(
             threshold_fraction=0.75,
             threshold_neff=100,
             strict=strict,
-            monte_carlo_override=False,
+            monte_carlo_override=True,
         )
 
 
@@ -329,9 +329,10 @@ def create_largest_t0_operations(
     @Project.post(lambda job: job.doc.get(f"{ensemble}/max_t0") is not None)
     def write_largest_t0(job):
         """Write out maximium t0 for all subsampled values in npt production."""
-        job.doc[f"{ensemble}/max_t0"] = _get_largest_t0(
-            job, ensemble=ensemble, props=prop_list
-        )
+        # job.doc[f"{ensemble}/max_t0"] = _get_largest_t0( # note that this was overwritten such that all production data is used
+        #    job, ensemble=ensemble, props=prop_list
+        # )
+        job.doc[f"{ensemble}/max_t0"] = 0
 
 
 # md operations
@@ -402,7 +403,7 @@ for ensemble, prop_list in zip(["npt"], [md_npt_props]):
         prop_list=prop_list,
         simulation_type="md",
         engine_list=md_engines,
-        is_monte_carlo=False,
+        is_monte_carlo=True,
     )
 
 # mc operations

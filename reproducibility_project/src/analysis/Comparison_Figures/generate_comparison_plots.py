@@ -36,10 +36,12 @@ rc("text", usetex=True)
 
 # plot settings
 ms = 8  # markersize
-xtickfs = 15  # xtickfontsize
-xlabelfs = 18  # xlabelfontsize
-ylabelfs = 20  # ylabelfontsize
-ytickfs = 14  # ytickfontsize
+xtickfs = 12  # xtickfontsize
+# xlabelfs = 18  # xlabelfontsize
+xlabelfs = 12  # xlabelfontsize
+ylabelfs = 12  # ylabelfontsize
+ytickfs = 12  # ytickfontsize
+# ytickfs = 10  # ytickfontsize
 titlefs = 14  # title size
 legendfs = 9
 alpha = 0.2
@@ -215,6 +217,10 @@ def _sort_plotting_labels(df, x_label, y_label):
             func=lambda x: sortmolDict.get(x)
         )
     elif x_label == "ff-mol":
+        df["sortedindex"] = df[x_label].apply(
+            func=lambda x: sortffmolDict.get(x)
+        )
+    else:
         df["sortedindex"] = df[x_label].apply(
             func=lambda x: sortffmolDict.get(x)
         )
@@ -418,7 +424,13 @@ def _save_single_scatter_labels(
 
 
 def single_plot_comparisons(
-    df, splitby, combMCMD, plot_type, average_replicas=False, figdir="combined"
+    df,
+    splitby,
+    combMCMD,
+    plot_type,
+    average_replicas=False,
+    figdir="combined",
+    errormax=None,
 ):
     """Plot deviations split into splitby groupings on xaxis and compared to their statepoint and/or MD/MC means."""
     if average_replicas:
@@ -476,13 +488,18 @@ def single_plot_comparisons(
         ax,
         splitby,
         figdir,
-        groupMCMD,
+        combMCMD,
         xtick_labelsList,
         color_labels,
         average_replicas,
+        rotation=45,
+        wrap_labels=False,
     )  # formatting for all plots
+    if errormax:
+        ax.set_ylim(-errormax, errormax)
+
     _save_single_scatter_labels(
-        fig, ax, groupMCMD, average_replicas, figdir, splitby, plot_type
+        fig, ax, combMCMD, average_replicas, figdir, splitby, plot_type
     )
     plt.close()
 
@@ -587,7 +604,7 @@ def stack_plot_comparisons(df, stack, ymax=None):
         )  # format all plots
     # remove extra labels
     axs[0].set_ylabel("")
-    axs[2].set_ylabel("")
+    # axs[2].set_ylabel("")
 
     fig_names = []
     for sta in stack:
@@ -595,7 +612,7 @@ def stack_plot_comparisons(df, stack, ymax=None):
     fname = f"figures/Stacked_Figures/{'_'.join(fig_names)}.pdf"
     print(f"Plotting {fname}")
     fig.tight_layout()
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def stack_plot_multix(stack):
@@ -705,38 +722,48 @@ def stack_plot_multix(stack):
     axs[2].text(3.1, 5.8, "RR", fontdict={"size": fontsize})
     axs[2].text(3.1, 29.7, "RR", fontdict={"size": fontsize})
     axs[2].text(0.8, 53.8, "RR", fontdict={"size": fontsize})
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def looper_for_plotting_single_data(df):
     """Seperate out plotting data from source specific dataframes."""
     for filter_method in ["MoSDeF", "RR", None]:
         if filter_method:
-            df = copy.deepcopy(densityDF)
-            df = df.loc[df["associated_work"] == filter_method]
+            plotDF = copy.deepcopy(
+                df.loc[df["associated_work"] == filter_method]
+            )
         for use_replica_avg in (True, False):
             for splitby in ["ff-mol", "forcefield", "associated_work"]:
-                for combMCMDMCMD in [True, False]:
-                    for plot_type in ["scatter", "violin", "box"]:
+                for combMCMD in [True, False]:
+                    for plot_type in ["scatter", "violin"]:
                         if filter_method is None:
                             single_plot_comparisons(
-                                df.copy(),
+                                copy.deepcopy(plotDF),
                                 splitby=splitby,
                                 combMCMD=combMCMD,
                                 plot_type=plot_type,
                                 average_replicas=use_replica_avg,
                                 figdir="combined",
                             )
+                        elif filter_method == "MoSDeF":
+                            single_plot_comparisons(
+                                copy.deepcopy(plotDF),
+                                splitby=splitby,
+                                combMCMD=combMCMD,
+                                plot_type=plot_type,
+                                average_replicas=use_replica_avg,
+                                figdir=filter_method,
+                                errormax=3.0,
+                            )
                         else:
                             single_plot_comparisons(
-                                df.copy(),
+                                copy.deepcopy(plotDF),
                                 splitby=splitby,
-                                combMCMD=combMCMDMCMD,
+                                combMCMD=combMCMD,
                                 plot_type=plot_type,
                                 average_replicas=use_replica_avg,
                                 figdir=filter_method,
                             )
-                        df = copy.deepcopy(densityDF)
 
 
 def plot_rr_mosdef_mosdef_avg(fullDF):
@@ -842,7 +869,7 @@ def plot_rr_mosdef_mosdef_avg(fullDF):
     fname = f"figures/Stacked_Figures/{'Grouped-Comparison'}-{plot_type}.pdf"
     print(f"Plotting {fname}")
     fig.tight_layout()
-    fig.savefig(fname, dpi=500, bbox_inches="tight", overwrite=True)
+    fig.savefig(fname, dpi=500, bbox_inches="tight")
 
 
 def print_errors_for_text(df):
@@ -941,7 +968,7 @@ if __name__ == "__main__":
     df = copy.deepcopy(densityDF)
 
     # generate individual scatter and violin plots
-    # looper_for_plotting_single_data(df)
+    looper_for_plotting_single_data(df)
 
     # generate stacked plots
 
@@ -992,7 +1019,7 @@ if __name__ == "__main__":
         },
     ]
 
-    # stack_plot_comparisons(df, stack2) # try other plotting
+    stack_plot_comparisons(df, stack2)  # try other plotting
 
     stack3 = [
         {
@@ -1015,7 +1042,7 @@ if __name__ == "__main__":
         },
     ]
 
-    # stack_plot_comparisons(df, stack3)
+    stack_plot_comparisons(df, stack3)
 
     # compare TraPPE -> all
     df1 = copy.deepcopy(df).loc[
@@ -1059,6 +1086,7 @@ if __name__ == "__main__":
     # Compare TraPPE -> TraPPE
     # compare OPLS -> SPC/E
     # compare OPLS AMBER -> OPLS Ethanol
+
     stack_plot_multix(stack_mol_by_mol_basis)
 
     plot_rr_mosdef_mosdef_avg(densityDF.copy())

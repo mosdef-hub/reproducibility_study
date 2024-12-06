@@ -109,7 +109,7 @@ def _determine_sampling_information(
             threshold_fraction=0.75,
             threshold_neff=100,
             strict=strict,
-            monte_carlo_override=False,
+            monte_carlo_override=True,
         )
 
 
