@@ -38,7 +38,9 @@ def main():
     ):
         print("-----------------------------------------------------")
 
-        if molecule == "ethanolAA" and engine == "mcccs":
+        jobs = []
+
+        if molecule == "benzeneUA" and engine == "mcccs":
             print(
                 molecule,
                 ensemble,
@@ -50,7 +52,15 @@ def main():
             )
 
             for job in group:
-                print(job.sp.replica, job)
+                jobs.append(
+                    [
+                        job.sp.replica,
+                        str(job),
+                    ]
+                )
+            jobs.sort()
+            for job in jobs:
+                print(job)
 
 
 if __name__ == "__main__":
