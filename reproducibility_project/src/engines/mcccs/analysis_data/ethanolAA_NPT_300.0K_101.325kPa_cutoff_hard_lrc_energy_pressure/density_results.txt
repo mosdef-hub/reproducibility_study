@@ -1,1 +1,3 @@
-The average density is 0.7915156250000001 g/ml with SEM 0.00022247973156454715 from 16 samples
+For NpT cases, the first line is runfile avg and second line is logfile avg
+The average density is 0.7914194531250001 g/ml with SEM 0.00021111305682752364 from 16 samples
+The average density is 0.7914208917911247 g/ml with SEM 0.00021123437103423662 from 16 samples

@@ -85,6 +85,7 @@ def main():
         base_dir = os.getcwd()
         if ensemble == "NPT":
             density_list = []
+            density_list_logfile = []
             for job in group:
                 os.chdir(job.ws)
                 # print(job)
@@ -103,15 +104,25 @@ def main():
                         )
                     )
                 density_list.append(avg_one_seed_density_box1(prod_run_files))
-
+                density_list_logfile.append(density_avg_logfile("log-npt.txt"))
                 # print(density_list)
             filtered_density_list = list(filter(None, density_list))
-            output_string = "The average density is {} g/ml with SEM {} from {} samples".format(
+            filtered_density_list_logfile = list(
+                filter(None, density_list_logfile)
+            )
+            output_string = "For NpT cases, the first line is runfile avg and second line is logfile avg\nThe average density is {} g/ml with SEM {} from {} samples\n".format(
                 np.mean(filtered_density_list),
                 np.std(filtered_density_list)
                 / np.sqrt(len(filtered_density_list)),
                 len(filtered_density_list),
             )
+            output_string += "The average density is {} g/ml with SEM {} from {} samples".format(
+                np.mean(filtered_density_list_logfile),
+                np.std(filtered_density_list_logfile)
+                / np.sqrt(len(filtered_density_list_logfile)),
+                len(filtered_density_list_logfile),
+            )
+
             print(output_string)
             os.chdir(base_dir)
             with open("density_results.txt", "w") as text_file:
@@ -169,6 +180,16 @@ def main():
             text_file.close()
 
         os.chdir("..")
+
+
+def density_avg_logfile(logfile):
+    """Calc average for log files."""
+    data = np.loadtxt("log-npt.txt", skiprows=1)
+
+    # Calculate the average of the third from last column (density)
+    density_column_index = -3  # Third from last column
+    average_density = np.mean(data[:, density_column_index])
+    return average_density
 
 
 def avg_one_seed_density_box1(prod_run_files):
