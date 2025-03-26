@@ -1092,3 +1092,44 @@ if __name__ == "__main__":
     plot_rr_mosdef_mosdef_avg(densityDF.copy())
 
     print_errors_for_text(densityDF.copy())
+
+    ## Print out relative errors for max and min
+
+    import copy
+
+    mosdefDF = pd.read_csv("csvs/job_density_data.csv", index_col=0)
+    mosdefDF.insert(
+        len(mosdefDF.columns),
+        "pressure",
+        np.full(len(mosdefDF.index), 0.101325),
+    )
+    hasse_dfList = _load_all_rr_data()
+
+    # 4 combine data into one dataframe
+    densityDF = mosdefDF.loc[
+        mosdefDF["molecule"] != "pentaneUA-flexible_bonds"
+    ].copy()
+    densityDF = pd.concat([densityDF, *hasse_dfList], ignore_index=True)
+    df = copy.deepcopy(densityDF)
+    df = _mask_df(df)
+    init_rows = df.shape[0]
+    df = df[df["density"].notna()]  # drop bad rows
+    print(f"Removed {init_rows-df.shape[0]} rows")
+    mosdf = copy.copy(df.loc[df["associated_work"] == "MoSDeF"])
+
+    groupREList = ["molecule", "temperature", "forcefield"]
+    mosdf["Relative_Error"] = mosdf.groupby(groupREList)["density"].transform(
+        calculate_relative_error
+    )
+    maxval = mosdf["Relative_Error"].max()
+    medval = mosdf["Relative_Error"].median()
+    print("MoSDeF max and median values: ", maxval, medval)
+
+    RRdf = copy.copy(df.loc[df["associated_work"] == "RR"])
+    groupREList = ["molecule", "temperature", "forcefield", "pressure"]
+    RRdf["Relative_Error"] = RRDF.groupby(groupREList)["density"].transform(
+        calculate_relative_error
+    )
+    maxval = RRdf["Relative_Error"].max()
+    medval = RRdf["Relative_Error"].median()
+    print("Round robin max and median values: ", maxval, medval)
