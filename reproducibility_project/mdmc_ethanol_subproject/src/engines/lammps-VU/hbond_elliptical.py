@@ -261,7 +261,7 @@ def calualateHBMap(
     >>> sel_oxygen_head = 'name O5' ; sel_hydrogen = 'name H1 or name H2' ; sel_oxygen_tail = 'name O5'; list_names_hydrogen = ["H1", "H2"] ; list_names_oxygen_head = ["O5"] ; list_names_oxygen_tail = ["O5"]
     >>> rdf_output, inter_output, map_output,hbond,hbond_time = calualateHBMap(traj, r_cutoff, nbins_r, nbins_a, skip_every_x_frames, sel_oxygen_head, sel_oxygen_tail, sel_hydrogen, list_names_hydrogen, list_names_oxygen_head, list_names_oxygen_tail)
     >>> #Plotting
-    >>> plt.figure() ; cmap = plt.get_cmap('jet') ; plt.figure(figsize=(5, 3)) ; plt.style.use('default'); levels = np.linspace(0,10,11) ; cs = plt.contourf(rdf_output[0], inter_output[0], map_output,levels = levels, cmap=cmap) ; plt.xlabel('r (nm)') ; plt.ylabel('\u03B8 (degrees)') ; plt.xlim([0.2, 0.4]) ; plt.ylim([140, 180]) ; plt.colorbar()
+    >>> plt.figure() ; cmap = plt.get_cmap('jet') ; plt.figure(figsize=(5, 3)) ; plt.style.use('default'); levels = np.linspace(0,10,11) ; cs = plt.contourf(rdf_output[0], inter_output[0], map_output,levels = levels, cmap=cmap) ; plt.xlabel('r (nm)') ; plt.ylabel('\u03b8 (degrees)') ; plt.xlim([0.2, 0.4]) ; plt.ylim([140, 180]) ; plt.colorbar()
 
     """
     bond_diction, top = create_bond_dict(

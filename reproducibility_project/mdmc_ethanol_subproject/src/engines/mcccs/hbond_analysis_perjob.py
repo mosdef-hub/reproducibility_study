@@ -100,7 +100,7 @@ def hbond(job):
                 cmap=cmap,
             )
             plt.xlabel("r (nm)")
-            plt.ylabel("\u03B8 (degrees)")
+            plt.ylabel("\u03b8 (degrees)")
             plt.xlim([0.2, 0.4])
             plt.ylim([140, 180])
             plt.colorbar()

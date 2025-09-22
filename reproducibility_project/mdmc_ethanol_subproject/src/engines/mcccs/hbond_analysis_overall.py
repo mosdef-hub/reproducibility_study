@@ -132,7 +132,7 @@ def main():
                 avg_r, avg_theta, avg_map_output, levels=levels, cmap=cmap
             )
             plt.xlabel(r"$r$" + r" ($\mathrm{\AA}$)", fontsize=xlabelfs)
-            plt.ylabel("\u03B8 (degrees)", fontsize=ylabelfs)
+            plt.ylabel("\u03b8 (degrees)", fontsize=ylabelfs)
             plt.xlim([2.2, 3.5])
             plt.ylim([125, 180])
             cbar = plt.colorbar(cs)
